@@ -55,8 +55,3 @@ To successfully complete this course, you must take the following tasks. Please 
 ---
 
 ## 📜 References
-- [Eventim](https://www.eventim.com.br/)
-- [Even3](https://www.even3.com.br/)
-- [Ticket Master](https://www.ticketmaster.com.br/)
-- [Sympla](https://www.sympla.com.br/)
-- [EventHub](https://eventhub.net/)

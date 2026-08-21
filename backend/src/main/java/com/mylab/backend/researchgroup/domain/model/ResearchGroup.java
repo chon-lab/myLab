@@ -5,6 +5,9 @@ import java.time.Year;
 import java.util.Objects;
 import java.util.UUID;
 
+import com.mylab.backend.researchgroup.domain.valueobjects.GroupAddress;
+import com.mylab.backend.researchgroup.domain.valueobjects.GroupContact;
+
 import lombok.Builder;
 import lombok.Getter;
 
@@ -26,7 +29,7 @@ public class ResearchGroup {
     private GroupContact contact;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private LocalDateTime archivedAt;
+    private LocalDateTime deletedAt;
 
     @Builder
     public ResearchGroup(
@@ -46,7 +49,7 @@ public class ResearchGroup {
             GroupContact contact,
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
-            LocalDateTime archivedAt) {
+            LocalDateTime deletedAt) {
         this.id = Objects.requireNonNull(id, "id must not be null");
         this.cnpqId = requireNonBlank(cnpqId, "cnpqId");
         this.name = requireNonBlank(name, "name");
@@ -63,7 +66,8 @@ public class ResearchGroup {
         this.contact = contact;
         this.createdAt = Objects.requireNonNull(createdAt, "createdAt must not be null");
         this.updatedAt = Objects.requireNonNull(updatedAt, "updatedAt must not be null");
-        this.archivedAt = archivedAt;
+        this.updatedAt = requireValidUpdatedAt(updatedAt, createdAt);
+        this.deletedAt = deletedAt;
     }
 
     private static String requireNonBlank(String value, String fieldName) {
@@ -79,4 +83,23 @@ public class ResearchGroup {
         }
         return formationYear;
     }
+
+    private static LocalDateTime requireValidUpdatedAt(
+        LocalDateTime updatedAt,
+        LocalDateTime createdAt
+    ) {
+        Objects.requireNonNull(
+                updatedAt,
+                "updatedAt must not be null"
+        );
+
+        if (updatedAt.isBefore(createdAt)) {
+            throw new IllegalArgumentException(
+                    "updatedAt must not be before createdAt"
+            );
+        }
+
+        return updatedAt;
+    }
+
 }

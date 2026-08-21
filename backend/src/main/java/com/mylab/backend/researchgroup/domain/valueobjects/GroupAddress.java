@@ -1,4 +1,4 @@
-package com.mylab.backend.researchgroup.domain.model;
+package com.mylab.backend.researchgroup.domain.valueobjects;
 
 import java.math.BigDecimal;
 

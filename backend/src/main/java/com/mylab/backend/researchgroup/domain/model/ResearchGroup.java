@@ -2,9 +2,9 @@ package com.mylab.backend.researchgroup.domain.model;
 
 import java.time.LocalDateTime;
 import java.time.Year;
-import java.util.Objects;
 import java.util.UUID;
 
+import com.mylab.backend.researchgroup.domain.exception.InvalidResearchGroupException;
 import com.mylab.backend.researchgroup.domain.valueobjects.GroupAddress;
 import com.mylab.backend.researchgroup.domain.valueobjects.GroupContact;
 
@@ -50,7 +50,7 @@ public class ResearchGroup {
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
             LocalDateTime deletedAt) {
-        this.id = Objects.requireNonNull(id, "id must not be null");
+        this.id = requireNonNull(id, "id");
         this.cnpqId = requireNonBlank(cnpqId, "cnpqId");
         this.name = requireNonBlank(name, "name");
         this.situation = requireNonBlank(situation, "situation");
@@ -64,22 +64,28 @@ public class ResearchGroup {
         this.repercussions = repercussions;
         this.address = address;
         this.contact = contact;
-        this.createdAt = Objects.requireNonNull(createdAt, "createdAt must not be null");
-        this.updatedAt = Objects.requireNonNull(updatedAt, "updatedAt must not be null");
+        this.createdAt = requireNonNull(createdAt, "createdAt");
         this.updatedAt = requireValidUpdatedAt(updatedAt, createdAt);
         this.deletedAt = deletedAt;
     }
 
     private static String requireNonBlank(String value, String fieldName) {
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException(fieldName + " must not be blank");
+            throw new InvalidResearchGroupException(fieldName + " must not be blank");
+        }
+        return value;
+    }
+
+    private static <T> T requireNonNull(T value, String fieldName) {
+        if (value == null) {
+            throw new InvalidResearchGroupException(fieldName + " must not be null");
         }
         return value;
     }
 
     private static int requireValidFormationYear(int formationYear) {
         if (formationYear < 1 || formationYear > Year.now().getValue()) {
-            throw new IllegalArgumentException("formationYear must be between 1 and the current year");
+            throw new InvalidResearchGroupException("formationYear must be between 1 and the current year");
         }
         return formationYear;
     }
@@ -88,18 +94,55 @@ public class ResearchGroup {
         LocalDateTime updatedAt,
         LocalDateTime createdAt
     ) {
-        Objects.requireNonNull(
-                updatedAt,
-                "updatedAt must not be null"
-        );
+        requireNonNull(updatedAt, "updatedAt");
 
         if (updatedAt.isBefore(createdAt)) {
-            throw new IllegalArgumentException(
+            throw new InvalidResearchGroupException(
                     "updatedAt must not be before createdAt"
             );
         }
 
         return updatedAt;
+    }
+
+    public void updateDetails(
+            String name,
+            String situation,
+            int formationYear,
+            LocalDateTime situationAt,
+            LocalDateTime lastSubmittedAt,
+            String predominantArea,
+            String institutionName,
+            String institutionUnit,
+            String sourceUrl,
+            String repercussions,
+            GroupAddress address,
+            GroupContact contact,
+            LocalDateTime occurredAt) {
+        String validName = requireNonBlank(name, "name");
+        String validSituation = requireNonBlank(situation, "situation");
+        int validFormationYear = requireValidFormationYear(formationYear);
+        String validPredominantArea = requireNonBlank(predominantArea, "predominantArea");
+        String validInstitutionName = requireNonBlank(institutionName, "institutionName");
+        LocalDateTime validUpdatedAt = requireValidUpdatedAt(occurredAt, this.createdAt);
+
+        if (validUpdatedAt.isBefore(this.updatedAt)) {
+            throw new InvalidResearchGroupException("updatedAt must not move backwards");
+        }
+
+        this.name = validName;
+        this.situation = validSituation;
+        this.formationYear = validFormationYear;
+        this.situationAt = situationAt;
+        this.lastSubmittedAt = lastSubmittedAt;
+        this.predominantArea = validPredominantArea;
+        this.institutionName = validInstitutionName;
+        this.institutionUnit = institutionUnit;
+        this.sourceUrl = sourceUrl;
+        this.repercussions = repercussions;
+        this.address = address;
+        this.contact = contact;
+        this.updatedAt = validUpdatedAt;
     }
 
 }

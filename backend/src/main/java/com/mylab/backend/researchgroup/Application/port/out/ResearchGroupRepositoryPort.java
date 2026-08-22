@@ -1,14 +1,15 @@
 package com.mylab.backend.researchgroup.application.port.out;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.mylab.backend.researchgroup.domain.model.ResearchGroup;
 
 public interface ResearchGroupRepositoryPort {
     ResearchGroup save(ResearchGroup researchGroup);
-    ResearchGroup update(UUID id, ResearchGroup researchGroup);
-    ResearchGroup findById(UUID id);
+    Optional<ResearchGroup> findById(UUID id);
+    boolean existsByCnpqId(String cnpqId);
     List<ResearchGroup> findAll();
-    void delete(UUID id);
+    void deleteById(UUID id);
 }

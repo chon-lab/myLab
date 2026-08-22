@@ -1,4 +1,4 @@
-package com.mylab.backend.researchgroup.Application.port.in;
+package com.mylab.backend.researchgroup.application.port.in;
 
 import java.util.List;
 

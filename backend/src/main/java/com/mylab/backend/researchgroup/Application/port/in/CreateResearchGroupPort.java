@@ -1,7 +1,9 @@
-package com.mylab.backend.researchgroup.Application.port.in;
+package com.mylab.backend.researchgroup.application.port.in;
 
-import com.mylab.backend.researchgroup.domain.model.ResearchGroup;
+import java.util.UUID;
+
+import com.mylab.backend.researchgroup.application.dto.CreateResearchGroupInput;
 
 public interface CreateResearchGroupPort {
-    void create(ResearchGroup researchGroup);
+    UUID create(CreateResearchGroupInput input);
 }

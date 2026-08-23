@@ -1,8 +1,10 @@
 package com.mylab.backend.researchgroup.application.usecase;
 
 import java.time.LocalDateTime;
-import java.util.Objects;
 import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.mylab.backend.researchgroup.application.dto.CreateResearchGroupInput;
 import com.mylab.backend.researchgroup.application.port.in.CreateResearchGroupPort;
@@ -10,19 +12,22 @@ import com.mylab.backend.researchgroup.application.port.out.ResearchGroupReposit
 import com.mylab.backend.researchgroup.domain.exception.DuplicateCnpqIdException;
 import com.mylab.backend.researchgroup.domain.model.ResearchGroup;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
 public class CreateResearchGroupUsecase implements CreateResearchGroupPort {
 
-    private final ResearchGroupRepositoryPort repository;
-
-    public CreateResearchGroupUsecase(ResearchGroupRepositoryPort repository) {
-        this.repository = Objects.requireNonNull(repository, "repository must not be null");
-    }
+    private final ResearchGroupRepositoryPort repositoryPort;
 
     @Override
+    @Transactional
     public UUID create(CreateResearchGroupInput input) {
-        Objects.requireNonNull(input, "input must not be null");
+        log.info("Creating research group with CNPq ID: {}", input.cnpqId());
 
-        if (repository.existsByCnpqId(input.cnpqId())) {
+        if (repositoryPort.existsByCnpqId(input.cnpqId())) {
             throw new DuplicateCnpqIdException(input.cnpqId());
         }
 
@@ -46,7 +51,8 @@ public class CreateResearchGroupUsecase implements CreateResearchGroupPort {
                 .updatedAt(now)
                 .build();
 
-        ResearchGroup savedResearchGroup = repository.save(researchGroup);
+        ResearchGroup savedResearchGroup = repositoryPort.save(researchGroup);
+        log.info("Research group created successfully with ID: {}", savedResearchGroup.getId());
         return savedResearchGroup.getId();
     }
 }

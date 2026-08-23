@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(
-        name = "tb_research_groups",
+        name = "research_group",
         uniqueConstraints = @UniqueConstraint(name = "uk_research_group_cnpq_id", columnNames = "cnpq_id"),
         indexes = @Index(name = "idx_research_group_name", columnList = "name")
 )

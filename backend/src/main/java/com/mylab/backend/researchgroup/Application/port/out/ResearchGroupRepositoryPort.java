@@ -7,7 +7,7 @@ import java.util.UUID;
 import com.mylab.backend.researchgroup.domain.model.ResearchGroup;
 
 public interface ResearchGroupRepositoryPort {
-    ResearchGroup save(ResearchGroup researchGroup);
+    void save(ResearchGroup researchGroup);
     Optional<ResearchGroup> findById(UUID id);
     boolean existsByCnpqId(String cnpqId);
     List<ResearchGroup> findAll();

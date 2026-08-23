@@ -51,8 +51,8 @@ public class CreateResearchGroupUsecase implements CreateResearchGroupPort {
                 .updatedAt(now)
                 .build();
 
-        ResearchGroup savedResearchGroup = repositoryPort.save(researchGroup);
-        log.info("Research group created successfully with ID: {}", savedResearchGroup.getId());
-        return savedResearchGroup.getId();
+        repositoryPort.save(researchGroup);
+        log.info("Research group created successfully with ID: {}", researchGroup.getId());
+        return researchGroup.getId();
     }
 }

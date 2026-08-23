@@ -1,2 +1,8 @@
 [tools]
 java = "25"
+
+[tasks.start]
+description = "Inicia o backend Spring Boot"
+dir = "backend"
+run = "./mvnw spring-boot:run"
+run_windows = "mvnw.cmd spring-boot:run"

@@ -5,5 +5,5 @@ import java.util.UUID;
 import com.mylab.backend.researchgroup.application.dto.CreateResearchGroupInput;
 
 public interface CreateResearchGroupPort {
-    UUID create(CreateResearchGroupInput input);
+  UUID create(CreateResearchGroupInput input);
 }

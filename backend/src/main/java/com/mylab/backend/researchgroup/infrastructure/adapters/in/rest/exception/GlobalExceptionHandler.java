@@ -1,0 +1,106 @@
+package com.mylab.backend.researchgroup.infrastructure.adapters.in.rest.exception;
+
+import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
+import com.mylab.backend.researchgroup.application.exception.ResearchGroupNotFoundException;
+import com.mylab.backend.researchgroup.domain.exception.DuplicateCnpqIdException;
+import com.mylab.backend.researchgroup.domain.exception.InvalidGroupAddressException;
+import com.mylab.backend.researchgroup.domain.exception.InvalidGroupContactException;
+import com.mylab.backend.researchgroup.domain.exception.InvalidResearchGroupException;
+
+import jakarta.servlet.http.HttpServletRequest;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ResearchGroupNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleNotFound(
+            ResearchGroupNotFoundException exception,
+            HttpServletRequest request
+    ) {
+        return response(HttpStatus.NOT_FOUND, exception.getMessage(), request, Map.of());
+    }
+
+    @ExceptionHandler(DuplicateCnpqIdException.class)
+    public ResponseEntity<ApiErrorResponse> handleDuplicate(
+            DuplicateCnpqIdException exception,
+            HttpServletRequest request
+    ) {
+        return response(HttpStatus.CONFLICT, exception.getMessage(), request, Map.of());
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiErrorResponse> handleDataIntegrity(
+            DataIntegrityViolationException exception,
+            HttpServletRequest request
+    ) {
+        return response(
+                HttpStatus.CONFLICT,
+                "The request conflicts with data already stored",
+                request,
+                Map.of()
+        );
+    }
+
+    @ExceptionHandler({
+            InvalidResearchGroupException.class,
+            InvalidGroupAddressException.class,
+            InvalidGroupContactException.class
+    })
+    public ResponseEntity<ApiErrorResponse> handleInvalidDomain(
+            RuntimeException exception,
+            HttpServletRequest request
+    ) {
+        return response(HttpStatus.BAD_REQUEST, exception.getMessage(), request, Map.of());
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiErrorResponse> handleValidation(
+            MethodArgumentNotValidException exception,
+            HttpServletRequest request
+    ) {
+        Map<String, String> fieldErrors = new LinkedHashMap<>();
+        exception.getBindingResult().getFieldErrors().forEach(error ->
+                fieldErrors.putIfAbsent(error.getField(), error.getDefaultMessage())
+        );
+
+        return response(HttpStatus.BAD_REQUEST, "Request validation failed", request, fieldErrors);
+    }
+
+    @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<ApiErrorResponse> handleMalformedRequest(
+            Exception exception,
+            HttpServletRequest request
+    ) {
+        return response(HttpStatus.BAD_REQUEST, "Malformed request", request, Map.of());
+    }
+
+    private ResponseEntity<ApiErrorResponse> response(
+            HttpStatus status,
+            String message,
+            HttpServletRequest request,
+            Map<String, String> fieldErrors
+    ) {
+        ApiErrorResponse body = new ApiErrorResponse(
+                Instant.now(),
+                status.value(),
+                status.getReasonPhrase(),
+                message,
+                request.getRequestURI(),
+                fieldErrors
+        );
+
+        return ResponseEntity.status(status).body(body);
+    }
+}

@@ -12,4 +12,6 @@ import com.mylab.backend.researchline.infrastructure.adapters.out.persistence.en
 public interface ResearchLineJpaRepository extends JpaRepository<ResearchLineEntity, UUID> {
 
     List<ResearchLineEntity> findAllByResearchGroupId(UUID researchGroupId);
+
+    boolean existsByIdAndResearchGroupId(UUID id, UUID researchGroupId);
 }

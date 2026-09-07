@@ -1,0 +1,3 @@
+ALTER TABLE laboratory
+    ADD COLUMN description TEXT NULL AFTER name,
+    ADD COLUMN status ENUM('ACTIVE', 'INACTIVE', 'MAINTENANCE') NOT NULL DEFAULT 'ACTIVE' AFTER description;

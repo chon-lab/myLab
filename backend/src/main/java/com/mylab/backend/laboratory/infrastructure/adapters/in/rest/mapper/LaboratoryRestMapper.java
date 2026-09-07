@@ -20,11 +20,22 @@ import com.mylab.backend.laboratory.infrastructure.adapters.in.rest.dto.UpdateLa
 public class LaboratoryRestMapper {
 
     public CreateLaboratoryInput toInput(UUID researchGroupId, CreateLaboratoryRequest request) {
-        return new CreateLaboratoryInput(researchGroupId, request.getName(), toDomain(request.getAddress()));
+        return new CreateLaboratoryInput(
+                researchGroupId,
+                request.getName(),
+                request.getDescription(),
+                request.getStatus(),
+                toDomain(request.getAddress())
+        );
     }
 
     public UpdateLaboratoryInput toInput(UpdateLaboratoryRequest request) {
-        return new UpdateLaboratoryInput(request.getName(), toDomain(request.getAddress()));
+        return new UpdateLaboratoryInput(
+                request.getName(),
+                request.getDescription(),
+                request.getStatus(),
+                toDomain(request.getAddress())
+        );
     }
 
     public LaboratoryResponse toResponse(Laboratory domain) {
@@ -35,6 +46,8 @@ public class LaboratoryRestMapper {
                 domain.getId(),
                 domain.getResearchGroupId(),
                 domain.getName(),
+                domain.getDescription(),
+                domain.getStatus(),
                 toResponse(domain.getAddress()),
                 domain.getCreatedAt(),
                 domain.getUpdatedAt()

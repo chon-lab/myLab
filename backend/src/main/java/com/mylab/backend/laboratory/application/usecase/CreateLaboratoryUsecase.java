@@ -41,6 +41,8 @@ public class CreateLaboratoryUsecase implements CreateLaboratoryPort {
                 .id(UUID.randomUUID())
                 .researchGroupId(input.researchGroupId())
                 .name(input.name())
+                .description(input.description())
+                .status(input.status())
                 .address(input.address())
                 .createdAt(now)
                 .updatedAt(now)

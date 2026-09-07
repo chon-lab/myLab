@@ -8,6 +8,8 @@ import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
@@ -15,6 +17,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import com.mylab.backend.laboratory.domain.model.LaboratoryStatus;
 
 @Entity
 @Table(
@@ -36,6 +40,13 @@ public class LaboratoryEntity {
 
     @Column(nullable = false, length = 255)
     private String name;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private LaboratoryStatus status;
 
     @Embedded
     @AttributeOverrides({

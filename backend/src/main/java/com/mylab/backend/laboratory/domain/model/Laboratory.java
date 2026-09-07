@@ -14,6 +14,8 @@ public class Laboratory {
     private final UUID id;
     private final UUID researchGroupId;
     private String name;
+    private String description;
+    private LaboratoryStatus status;
     private LaboratoryAddress address;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -24,6 +26,8 @@ public class Laboratory {
             UUID id,
             UUID researchGroupId,
             String name,
+            String description,
+            LaboratoryStatus status,
             LaboratoryAddress address,
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
@@ -31,6 +35,8 @@ public class Laboratory {
         this.id = requireNonNull(id, "id");
         this.researchGroupId = requireNonNull(researchGroupId, "researchGroupId");
         this.name = validateName(name);
+        this.description = validateDescription(description);
+        this.status = status == null ? LaboratoryStatus.ACTIVE : status;
         this.address = normalizeAddress(address);
         this.createdAt = requireNonNull(createdAt, "createdAt");
         this.updatedAt = requireValidUpdatedAt(updatedAt, createdAt);
@@ -43,6 +49,13 @@ public class Laboratory {
         }
         if (value.length() > 255) {
             throw new InvalidLaboratoryException("name must not exceed 255 characters");
+        }
+        return value;
+    }
+
+    private static String validateDescription(String value) {
+        if (value != null && value.length() > 1000) {
+            throw new InvalidLaboratoryException("description must not exceed 1000 characters");
         }
         return value;
     }
@@ -62,13 +75,22 @@ public class Laboratory {
         return updatedAt;
     }
 
-    public void updateDetails(String name, LaboratoryAddress address, LocalDateTime occurredAt) {
+    public void updateDetails(
+            String name,
+            String description,
+            LaboratoryStatus status,
+            LaboratoryAddress address,
+            LocalDateTime occurredAt) {
         String validName = validateName(name);
+        String validDescription = validateDescription(description);
+        LaboratoryStatus validStatus = requireNonNull(status, "status");
         LocalDateTime validUpdatedAt = requireValidUpdatedAt(occurredAt, createdAt);
         if (validUpdatedAt.isBefore(updatedAt)) {
             throw new InvalidLaboratoryException("updatedAt must not move backwards");
         }
         this.name = validName;
+        this.description = validDescription;
+        this.status = validStatus;
         this.address = normalizeAddress(address);
         this.updatedAt = validUpdatedAt;
     }

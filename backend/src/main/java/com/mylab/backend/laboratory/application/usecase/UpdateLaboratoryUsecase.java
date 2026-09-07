@@ -31,7 +31,8 @@ public class UpdateLaboratoryUsecase implements UpdateLaboratoryPort {
 
         var laboratory = repositoryPort.findById(id)
                 .orElseThrow(() -> new LaboratoryNotFoundException(id));
-        laboratory.updateDetails(input.name(), input.address(), LocalDateTime.now());
+        laboratory.updateDetails(
+                input.name(), input.description(), input.status(), input.address(), LocalDateTime.now());
         repositoryPort.save(laboratory);
     }
 }

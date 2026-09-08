@@ -6,6 +6,5 @@ public record UpdateResearchLineInput(
         String name,
         String objective,
         List<String> keywords,
-        List<String> knowledgeAreas,
-        List<String> applicationSectors
+        List<String> knowledgeAreas
 ) {}

@@ -22,8 +22,7 @@ public class ResearchLineRestMapper {
                 request.getName(),
                 request.getObjective(),
                 request.getKeywords(),
-                request.getKnowledgeAreas(),
-                request.getApplicationSectors()
+                request.getKnowledgeAreas()
         );
     }
 
@@ -32,8 +31,7 @@ public class ResearchLineRestMapper {
                 request.getName(),
                 request.getObjective(),
                 request.getKeywords(),
-                request.getKnowledgeAreas(),
-                request.getApplicationSectors()
+                request.getKnowledgeAreas()
         );
     }
 
@@ -49,7 +47,6 @@ public class ResearchLineRestMapper {
                 domain.getObjective(),
                 domain.getKeywords(),
                 domain.getKnowledgeAreas(),
-                domain.getApplicationSectors(),
                 domain.getCreatedAt(),
                 domain.getUpdatedAt()
         );

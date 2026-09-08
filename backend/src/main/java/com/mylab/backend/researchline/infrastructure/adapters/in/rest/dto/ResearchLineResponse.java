@@ -19,7 +19,6 @@ public class ResearchLineResponse {
     private String objective;
     private List<String> keywords;
     private List<String> knowledgeAreas;
-    private List<String> applicationSectors;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

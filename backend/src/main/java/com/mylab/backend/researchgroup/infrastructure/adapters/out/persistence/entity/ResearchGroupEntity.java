@@ -1,15 +1,22 @@
 package com.mylab.backend.researchgroup.infrastructure.adapters.out.persistence.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import com.mylab.backend.common.infrastructure.adapters.out.persistence.entity.AddressEntity;
+import com.mylab.backend.common.infrastructure.adapters.out.persistence.entity.ContactEntity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -64,11 +71,13 @@ public class ResearchGroupEntity {
     @Column(columnDefinition = "TEXT")
     private String repercussions;
 
-    @Embedded
-    private GroupAddressEmbeddable address;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JoinColumn(name = "address_id", unique = true)
+    private AddressEntity address;
 
-    @Embedded
-    private GroupContactEmbeddable contact;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JoinColumn(name = "research_group_id")
+    private List<ContactEntity> contacts;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

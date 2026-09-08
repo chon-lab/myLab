@@ -17,7 +17,6 @@ public class ResearchLine {
     private String objective;
     private List<String> keywords;
     private List<String> knowledgeAreas;
-    private List<String> applicationSectors;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
@@ -30,7 +29,6 @@ public class ResearchLine {
             String objective,
             List<String> keywords,
             List<String> knowledgeAreas,
-            List<String> applicationSectors,
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
             LocalDateTime deletedAt) {
@@ -40,7 +38,6 @@ public class ResearchLine {
         this.objective = requireNonBlank(objective, "objective");
         this.keywords = defaultIfNull(keywords);
         this.knowledgeAreas = defaultIfNull(knowledgeAreas);
-        this.applicationSectors = defaultIfNull(applicationSectors);
         this.createdAt = requireNonNull(createdAt, "createdAt");
         this.updatedAt = requireValidUpdatedAt(updatedAt, createdAt);
         this.deletedAt = deletedAt;
@@ -84,7 +81,6 @@ public class ResearchLine {
             String objective,
             List<String> keywords,
             List<String> knowledgeAreas,
-            List<String> applicationSectors,
             LocalDateTime occurredAt) {
         String validName = requireNonBlank(name, "name");
         String validObjective = requireNonBlank(objective, "objective");
@@ -98,7 +94,6 @@ public class ResearchLine {
         this.objective = validObjective;
         this.keywords = defaultIfNull(keywords);
         this.knowledgeAreas = defaultIfNull(knowledgeAreas);
-        this.applicationSectors = defaultIfNull(applicationSectors);
         this.updatedAt = validUpdatedAt;
     }
 }

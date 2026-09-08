@@ -41,7 +41,6 @@ public class CreateResearchLineUsecase implements CreateResearchLinePort {
                 .objective(input.objective())
                 .keywords(input.keywords())
                 .knowledgeAreas(input.knowledgeAreas())
-                .applicationSectors(input.applicationSectors())
                 .createdAt(now)
                 .updatedAt(now)
                 .build();

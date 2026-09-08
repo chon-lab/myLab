@@ -3,15 +3,16 @@ package com.mylab.backend.laboratory.infrastructure.adapters.out.persistence.ent
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.AttributeOverrides;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,6 +20,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import com.mylab.backend.laboratory.domain.model.LaboratoryStatus;
+import com.mylab.backend.common.infrastructure.adapters.out.persistence.entity.AddressEntity;
 
 @Entity
 @Table(
@@ -48,14 +50,9 @@ public class LaboratoryEntity {
     @Column(nullable = false, length = 30)
     private LaboratoryStatus status;
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "street", column = @Column(name = "address_street", length = 255)),
-            @AttributeOverride(name = "number", column = @Column(name = "address_number", length = 30)),
-            @AttributeOverride(name = "city", column = @Column(name = "address_city", length = 120)),
-            @AttributeOverride(name = "postalCode", column = @Column(name = "address_postal_code", length = 8))
-    })
-    private LaboratoryAddressEmbeddable address;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JoinColumn(name = "address_id", unique = true)
+    private AddressEntity address;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

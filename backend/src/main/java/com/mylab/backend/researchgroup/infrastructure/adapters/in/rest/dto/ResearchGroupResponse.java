@@ -1,6 +1,7 @@
 package com.mylab.backend.researchgroup.infrastructure.adapters.in.rest.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import lombok.AllArgsConstructor;
@@ -25,7 +26,7 @@ public class ResearchGroupResponse {
     private String sourceUrl;
     private String repercussions;
     private GroupAddressResponse address;
-    private GroupContactResponse contact;
+    private List<GroupContactResponse> contacts;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

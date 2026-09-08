@@ -23,6 +23,4 @@ public class CreateResearchLineRequest {
     private List<@NotBlank @Size(max = 255) String> keywords;
 
     private List<@NotBlank @Size(max = 500) String> knowledgeAreas;
-
-    private List<@NotBlank @Size(max = 255) String> applicationSectors;
 }

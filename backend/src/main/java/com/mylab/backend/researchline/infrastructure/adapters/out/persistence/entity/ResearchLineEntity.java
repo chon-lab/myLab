@@ -60,13 +60,6 @@ public class ResearchLineEntity {
     @Builder.Default
     private List<String> knowledgeAreas = new ArrayList<>();
 
-    @ElementCollection
-    @CollectionTable(name = "research_line_application_sector", joinColumns = @JoinColumn(name = "research_line_id"))
-    @OrderColumn(name = "sort_order")
-    @Column(name = "application_sector", nullable = false, length = 255)
-    @Builder.Default
-    private List<String> applicationSectors = new ArrayList<>();
-
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 

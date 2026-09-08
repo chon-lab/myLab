@@ -39,7 +39,6 @@ public class UpdateResearchLineUsecase implements UpdateResearchLinePort {
             input.objective(),
             input.keywords(),
             input.knowledgeAreas(),
-            input.applicationSectors(),
             LocalDateTime.now()
         );
 

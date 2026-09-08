@@ -1,6 +1,7 @@
 package com.mylab.backend.researchgroup.infrastructure.adapters.in.rest.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
@@ -53,5 +54,5 @@ public class CreateResearchGroupRequest {
     private GroupAddressRequest address;
 
     @Valid
-    private GroupContactRequest contact;
+    private List<GroupContactRequest> contacts;
 }

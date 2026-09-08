@@ -1,6 +1,7 @@
 package com.mylab.backend.researchgroup.application.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.mylab.backend.researchgroup.domain.valueobjects.GroupAddress;
 import com.mylab.backend.researchgroup.domain.valueobjects.GroupContact;
@@ -17,5 +18,5 @@ public record UpdateResearchGroupInput(
         String sourceUrl,
         String repercussions,
         GroupAddress address,
-        GroupContact contact
+        List<GroupContact> contacts
 ) {}

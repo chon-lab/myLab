@@ -46,7 +46,7 @@ public class UpdateResearchGroupUsecase implements UpdateResearchGroupPort {
             input.sourceUrl(),
             input.repercussions(),
             input.address(),
-            input.contact(),
+            input.contacts(),
             LocalDateTime.now()
         );
 

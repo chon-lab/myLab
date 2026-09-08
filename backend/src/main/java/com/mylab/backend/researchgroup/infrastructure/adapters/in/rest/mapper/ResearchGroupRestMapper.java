@@ -35,7 +35,7 @@ public class ResearchGroupRestMapper {
                 request.getSourceUrl(),
                 request.getRepercussions(),
                 toDomain(request.getAddress()),
-                toDomain(request.getContact())
+                toDomainContacts(request.getContacts())
         );
     }
 
@@ -52,7 +52,7 @@ public class ResearchGroupRestMapper {
                 request.getSourceUrl(),
                 request.getRepercussions(),
                 toDomain(request.getAddress()),
-                toDomain(request.getContact())
+                toDomainContacts(request.getContacts())
         );
     }
 
@@ -75,13 +75,33 @@ public class ResearchGroupRestMapper {
                 domain.getSourceUrl(),
                 domain.getRepercussions(),
                 toResponse(domain.getAddress()),
-                toResponse(domain.getContact()),
+                toResponseContacts(domain.getContacts()),
                 domain.getCreatedAt(),
                 domain.getUpdatedAt()
         );
     }
 
     public List<ResearchGroupResponse> toResponseList(List<ResearchGroup> domains) {
+        if (domains == null) {
+            return List.of();
+        }
+
+        return domains.stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    private List<GroupContact> toDomainContacts(List<GroupContactRequest> requests) {
+        if (requests == null) {
+            return List.of();
+        }
+
+        return requests.stream()
+                .map(this::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    private List<GroupContactResponse> toResponseContacts(List<GroupContact> domains) {
         if (domains == null) {
             return List.of();
         }

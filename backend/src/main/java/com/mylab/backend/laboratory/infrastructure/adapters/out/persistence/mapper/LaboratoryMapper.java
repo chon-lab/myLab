@@ -1,13 +1,14 @@
 package com.mylab.backend.laboratory.infrastructure.adapters.out.persistence.mapper;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
+import com.mylab.backend.common.infrastructure.adapters.out.persistence.entity.AddressEntity;
 import com.mylab.backend.laboratory.domain.model.Laboratory;
 import com.mylab.backend.laboratory.domain.valueobject.LaboratoryAddress;
-import com.mylab.backend.laboratory.infrastructure.adapters.out.persistence.entity.LaboratoryAddressEmbeddable;
 import com.mylab.backend.laboratory.infrastructure.adapters.out.persistence.entity.LaboratoryEntity;
 
 @Component
@@ -56,7 +57,7 @@ public class LaboratoryMapper {
         return entities.stream().map(this::toDomain).collect(Collectors.toList());
     }
 
-    private LaboratoryAddress toDomain(LaboratoryAddressEmbeddable address) {
+    private LaboratoryAddress toDomain(AddressEntity address) {
         if (address == null) {
             return null;
         }
@@ -68,11 +69,12 @@ public class LaboratoryMapper {
                 .build();
     }
 
-    private LaboratoryAddressEmbeddable toEntity(LaboratoryAddress address) {
+    private AddressEntity toEntity(LaboratoryAddress address) {
         if (address == null) {
             return null;
         }
-        return LaboratoryAddressEmbeddable.builder()
+        return AddressEntity.builder()
+                .id(UUID.randomUUID())
                 .street(address.getStreet())
                 .number(address.getNumber())
                 .city(address.getCity())

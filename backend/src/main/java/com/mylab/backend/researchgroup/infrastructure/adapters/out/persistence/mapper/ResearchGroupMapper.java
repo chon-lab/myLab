@@ -1,15 +1,16 @@
 package com.mylab.backend.researchgroup.infrastructure.adapters.out.persistence.mapper;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
+import com.mylab.backend.common.infrastructure.adapters.out.persistence.entity.AddressEntity;
+import com.mylab.backend.common.infrastructure.adapters.out.persistence.entity.ContactEntity;
 import com.mylab.backend.researchgroup.domain.model.ResearchGroup;
 import com.mylab.backend.researchgroup.domain.valueobjects.GroupAddress;
 import com.mylab.backend.researchgroup.domain.valueobjects.GroupContact;
-import com.mylab.backend.researchgroup.infrastructure.adapters.out.persistence.entity.GroupAddressEmbeddable;
-import com.mylab.backend.researchgroup.infrastructure.adapters.out.persistence.entity.GroupContactEmbeddable;
 import com.mylab.backend.researchgroup.infrastructure.adapters.out.persistence.entity.ResearchGroupEntity;
 
 @Component
@@ -34,7 +35,7 @@ public class ResearchGroupMapper {
                 .sourceUrl(entity.getSourceUrl())
                 .repercussions(entity.getRepercussions())
                 .address(toDomain(entity.getAddress()))
-                .contact(toDomain(entity.getContact()))
+                .contacts(toDomainContacts(entity.getContacts()))
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .deletedAt(entity.getDeletedAt())
@@ -60,7 +61,7 @@ public class ResearchGroupMapper {
                 .sourceUrl(domain.getSourceUrl())
                 .repercussions(domain.getRepercussions())
                 .address(toEntity(domain.getAddress()))
-                .contact(toEntity(domain.getContact()))
+                .contacts(toEntityContacts(domain.getContacts()))
                 .createdAt(domain.getCreatedAt())
                 .updatedAt(domain.getUpdatedAt())
                 .deletedAt(domain.getDeletedAt())
@@ -77,7 +78,27 @@ public class ResearchGroupMapper {
                 .collect(Collectors.toList());
     }
 
-    private GroupAddress toDomain(GroupAddressEmbeddable entity) {
+    private List<GroupContact> toDomainContacts(List<ContactEntity> entities) {
+        if (entities == null) {
+            return List.of();
+        }
+
+        return entities.stream()
+                .map(this::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    private List<ContactEntity> toEntityContacts(List<GroupContact> domains) {
+        if (domains == null) {
+            return List.of();
+        }
+
+        return domains.stream()
+                .map(this::toEntity)
+                .collect(Collectors.toList());
+    }
+
+    private GroupAddress toDomain(AddressEntity entity) {
         if (entity == null) {
             return null;
         }
@@ -96,7 +117,7 @@ public class ResearchGroupMapper {
                 .build();
     }
 
-    private GroupContact toDomain(GroupContactEmbeddable entity) {
+    private GroupContact toDomain(ContactEntity entity) {
         if (entity == null) {
             return null;
         }
@@ -109,12 +130,13 @@ public class ResearchGroupMapper {
                 .build();
     }
 
-    private GroupAddressEmbeddable toEntity(GroupAddress domain) {
+    private AddressEntity toEntity(GroupAddress domain) {
         if (domain == null) {
             return null;
         }
 
-        return GroupAddressEmbeddable.builder()
+        return AddressEntity.builder()
+                .id(UUID.randomUUID())
                 .street(domain.getStreet())
                 .number(domain.getNumber())
                 .complement(domain.getComplement())
@@ -128,12 +150,13 @@ public class ResearchGroupMapper {
                 .build();
     }
 
-    private GroupContactEmbeddable toEntity(GroupContact domain) {
+    private ContactEntity toEntity(GroupContact domain) {
         if (domain == null) {
             return null;
         }
 
-        return GroupContactEmbeddable.builder()
+        return ContactEntity.builder()
+                .id(UUID.randomUUID())
                 .phone(domain.getPhone())
                 .fax(domain.getFax())
                 .email(domain.getEmail())

@@ -46,7 +46,7 @@ public class CreateResearchGroupUsecase implements CreateResearchGroupPort {
                 .sourceUrl(input.sourceUrl())
                 .repercussions(input.repercussions())
                 .address(input.address())
-                .contact(input.contact())
+                .contacts(input.contacts())
                 .createdAt(now)
                 .updatedAt(now)
                 .build();

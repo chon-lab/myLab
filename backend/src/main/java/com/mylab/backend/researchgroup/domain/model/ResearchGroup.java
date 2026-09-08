@@ -2,6 +2,7 @@ package com.mylab.backend.researchgroup.domain.model;
 
 import java.time.LocalDateTime;
 import java.time.Year;
+import java.util.List;
 import java.util.UUID;
 
 import com.mylab.backend.researchgroup.domain.exception.InvalidResearchGroupException;
@@ -26,7 +27,7 @@ public class ResearchGroup {
     private String sourceUrl;
     private String repercussions;
     private GroupAddress address;
-    private GroupContact contact;
+    private List<GroupContact> contacts;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
@@ -46,7 +47,7 @@ public class ResearchGroup {
             String sourceUrl,
             String repercussions,
             GroupAddress address,
-            GroupContact contact,
+            List<GroupContact> contacts,
             LocalDateTime createdAt,
             LocalDateTime updatedAt,
             LocalDateTime deletedAt) {
@@ -63,7 +64,7 @@ public class ResearchGroup {
         this.sourceUrl = sourceUrl;
         this.repercussions = repercussions;
         this.address = address;
-        this.contact = contact;
+        this.contacts = contacts == null ? List.of() : List.copyOf(contacts);
         this.createdAt = requireNonNull(createdAt, "createdAt");
         this.updatedAt = requireValidUpdatedAt(updatedAt, createdAt);
         this.deletedAt = deletedAt;
@@ -117,7 +118,7 @@ public class ResearchGroup {
             String sourceUrl,
             String repercussions,
             GroupAddress address,
-            GroupContact contact,
+            List<GroupContact> contacts,
             LocalDateTime occurredAt) {
         String validName = requireNonBlank(name, "name");
         String validSituation = requireNonBlank(situation, "situation");
@@ -141,7 +142,7 @@ public class ResearchGroup {
         this.sourceUrl = sourceUrl;
         this.repercussions = repercussions;
         this.address = address;
-        this.contact = contact;
+        this.contacts = contacts == null ? List.of() : List.copyOf(contacts);
         this.updatedAt = validUpdatedAt;
     }
 

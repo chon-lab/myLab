@@ -43,7 +43,9 @@ public class InventoryItem {
     public void updateDetails(String name, String description, BigDecimal referenceUnitValue,
             LocalDateTime occurredAt) {
         LocalDateTime timestamp = validTimestamp(occurredAt, createdAt);
-        if (timestamp.isBefore(updatedAt)) throw invalid("updatedAt must not move backwards");
+        if (timestamp.isBefore(updatedAt)) {
+            throw invalid("updatedAt must not move backwards");
+        }
         this.name = validName(name);
         this.description = validDescription(description);
         this.referenceUnitValue = validValue(referenceUnitValue);
@@ -51,35 +53,53 @@ public class InventoryItem {
     }
 
     public void archive(LocalDateTime occurredAt) {
-        if (deletedAt != null) throw invalid("inventory item is already archived");
+        if (deletedAt != null) {
+            throw invalid("inventory item is already archived");
+        }
         LocalDateTime timestamp = validTimestamp(occurredAt, createdAt);
-        if (timestamp.isBefore(updatedAt)) throw invalid("updatedAt must not move backwards");
+        if (timestamp.isBefore(updatedAt)) {
+            throw invalid("updatedAt must not move backwards");
+        }
         this.active = false;
         this.deletedAt = timestamp;
         this.updatedAt = timestamp;
     }
 
     private static String validName(String value) {
-        if (value == null || value.isBlank()) throw invalid("name must not be blank");
-        if (value.length() > 255) throw invalid("name must not exceed 255 characters");
+        if (value == null || value.isBlank()) {
+            throw invalid("name must not be blank");
+        }
+        if (value.length() > 255) {
+            throw invalid("name must not exceed 255 characters");
+        }
         return value.trim();
     }
     private static String validDescription(String value) {
-        if (value != null && value.length() > 2000) throw invalid("description must not exceed 2000 characters");
+        if (value != null && value.length() > 2000) {
+            throw invalid("description must not exceed 2000 characters");
+        }
         return value;
     }
     private static BigDecimal validValue(BigDecimal value) {
-        if (value == null || value.signum() <= 0) throw invalid("referenceUnitValue must be greater than zero");
+        if (value == null || value.signum() <= 0) {
+            throw invalid("referenceUnitValue must be greater than zero");
+        }
         return value;
     }
     private static LocalDateTime validTimestamp(LocalDateTime value, LocalDateTime createdAt) {
         required(value, "updatedAt");
-        if (value.isBefore(createdAt)) throw invalid("updatedAt must not be before createdAt");
+        if (value.isBefore(createdAt)) {
+            throw invalid("updatedAt must not be before createdAt");
+        }
         return value;
     }
     private static <T> T required(T value, String field) {
-        if (value == null) throw invalid(field + " must not be null");
+        if (value == null) {
+            throw invalid(field + " must not be null");
+        }
         return value;
     }
-    private static InvalidInventoryException invalid(String message) { return new InvalidInventoryException(message); }
+    private static InvalidInventoryException invalid(String message) {
+        return new InvalidInventoryException(message);
+    }
 }

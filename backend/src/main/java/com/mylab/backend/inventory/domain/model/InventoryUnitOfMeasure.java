@@ -5,7 +5,11 @@ public enum InventoryUnitOfMeasure {
 
     private final boolean fractional;
 
-    InventoryUnitOfMeasure(boolean fractional) { this.fractional = fractional; }
+    InventoryUnitOfMeasure(boolean fractional) {
+        this.fractional = fractional;
+    }
 
-    public boolean allowsFractional() { return fractional; }
+    public boolean allowsFractional() {
+        return fractional;
+    }
 }

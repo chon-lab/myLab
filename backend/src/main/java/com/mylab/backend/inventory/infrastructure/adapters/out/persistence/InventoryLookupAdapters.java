@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 import com.mylab.backend.inventory.application.port.out.ResearchGroupLookupPort;
 import com.mylab.backend.researchgroup.infrastructure.adapters.out.persistence.repository.ResearchGroupJpaRepository;
 
-@Component
+@Component("inventoryResearchGroupLookupAdapter")
 @RequiredArgsConstructor
 class ResearchGroupLookupAdapter implements ResearchGroupLookupPort {
 

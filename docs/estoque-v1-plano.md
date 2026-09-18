@@ -23,6 +23,48 @@ Implementar o módulo de estoque focado em cadastro de itens e entradas. Ele con
 - Expor upload e consulta de documentos por entrada via `multipart/form-data`.
 - Adicionar MinIO ao ambiente Docker e criar um adaptador de armazenamento compatível com S3. O MariaDB guardará apenas metadados e a chave do objeto, nunca Base64 ou binários de nota.
 
+## Fluxo da aplicação
+
+O módulo será dividido em três telas, seguindo a ordem do processo:
+
+```text
+Cadastro de itens
+    └── cria os tipos de item no catálogo
+
+Registro de entrada
+    └── seleciona itens ativos do catálogo
+         └── informa quantidade e valor histórico da entrada
+
+Consulta do estoque
+    └── exibe os saldos consolidados por item e laboratório
+```
+
+### Cadastro de itens
+
+Antes de registrar um recebimento, o usuário cria cada tipo de item pelo CRUD de `inventory_item`, informando nome, descrição, tipo, unidade de medida e valor unitário de referência. Esse valor é uma estimativa ou valor atual e poderá ser usado como sugestão na tela de entrada.
+
+### Registro de entrada
+
+Na tela de entrada, o usuário informa laboratório, origem, fornecedor/doador, data de recebimento e observações. Em seguida, adiciona linhas em uma tabela dinâmica. O campo de item será um `select`, autocomplete ou busca que consulta somente itens ativos previamente cadastrados no catálogo.
+
+O valor de referência poderá preencher o campo de preço, mas o usuário poderá informar o valor histórico efetivamente pago ou estimado para aquela entrada. Uma entrada pode conter vários tipos de item e será enviada em um único `POST`, com uma linha para cada tipo selecionado.
+
+Exemplo de entrada:
+
+```text
+Mouse sem fio  | quantidade: 5  | valor unitário: R$ 75,00
+Monitor 24"    | quantidade: 10 | valor unitário: R$ 850,00
+Teclado USB    | quantidade: 10 | valor unitário: R$ 45,00
+```
+
+O backend cria uma linha em `inventory_entry` e uma linha em `inventory_entry_item` para cada item diferente. Dez unidades do mesmo item continuam sendo uma única linha, com `quantity = 10`; não é criada uma linha por unidade física.
+
+### Consulta do estoque
+
+A tela de estoque exibirá o saldo consolidado por item e laboratório. Ela não repetirá cada recebimento; o histórico de entradas ficará disponível em uma tela separada para auditoria e detalhamento.
+
+O cadastro do item representa o tipo permanente do produto, enquanto o valor da entrada representa o preço histórico daquele recebimento. Dessa forma, o mesmo item pode ser recebido diversas vezes, com origens, datas e valores diferentes.
+
 ## Implementação backend
 
 - Seguir a estrutura hexagonal atual: domínio de estoque, portas de entrada/saída, casos de uso, adaptadores JPA/REST e migrações Flyway.

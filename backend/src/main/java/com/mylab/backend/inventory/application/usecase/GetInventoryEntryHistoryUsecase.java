@@ -1,0 +1,58 @@
+package com.mylab.backend.inventory.application.usecase;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import lombok.RequiredArgsConstructor;
+import com.mylab.backend.inventory.application.dto.InventoryEntryHistoryRecord;
+import com.mylab.backend.inventory.application.dto.InventoryEntrySearchCriteria;
+import com.mylab.backend.inventory.application.exception.InventoryLaboratoryNotFoundException;
+import com.mylab.backend.inventory.application.exception.ResearchGroupNotFoundException;
+import com.mylab.backend.inventory.application.port.in.GetInventoryEntryHistoryPort;
+import com.mylab.backend.inventory.application.port.out.InventoryEntryQueryPort;
+import com.mylab.backend.inventory.application.port.out.InventoryLaboratoryLookupPort;
+import com.mylab.backend.inventory.application.port.out.ResearchGroupLookupPort;
+import com.mylab.backend.inventory.domain.exception.InvalidInventoryException;
+
+@Service
+@RequiredArgsConstructor
+public class GetInventoryEntryHistoryUsecase implements GetInventoryEntryHistoryPort {
+    private final InventoryEntryQueryPort entryQuery;
+    private final ResearchGroupLookupPort researchGroupLookup;
+    private final InventoryLaboratoryLookupPort laboratoryLookup;
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<InventoryEntryHistoryRecord> getHistory(
+            UUID researchGroupId,
+            InventoryEntrySearchCriteria criteria
+    ) {
+        if (!researchGroupLookup.existsById(researchGroupId)) {
+            throw new ResearchGroupNotFoundException(researchGroupId);
+        }
+        if (criteria == null) {
+            throw new InvalidInventoryException("search criteria must not be null");
+        }
+        if (criteria.dateFrom() != null && criteria.dateTo() != null
+                && criteria.dateFrom().isAfter(criteria.dateTo())) {
+            throw new InvalidInventoryException("dateFrom must not be after dateTo");
+        }
+        validateLaboratoryScope(researchGroupId, criteria.laboratoryId());
+        return entryQuery.findHistory(researchGroupId, criteria);
+    }
+
+    private void validateLaboratoryScope(UUID researchGroupId, UUID laboratoryId) {
+        if (laboratoryId == null) {
+            return;
+        }
+
+        UUID laboratoryGroupId = laboratoryLookup.findResearchGroupIdByLaboratoryId(laboratoryId)
+                .orElseThrow(() -> new InventoryLaboratoryNotFoundException(laboratoryId));
+        if (!researchGroupId.equals(laboratoryGroupId)) {
+            throw new InvalidInventoryException("laboratory must belong to the specified research group");
+        }
+    }
+}

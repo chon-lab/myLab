@@ -7,8 +7,10 @@ import org.springframework.stereotype.Component;
 import lombok.RequiredArgsConstructor;
 import com.mylab.backend.inventory.application.dto.CreateInventoryEntryInput;
 import com.mylab.backend.inventory.application.dto.CreateInventoryEntryItemInput;
+import com.mylab.backend.inventory.application.dto.ReverseInventoryEntryInput;
 import com.mylab.backend.inventory.infrastructure.adapters.in.rest.dto.CreateInventoryEntryItemRequest;
 import com.mylab.backend.inventory.infrastructure.adapters.in.rest.dto.CreateInventoryEntryRequest;
+import com.mylab.backend.inventory.infrastructure.adapters.in.rest.dto.ReverseInventoryEntryRequest;
 
 @Component
 @RequiredArgsConstructor
@@ -36,5 +38,12 @@ public class InventoryEntryRestMapper {
                 request.getManufacturer(),
                 request.getExpirationDate()
         );
+    }
+
+    public ReverseInventoryEntryInput toInput(ReverseInventoryEntryRequest request) {
+        if (request == null) {
+            return null;
+        }
+        return new ReverseInventoryEntryInput(request.getReason());
     }
 }

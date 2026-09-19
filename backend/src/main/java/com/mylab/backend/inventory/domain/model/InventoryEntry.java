@@ -54,4 +54,30 @@ public record InventoryEntry(
             throw new InvalidInventoryException("At least one entry item is required");
         }
     }
+
+    public InventoryEntry reverse(String reason, LocalDateTime occurredAt) {
+        if (this.status == InventoryEntryStatus.REVERSED) {
+            throw new InvalidInventoryException("inventory entry is already reversed");
+        }
+        if (reason == null || reason.isBlank()) {
+            throw new InvalidInventoryException("reversal reason must not be blank");
+        }
+        if (occurredAt == null) {
+            throw new InvalidInventoryException("reversal timestamp must not be null");
+        }
+        return new InventoryEntry(
+                this.id,
+                this.researchGroupId,
+                this.laboratoryId,
+                this.source,
+                this.sourceName,
+                this.receivedAt,
+                this.notes,
+                InventoryEntryStatus.REVERSED,
+                occurredAt,
+                reason,
+                this.createdAt,
+                this.items
+        );
+    }
 }

@@ -17,18 +17,28 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.mylab.backend.inventory.application.dto.InventoryEntryHistoryItem;
 import com.mylab.backend.inventory.application.dto.InventoryEntryHistoryRecord;
+import com.mylab.backend.inventory.application.dto.ReverseInventoryEntryInput;
 import com.mylab.backend.inventory.application.exception.InventoryEntryNotFoundException;
 import com.mylab.backend.inventory.application.port.in.CreateInventoryEntryPort;
 import com.mylab.backend.inventory.application.port.in.GetInventoryEntryHistoryPort;
 import com.mylab.backend.inventory.application.port.in.GetInventoryEntryPort;
+import com.mylab.backend.inventory.application.port.in.ReverseInventoryEntryPort;
+import com.mylab.backend.inventory.domain.exception.InvalidInventoryException;
 import com.mylab.backend.inventory.domain.model.InventoryEntrySource;
 import com.mylab.backend.inventory.domain.model.InventoryEntryStatus;
 import com.mylab.backend.inventory.domain.model.InventoryItemType;
 import com.mylab.backend.inventory.domain.model.InventoryUnitOfMeasure;
+import com.mylab.backend.inventory.infrastructure.adapters.in.rest.dto.ReverseInventoryEntryRequest;
 import com.mylab.backend.inventory.infrastructure.adapters.in.rest.mapper.InventoryEntryRestMapper;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -47,6 +57,9 @@ class InventoryEntryControllerTest {
 
     @MockitoBean
     private GetInventoryEntryPort getInventoryEntryPort;
+
+    @MockitoBean
+    private ReverseInventoryEntryPort reverseInventoryEntryPort;
 
     @MockitoBean
     private InventoryEntryRestMapper mapper;
@@ -123,5 +136,89 @@ class InventoryEntryControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.message").value("Inventory entry not found: " + entryId));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/inventory/entries/{entryId}/reverse should return 204 when reversal succeeds")
+    void shouldReturn204WhenReversalSucceeds() throws Exception {
+        UUID entryId = UUID.randomUUID();
+        String json = """
+                {
+                    "reason": "Nota fiscal registrada em duplicidade"
+                }
+                """;
+
+        when(mapper.toInput(any(ReverseInventoryEntryRequest.class)))
+                .thenReturn(new ReverseInventoryEntryInput("Nota fiscal registrada em duplicidade"));
+        doNothing().when(reverseInventoryEntryPort).reverse(eq(entryId), any(ReverseInventoryEntryInput.class));
+
+        mockMvc.perform(post("/api/v1/inventory/entries/{entryId}/reverse", entryId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isNoContent());
+
+        verify(reverseInventoryEntryPort).reverse(eq(entryId), any(ReverseInventoryEntryInput.class));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/inventory/entries/{entryId}/reverse should return 404 when entry not found")
+    void shouldReturn404WhenReversingNonExistentEntry() throws Exception {
+        UUID entryId = UUID.randomUUID();
+        String json = """
+                {
+                    "reason": "Nota fiscal registrada em duplicidade"
+                }
+                """;
+
+        when(mapper.toInput(any(ReverseInventoryEntryRequest.class)))
+                .thenReturn(new ReverseInventoryEntryInput("Nota fiscal registrada em duplicidade"));
+        doThrow(new InventoryEntryNotFoundException(entryId))
+                .when(reverseInventoryEntryPort).reverse(eq(entryId), any(ReverseInventoryEntryInput.class));
+
+        mockMvc.perform(post("/api/v1/inventory/entries/{entryId}/reverse", entryId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").value("Inventory entry not found: " + entryId));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/inventory/entries/{entryId}/reverse should return 400 when reason is blank")
+    void shouldReturn400WhenReasonIsBlank() throws Exception {
+        UUID entryId = UUID.randomUUID();
+        String json = """
+                {
+                    "reason": "   "
+                }
+                """;
+
+        mockMvc.perform(post("/api/v1/inventory/entries/{entryId}/reverse", entryId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/inventory/entries/{entryId}/reverse should return 400 when entry already reversed")
+    void shouldReturn400WhenEntryAlreadyReversed() throws Exception {
+        UUID entryId = UUID.randomUUID();
+        String json = """
+                {
+                    "reason": "Estorno duplicado"
+                }
+                """;
+
+        when(mapper.toInput(any(ReverseInventoryEntryRequest.class)))
+                .thenReturn(new ReverseInventoryEntryInput("Estorno duplicado"));
+        doThrow(new InvalidInventoryException("inventory entry is already reversed"))
+                .when(reverseInventoryEntryPort).reverse(eq(entryId), any(ReverseInventoryEntryInput.class));
+
+        mockMvc.perform(post("/api/v1/inventory/entries/{entryId}/reverse", entryId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.message").value("inventory entry is already reversed"));
     }
 }

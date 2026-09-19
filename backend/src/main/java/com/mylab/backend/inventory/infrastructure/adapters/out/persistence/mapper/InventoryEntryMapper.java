@@ -50,4 +50,45 @@ public class InventoryEntryMapper {
                 .expirationDate(domain.expirationDate())
                 .build();
     }
+
+    public InventoryEntry toDomain(InventoryEntryEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+
+        List<InventoryEntryItem> items = entity.getItems() == null ? List.of() : entity.getItems().stream()
+                .map(this::toDomain)
+                .toList();
+
+        return new InventoryEntry(
+                entity.getId(),
+                entity.getResearchGroupId(),
+                entity.getLaboratoryId(),
+                entity.getSource(),
+                entity.getSourceName(),
+                entity.getReceivedAt(),
+                entity.getNotes(),
+                entity.getStatus(),
+                entity.getReversedAt(),
+                entity.getReversalReason(),
+                entity.getCreatedAt(),
+                items
+        );
+    }
+
+    private InventoryEntryItem toDomain(InventoryEntryItemEntity entity) {
+        if (entity == null) {
+            return null;
+        }
+
+        return new InventoryEntryItem(
+                entity.getId(),
+                entity.getInventoryItemId(),
+                entity.getQuantity(),
+                entity.getHistoricalUnitValue(),
+                entity.getBatchNumber(),
+                entity.getManufacturer(),
+                entity.getExpirationDate()
+        );
+    }
 }

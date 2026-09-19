@@ -19,7 +19,7 @@ Implementar o módulo de estoque focado em cadastro de itens e entradas. Ele con
 
 - Expor CRUD do catálogo em `/api/v1/research-groups/{groupId}/inventory/items`, com arquivamento em vez de exclusão quando houver movimentação.
 - Expor criação, consulta e estorno de entradas em `/api/v1/research-groups/{groupId}/inventory/entries`; a criação receberá cabeçalho e lista de linhas.
-- Expor consulta de saldo em `/api/v1/research-groups/{groupId}/inventory/stock`, filtrável por laboratório, retornando quantidade e valor total por item; e histórico de entradas filtrável por laboratório, origem, item e período.
+- Expor consulta de saldo em `/api/v1/research-groups/{groupId}/inventory/stock`: sem `laboratoryId`, consolidar por item em todo o grupo; com `laboratoryId`, consolidar por item naquele laboratório. Retornar o valor total de cada item e o total monetário do escopo consultado. O histórico de entradas será filtrável por laboratório, origem, item e período.
 - Expor upload e consulta de documentos por entrada via `multipart/form-data`.
 - Adicionar MinIO ao ambiente Docker e criar um adaptador de armazenamento compatível com S3. O MariaDB guardará apenas metadados e a chave do objeto, nunca Base64 ou binários de nota.
 
@@ -61,7 +61,7 @@ O backend cria uma linha em `inventory_entry` e uma linha em `inventory_entry_it
 
 ### Consulta do estoque
 
-A tela de estoque exibirá o saldo consolidado por item e laboratório. Ela não repetirá cada recebimento; o histórico de entradas ficará disponível em uma tela separada para auditoria e detalhamento.
+A tela de estoque exibirá o saldo por item no escopo escolhido. Sem filtro de laboratório, cada item será agregado entre os laboratórios do grupo; com um laboratório selecionado, o saldo será restrito a ele. O valor total do escopo poderá ser exibido no rodapé da tabela. A tela não repetirá cada recebimento; o histórico ficará separado para auditoria e detalhamento.
 
 O cadastro do item representa o tipo permanente do produto, enquanto o valor da entrada representa o preço histórico daquele recebimento. Dessa forma, o mesmo item pode ser recebido diversas vezes, com origens, datas e valores diferentes.
 

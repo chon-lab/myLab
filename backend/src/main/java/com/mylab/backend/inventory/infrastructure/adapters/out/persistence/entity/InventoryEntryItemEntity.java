@@ -36,6 +36,10 @@ public class InventoryEntryItemEntity {
     @Column(name = "inventory_item_id", nullable = false, updatable = false)
     private UUID inventoryItemId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "inventory_item_id", insertable = false, updatable = false)
+    private InventoryItemEntity inventoryItem;
+
     @Column(nullable = false, precision = 15, scale = 4)
     private BigDecimal quantity;
 

@@ -11,7 +11,10 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -21,6 +24,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import com.mylab.backend.inventory.domain.model.InventoryEntrySource;
 import com.mylab.backend.inventory.domain.model.InventoryEntryStatus;
+import com.mylab.backend.laboratory.infrastructure.adapters.out.persistence.entity.LaboratoryEntity;
 
 @Entity
 @Table(name = "inventory_entry")
@@ -39,6 +43,10 @@ public class InventoryEntryEntity {
 
     @Column(name = "laboratory_id", nullable = false, updatable = false)
     private UUID laboratoryId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "laboratory_id", insertable = false, updatable = false)
+    private LaboratoryEntity laboratory;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "source_type", nullable = false, length = 20)

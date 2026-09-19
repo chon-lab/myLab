@@ -21,8 +21,10 @@ import com.mylab.backend.inventory.application.dto.InventoryEntrySearchCriteria;
 import com.mylab.backend.inventory.application.port.in.CreateInventoryEntryPort;
 import com.mylab.backend.inventory.application.port.in.GetInventoryEntryHistoryPort;
 import com.mylab.backend.inventory.application.port.in.GetInventoryEntryPort;
+import com.mylab.backend.inventory.application.port.in.ReverseInventoryEntryPort;
 import com.mylab.backend.inventory.domain.model.InventoryEntrySource;
 import com.mylab.backend.inventory.infrastructure.adapters.in.rest.dto.CreateInventoryEntryRequest;
+import com.mylab.backend.inventory.infrastructure.adapters.in.rest.dto.ReverseInventoryEntryRequest;
 import com.mylab.backend.inventory.infrastructure.adapters.in.rest.mapper.InventoryEntryRestMapper;
 
 @RestController
@@ -31,11 +33,21 @@ public class InventoryEntryController {
     private final CreateInventoryEntryPort createInventoryEntryPort;
     private final GetInventoryEntryHistoryPort getInventoryEntryHistoryPort;
     private final GetInventoryEntryPort getInventoryEntryPort;
+    private final ReverseInventoryEntryPort reverseInventoryEntryPort;
     private final InventoryEntryRestMapper mapper;
 
     @GetMapping("/api/v1/inventory/entries/{entryId}")
     public InventoryEntryHistoryRecord getById(@PathVariable UUID entryId) {
         return getInventoryEntryPort.get(entryId);
+    }
+
+    @PostMapping("/api/v1/inventory/entries/{entryId}/reverse")
+    public ResponseEntity<Void> reverse(
+            @PathVariable UUID entryId,
+            @Valid @RequestBody ReverseInventoryEntryRequest request
+    ) {
+        reverseInventoryEntryPort.reverse(entryId, mapper.toInput(request));
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/api/v1/research-groups/{groupId}/inventory/entries")

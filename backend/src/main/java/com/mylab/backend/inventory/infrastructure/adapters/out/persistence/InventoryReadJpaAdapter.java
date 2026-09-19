@@ -1,6 +1,7 @@
 package com.mylab.backend.inventory.infrastructure.adapters.out.persistence;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
@@ -47,6 +48,11 @@ public class InventoryReadJpaAdapter implements InventoryStockQueryPort, Invento
                 .stream()
                 .map(this::toHistoryRecord)
                 .toList();
+    }
+
+    @Override
+    public Optional<InventoryEntryHistoryRecord> findById(UUID id) {
+        return repository.findByIdWithDetails(id).map(this::toHistoryRecord);
     }
 
     private InventoryStockItem toStockItem(InventoryStockProjection projection) {

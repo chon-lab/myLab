@@ -1,6 +1,7 @@
 package com.mylab.backend.inventory.application.port.out;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import com.mylab.backend.inventory.application.dto.InventoryEntryHistoryRecord;
@@ -11,4 +12,7 @@ public interface InventoryEntryQueryPort {
             UUID researchGroupId,
             InventoryEntrySearchCriteria criteria
     );
+
+    Optional<InventoryEntryHistoryRecord> findById(UUID id);
 }
+

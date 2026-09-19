@@ -19,4 +19,10 @@ public record InventoryEntryHistoryItem(
         String manufacturer,
         LocalDate expirationDate
 ) {
+    public InventoryEntryHistoryItem {
+        BigDecimal normalizedQuantity = quantity.stripTrailingZeros();
+        quantity = normalizedQuantity.scale() < 0
+                ? normalizedQuantity.setScale(0)
+                : normalizedQuantity;
+    }
 }

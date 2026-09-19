@@ -2,6 +2,7 @@ package com.mylab.backend.inventory.infrastructure.adapters.out.persistence.repo
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -65,4 +66,14 @@ public interface InventoryEntryJpaRepository extends JpaRepository<InventoryEntr
             @Param("dateFrom") LocalDate dateFrom,
             @Param("dateTo") LocalDate dateTo
     );
+
+    @Query("""
+            SELECT DISTINCT entry
+            FROM InventoryEntryEntity entry
+            LEFT JOIN FETCH entry.items line
+            LEFT JOIN FETCH line.inventoryItem
+            LEFT JOIN FETCH entry.laboratory
+            WHERE entry.id = :id
+            """)
+    Optional<InventoryEntryEntity> findByIdWithDetails(@Param("id") UUID id);
 }

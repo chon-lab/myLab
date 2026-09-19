@@ -2,19 +2,27 @@ package com.mylab.backend.inventory.infrastructure.adapters.in.rest;
 
 import java.time.Instant;
 import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
 import jakarta.servlet.http.HttpServletRequest;
 import com.mylab.backend.inventory.application.exception.InventoryItemNotFoundException;
+import com.mylab.backend.inventory.application.exception.InventoryLaboratoryNotFoundException;
 import com.mylab.backend.inventory.application.exception.ResearchGroupNotFoundException;
 import com.mylab.backend.inventory.domain.exception.InvalidInventoryException;
 import com.mylab.backend.researchgroup.infrastructure.adapters.in.rest.exception.ApiErrorResponse;
+
 @RestControllerAdvice
 public class InventoryExceptionHandler {
 
-    @ExceptionHandler({InventoryItemNotFoundException.class, ResearchGroupNotFoundException.class})
+    @ExceptionHandler({
+            InventoryItemNotFoundException.class,
+            InventoryLaboratoryNotFoundException.class,
+            ResearchGroupNotFoundException.class
+    })
     public ResponseEntity<ApiErrorResponse> handleNotFound(
             RuntimeException exception,
             HttpServletRequest request

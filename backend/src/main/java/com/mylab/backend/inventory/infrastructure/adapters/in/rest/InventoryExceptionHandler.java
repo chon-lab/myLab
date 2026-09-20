@@ -13,6 +13,7 @@ import com.mylab.backend.inventory.application.exception.InventoryEntryNotFoundE
 import com.mylab.backend.inventory.application.exception.InventoryExitNotFoundException;
 import com.mylab.backend.inventory.application.exception.InventoryItemNotFoundException;
 import com.mylab.backend.inventory.application.exception.InventoryLaboratoryNotFoundException;
+import com.mylab.backend.inventory.application.exception.InventoryTransferNotFoundException;
 import com.mylab.backend.inventory.application.exception.ResearchGroupNotFoundException;
 import com.mylab.backend.inventory.domain.exception.InvalidInventoryException;
 import com.mylab.backend.researchgroup.infrastructure.adapters.in.rest.exception.ApiErrorResponse;
@@ -25,7 +26,8 @@ public class InventoryExceptionHandler {
             InventoryLaboratoryNotFoundException.class,
             ResearchGroupNotFoundException.class,
             InventoryEntryNotFoundException.class,
-            InventoryExitNotFoundException.class
+            InventoryExitNotFoundException.class,
+            InventoryTransferNotFoundException.class
     })
     public ResponseEntity<ApiErrorResponse> handleNotFound(
             RuntimeException exception,

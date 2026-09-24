@@ -1,7 +1,6 @@
 package com.mylab.backend.person.infrastructure.adapters.out.persistence.mapper;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,7 +19,6 @@ public class PersonMapper {
 
         return Person.builder()
                 .id(entity.getId())
-                .researchGroupId(entity.getResearchGroupId())
                 .name(entity.getName())
                 .socialName(entity.getSocialName())
                 .email(entity.getEmail())
@@ -28,7 +26,6 @@ public class PersonMapper {
                 .cpf(entity.getCpf())
                 .academicDegree(entity.getAcademicDegree())
                 .areasOfExpertise(entity.getAreasOfExpertise())
-                .researchLineIds(entity.getResearchLineIds())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
                 .deletedAt(entity.getDeletedAt())
@@ -42,7 +39,6 @@ public class PersonMapper {
 
         return PersonEntity.builder()
                 .id(domain.getId())
-                .researchGroupId(domain.getResearchGroupId())
                 .name(domain.getName())
                 .socialName(domain.getSocialName())
                 .email(domain.getEmail())
@@ -50,7 +46,6 @@ public class PersonMapper {
                 .cpf(domain.getCpf())
                 .academicDegree(domain.getAcademicDegree())
                 .areasOfExpertise(new ArrayList<>(domain.getAreasOfExpertise()))
-                .researchLineIds(new HashSet<>(domain.getResearchLineIds()))
                 .createdAt(domain.getCreatedAt())
                 .updatedAt(domain.getUpdatedAt())
                 .deletedAt(domain.getDeletedAt())

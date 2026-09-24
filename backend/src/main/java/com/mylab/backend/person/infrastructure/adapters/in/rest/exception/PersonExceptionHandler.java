@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.mylab.backend.person.application.exception.PersonNotFoundException;
 import com.mylab.backend.person.application.exception.ResearchGroupNotFoundException;
-import com.mylab.backend.person.application.exception.ResearchLineNotFoundException;
 import com.mylab.backend.person.domain.exception.InvalidPersonException;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,14 +36,6 @@ public class PersonExceptionHandler {
     @ExceptionHandler(ResearchGroupNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleResearchGroupNotFound(
             ResearchGroupNotFoundException exception,
-            HttpServletRequest request
-    ) {
-        return response(HttpStatus.NOT_FOUND, exception.getMessage(), request, Map.of());
-    }
-
-    @ExceptionHandler(ResearchLineNotFoundException.class)
-    public ResponseEntity<ApiErrorResponse> handleResearchLineNotFound(
-            ResearchLineNotFoundException exception,
             HttpServletRequest request
     ) {
         return response(HttpStatus.NOT_FOUND, exception.getMessage(), request, Map.of());

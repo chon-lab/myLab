@@ -1,7 +1,6 @@
 package com.mylab.backend.person.infrastructure.adapters.in.rest.dto;
 
 import java.util.List;
-import java.util.UUID;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -36,6 +35,4 @@ public class UpdatePersonRequest {
     private String academicDegree;
 
     private List<@NotBlank @Size(max = 500) String> areasOfExpertise;
-
-    private List<UUID> researchLineIds;
 }

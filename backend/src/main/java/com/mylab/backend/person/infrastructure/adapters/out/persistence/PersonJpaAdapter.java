@@ -28,7 +28,7 @@ public class PersonJpaAdapter implements PersonRepositoryPort {
         log.debug("Saving person with ID: {}", person.getId());
 
         PersonEntity entity = mapper.toEntity(person);
-        jpaRepository.save(entity);
+        jpaRepository.saveAndFlush(entity);
 
         log.debug("Person saved successfully with ID: {}", person.getId());
     }
@@ -40,9 +40,12 @@ public class PersonJpaAdapter implements PersonRepositoryPort {
     }
 
     @Override
-    public List<Person> findAllByResearchGroupId(UUID researchGroupId) {
-        log.debug("Finding people by research group ID: {}", researchGroupId);
-        return mapper.toDomainList(jpaRepository.findAllByResearchGroupId(researchGroupId));
+    public List<Person> findAllByIds(List<UUID> ids) {
+        log.debug("Finding people by IDs: {}", ids);
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return mapper.toDomainList(jpaRepository.findAllById(ids));
     }
 
     @Override

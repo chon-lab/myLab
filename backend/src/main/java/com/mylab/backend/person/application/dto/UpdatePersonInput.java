@@ -1,7 +1,6 @@
 package com.mylab.backend.person.application.dto;
 
 import java.util.List;
-import java.util.UUID;
 
 public record UpdatePersonInput(
         String name,
@@ -10,6 +9,5 @@ public record UpdatePersonInput(
         String phone,
         String cpf,
         String academicDegree,
-        List<String> areasOfExpertise,
-        List<UUID> researchLineIds
+        List<String> areasOfExpertise
 ) {}

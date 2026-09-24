@@ -38,8 +38,7 @@ public class PersonRestMapper {
                 request.getPhone(),
                 request.getCpf(),
                 request.getAcademicDegree(),
-                request.getAreasOfExpertise(),
-                request.getResearchLineIds()
+                request.getAreasOfExpertise()
         );
     }
 
@@ -50,7 +49,6 @@ public class PersonRestMapper {
 
         return new PersonResponse(
                 domain.getId(),
-                domain.getResearchGroupId(),
                 domain.getName(),
                 domain.getSocialName(),
                 domain.getEmail(),
@@ -58,7 +56,6 @@ public class PersonRestMapper {
                 domain.getCpf(),
                 domain.getAcademicDegree(),
                 domain.getAreasOfExpertise(),
-                domain.getResearchLineIds(),
                 domain.getCreatedAt(),
                 domain.getUpdatedAt()
         );

@@ -10,7 +10,8 @@ import java.util.UUID;
 import com.mylab.backend.inventory.domain.exception.InvalidInventoryException;
 
 public record InventoryMovement(UUID id, UUID researchGroupId, InventoryMovementType type,
-                                InventoryMovementReason reason, UUID sourceLaboratoryId,
+                                InventoryMovementReason reason, InventoryPurchaseType purchaseType,
+                                UUID sourceLaboratoryId,
                                 UUID destinationLaboratoryId, String externalSourceName,
                                 LocalDate occurredAt, String notes, InventoryMovementStatus status,
                                 LocalDateTime reversedAt, String reversalReason,
@@ -24,9 +25,12 @@ public record InventoryMovement(UUID id, UUID researchGroupId, InventoryMovement
             case ENTRY -> {
                 if (sourceLaboratoryId != null || destinationLaboratoryId == null
                         || !(reason == InventoryMovementReason.PURCHASE
-                        || reason == InventoryMovementReason.DONATION
-                        || reason == InventoryMovementReason.FUNDING)) {
+                        || reason == InventoryMovementReason.DONATION)) {
                     throw new InvalidInventoryException("Invalid entry route or reason");
+                }
+                if ((reason == InventoryMovementReason.PURCHASE && purchaseType == null)
+                        || (reason == InventoryMovementReason.DONATION && purchaseType != null)) {
+                    throw new InvalidInventoryException("purchaseType is required only for purchase entries");
                 }
                 if (externalSourceName == null || externalSourceName.isBlank()) {
                     throw new InvalidInventoryException("externalSourceName is required for entries");
@@ -37,7 +41,7 @@ public record InventoryMovement(UUID id, UUID researchGroupId, InventoryMovement
                 }
             }
             case EXIT -> {
-                if (sourceLaboratoryId == null || destinationLaboratoryId != null || externalSourceName != null
+                if (purchaseType != null || sourceLaboratoryId == null || destinationLaboratoryId != null || externalSourceName != null
                         || !(reason == InventoryMovementReason.CONSUMPTION
                         || reason == InventoryMovementReason.DISPOSAL
                         || reason == InventoryMovementReason.LOSS)) {
@@ -45,7 +49,7 @@ public record InventoryMovement(UUID id, UUID researchGroupId, InventoryMovement
                 }
             }
             case TRANSFER -> {
-                if (sourceLaboratoryId == null || destinationLaboratoryId == null || externalSourceName != null
+                if (purchaseType != null || sourceLaboratoryId == null || destinationLaboratoryId == null || externalSourceName != null
                         || sourceLaboratoryId.equals(destinationLaboratoryId)
                         || reason != InventoryMovementReason.INTERNAL_TRANSFER) {
                     throw new InvalidInventoryException("Invalid transfer route or reason");
@@ -87,7 +91,7 @@ public record InventoryMovement(UUID id, UUID researchGroupId, InventoryMovement
         if (reason == null || reason.isBlank() || at == null) {
             throw new InvalidInventoryException("Reversal reason and date are required");
         }
-        return new InventoryMovement(id, researchGroupId, type, this.reason, sourceLaboratoryId,
+        return new InventoryMovement(id, researchGroupId, type, this.reason, purchaseType, sourceLaboratoryId,
                 destinationLaboratoryId, externalSourceName, occurredAt, notes,
                 InventoryMovementStatus.REVERSED, at, reason.trim(), createdAt, items);
     }

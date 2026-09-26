@@ -91,7 +91,7 @@ public class InventoryReadJpaAdapter implements InventoryStockQueryPort, Invento
     private InventoryEntryHistoryRecord entryRecord(InventoryMovementEntity m) {
         return new InventoryEntryHistoryRecord(m.getId(), m.getResearchGroupId(), m.getDestinationLaboratoryId(),
                 m.getDestinationLaboratory().getName(), InventoryEntrySource.valueOf(m.getReason().name()),
-                m.getExternalSourceName(), m.getOccurredAt(), m.getNotes(),
+                m.getPurchaseType(), m.getExternalSourceName(), m.getOccurredAt(), m.getNotes(),
                 InventoryEntryStatus.valueOf(m.getStatus().name()), m.getReversedAt(), m.getReversalReason(),
                 m.getCreatedAt(), m.getItems().stream().map(line -> new InventoryEntryHistoryItem(
                     line.getId(), line.getInventoryItemId(), line.getInventoryItem().getName(),

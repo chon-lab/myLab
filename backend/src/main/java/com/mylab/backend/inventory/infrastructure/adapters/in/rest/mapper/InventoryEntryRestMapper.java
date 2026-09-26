@@ -22,6 +22,7 @@ public class InventoryEntryRestMapper {
         return new CreateInventoryEntryInput(
                 request.getLaboratoryId(),
                 request.getSource(),
+                request.getPurchaseType(),
                 request.getSourceName(),
                 request.getReceivedAt(),
                 request.getNotes(),

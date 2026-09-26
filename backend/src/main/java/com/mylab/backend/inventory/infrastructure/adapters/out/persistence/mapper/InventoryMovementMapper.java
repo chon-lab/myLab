@@ -14,7 +14,7 @@ public class InventoryMovementMapper {
     public InventoryMovementEntity toEntity(InventoryMovement domain) {
         InventoryMovementEntity entity = InventoryMovementEntity.builder()
                 .id(domain.id()).researchGroupId(domain.researchGroupId())
-                .type(domain.type()).reason(domain.reason())
+                .type(domain.type()).reason(domain.reason()).purchaseType(domain.purchaseType())
                 .sourceLaboratoryId(domain.sourceLaboratoryId())
                 .destinationLaboratoryId(domain.destinationLaboratoryId())
                 .externalSourceName(domain.externalSourceName())
@@ -34,7 +34,7 @@ public class InventoryMovementMapper {
 
     public InventoryMovement toDomain(InventoryMovementEntity entity) {
         return new InventoryMovement(entity.getId(), entity.getResearchGroupId(), entity.getType(),
-                entity.getReason(), entity.getSourceLaboratoryId(), entity.getDestinationLaboratoryId(),
+                entity.getReason(), entity.getPurchaseType(), entity.getSourceLaboratoryId(), entity.getDestinationLaboratoryId(),
                 entity.getExternalSourceName(), entity.getOccurredAt(), entity.getNotes(),
                 entity.getStatus(), entity.getReversedAt(), entity.getReversalReason(),
                 entity.getCreatedAt(), entity.getItems().stream().map(item -> new InventoryMovementItem(

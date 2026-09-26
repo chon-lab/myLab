@@ -129,6 +129,7 @@ public class CreateInventoryExitUsecase implements CreateInventoryExitPort {
                 researchGroupId,
                 InventoryMovementType.EXIT,
                 InventoryMovementReason.valueOf(input.type().name()),
+                null,
                 input.laboratoryId(),
                 null,
                 null,

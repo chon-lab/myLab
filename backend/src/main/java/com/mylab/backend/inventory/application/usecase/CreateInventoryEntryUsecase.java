@@ -29,6 +29,7 @@ import com.mylab.backend.inventory.domain.model.InventoryMovementItem;
 import com.mylab.backend.inventory.domain.model.InventoryMovementType;
 import com.mylab.backend.inventory.domain.model.InventoryMovementReason;
 import com.mylab.backend.inventory.domain.model.InventoryMovementStatus;
+import com.mylab.backend.inventory.domain.model.InventoryEntrySource;
 import com.mylab.backend.inventory.domain.model.InventoryItem;
 
 @Service
@@ -63,6 +64,10 @@ public class CreateInventoryEntryUsecase implements CreateInventoryEntryPort {
         if (input.items() == null || input.items().isEmpty()) {
             throw new InvalidInventoryException("At least one entry item is required");
         }
+        if ((input.source() == InventoryEntrySource.PURCHASE && input.purchaseType() == null)
+                || (input.source() == InventoryEntrySource.DONATION && input.purchaseType() != null)) {
+            throw new InvalidInventoryException("purchaseType is required only for purchase entries");
+        }
 
         Set<UUID> selectedItemIds = new HashSet<>();
         List<InventoryMovementItem> entryItems = new ArrayList<>();
@@ -88,6 +93,7 @@ public class CreateInventoryEntryUsecase implements CreateInventoryEntryPort {
                 researchGroupId,
                 InventoryMovementType.ENTRY,
                 input.source() == null ? null : InventoryMovementReason.valueOf(input.source().name()),
+                input.purchaseType(),
                 null,
                 input.laboratoryId(),
                 input.sourceName(),

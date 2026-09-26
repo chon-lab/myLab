@@ -32,7 +32,7 @@ public class InventoryMovementReadJpaAdapter implements InventoryMovementQueryPo
     }
 
     private InventoryMovementHistoryRecord toRecord(InventoryMovementEntity m) {
-        return new InventoryMovementHistoryRecord(m.getId(), m.getResearchGroupId(), m.getType(), m.getReason(),
+        return new InventoryMovementHistoryRecord(m.getId(), m.getResearchGroupId(), m.getType(), m.getReason(), m.getPurchaseType(),
                 m.getSourceLaboratoryId(), m.getSourceLaboratory() == null ? null : m.getSourceLaboratory().getName(),
                 m.getDestinationLaboratoryId(), m.getDestinationLaboratory() == null ? null : m.getDestinationLaboratory().getName(),
                 m.getExternalSourceName(), m.getOccurredAt(), m.getNotes(), m.getStatus(), m.getReversedAt(),

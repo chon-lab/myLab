@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import com.mylab.backend.inventory.domain.model.InventoryEntrySource;
 import com.mylab.backend.inventory.domain.model.InventoryEntryStatus;
+import com.mylab.backend.inventory.domain.model.InventoryPurchaseType;
 
 public record InventoryEntryHistoryRecord(
         UUID id,
@@ -14,6 +15,7 @@ public record InventoryEntryHistoryRecord(
         UUID laboratoryId,
         String laboratoryName,
         InventoryEntrySource source,
+        InventoryPurchaseType purchaseType,
         String sourceName,
         LocalDate receivedAt,
         String notes,

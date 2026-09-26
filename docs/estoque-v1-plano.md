@@ -6,8 +6,8 @@ Implementar o módulo de estoque focado em cadastro de itens e entradas. Ele con
 
 ## Modelo e regras
 
-- Criar `inventory_item`, vinculado ao grupo de pesquisa: nome, descrição, tipo obrigatório (`CONSUMABLE` ou `DURABLE`), unidade padronizada (`UN`, `CX`, `KIT`, `M`, `KG`, `L` etc.) e valor unitário de referência em BRL.
-- Criar uma entrada com cabeçalho em `inventory_entry`: grupo, laboratório de destino, origem (`PURCHASE`, `DONATION`, `FUNDING`), nome obrigatório da entidade de origem, data de recebimento, observação e status (`CONFIRMED`, `REVERSED`).
+- Criar `inventory_item`, vinculado ao grupo de pesquisa: nome, descrição, tipo obrigatório (`CONSUMABLE` ou `PERMANENT`), unidade padronizada (`UN`, `CX`, `KIT`, `M`, `KG`, `L` etc.) e valor unitário de referência em BRL.
+- Criar uma entrada com cabeçalho em `inventory_entry`: grupo, laboratório de destino, origem (`PURCHASE` ou `DONATION`), tipo de compra (`FUNDING` ou `OTHER`, obrigatório para compras), nome obrigatório da entidade de origem, data de recebimento, observação e status (`CONFIRMED`, `REVERSED`).
 - Criar linhas em `inventory_entry_item`, permitindo uma única entrada para vários itens de uma nota: item, quantidade positiva, valor unitário histórico obrigatório, lote/fabricante/validade opcionais.
 - O valor do estoque será calculado pelas linhas confirmadas: `quantidade disponível × valor unitário histórico`. Em doações, o valor unitário será uma avaliação estimada; não poderá ser omitido.
 - Criar `inventory_entry_document`, com zero ou mais documentos por entrada: número, emissor, data e arquivo opcionais. Metadados do arquivo incluem nome original, tipo, tamanho, checksum e chave de armazenamento.
@@ -75,7 +75,8 @@ O cadastro do item representa o tipo permanente do produto, enquanto o valor da 
 ## Testes e aceite
 
 - Testar criação de itens consumíveis e duráveis, unidades inteiras e fracionáveis, e atualização segura do catálogo.
-- Testar entrada com várias linhas, compra/doação/fomento, cálculo de saldo e valor, lote/validade opcionais e validação de escopo entre grupo, item e laboratório.
+- Entrada aceita compra ou doação; compras têm `purchaseType` (por exemplo, `FUNDING` ou `OTHER`).
+- Testar entrada com várias linhas, cálculo de saldo e valor, lote/validade opcionais e validação de escopo entre grupo, item e laboratório.
 - Testar estorno sem apagar histórico e remoção correta do saldo e valor agregados.
 - Testar documento somente com metadados, com PDF/imagem no MinIO e falhas de upload.
 - Validar as migrações em MariaDB e cobrir os endpoints com testes de controller e casos de uso.

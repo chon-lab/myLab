@@ -134,6 +134,7 @@ public class CreateInventoryTransferUsecase implements CreateInventoryTransferPo
                 researchGroupId,
                 InventoryMovementType.TRANSFER,
                 InventoryMovementReason.INTERNAL_TRANSFER,
+                null,
                 input.sourceLaboratoryId(),
                 input.destinationLaboratoryId(),
                 null,

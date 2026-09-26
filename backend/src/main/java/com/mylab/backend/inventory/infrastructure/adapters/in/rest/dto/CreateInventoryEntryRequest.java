@@ -12,6 +12,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.mylab.backend.inventory.domain.model.InventoryEntrySource;
+import com.mylab.backend.inventory.domain.model.InventoryPurchaseType;
 
 @Data
 @NoArgsConstructor
@@ -21,6 +22,8 @@ public class CreateInventoryEntryRequest {
 
     @NotNull
     private InventoryEntrySource source;
+
+    private InventoryPurchaseType purchaseType;
 
     @NotBlank
     @Size(max = 255)

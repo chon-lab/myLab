@@ -26,6 +26,9 @@ public class InventoryMovementEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, updatable = false)
     private InventoryMovementReason reason;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "purchase_type", updatable = false)
+    private InventoryPurchaseType purchaseType;
     @Column(name = "source_laboratory_id", updatable = false)
     private UUID sourceLaboratoryId;
     @ManyToOne(fetch = FetchType.LAZY)

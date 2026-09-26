@@ -5,6 +5,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import jakarta.persistence.LockModeType;
 import org.springframework.stereotype.Repository;
 
 import com.mylab.backend.laboratory.infrastructure.adapters.out.persistence.entity.LaboratoryEntity;
@@ -13,6 +17,10 @@ import com.mylab.backend.laboratory.infrastructure.adapters.out.persistence.enti
 public interface LaboratoryJpaRepository extends JpaRepository<LaboratoryEntity, UUID> {
 
     Optional<LaboratoryEntity> findByIdAndDeletedAtIsNull(UUID id);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT lab FROM LaboratoryEntity lab WHERE lab.id = :id AND lab.deletedAt IS NULL")
+    Optional<LaboratoryEntity> lockForStockUpdate(@Param("id") UUID id);
 
     List<LaboratoryEntity> findAllByResearchGroupIdAndDeletedAtIsNull(UUID researchGroupId);
 }

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 import com.mylab.backend.inventory.application.port.out.InventoryLaboratoryLookupPort;
+import com.mylab.backend.inventory.application.exception.InventoryLaboratoryNotFoundException;
 import com.mylab.backend.laboratory.infrastructure.adapters.out.persistence.entity.LaboratoryEntity;
 import com.mylab.backend.laboratory.infrastructure.adapters.out.persistence.repository.LaboratoryJpaRepository;
 
@@ -19,5 +20,11 @@ public class InventoryLaboratoryLookupAdapter implements InventoryLaboratoryLook
     public Optional<UUID> findResearchGroupIdByLaboratoryId(UUID laboratoryId) {
         return repository.findByIdAndDeletedAtIsNull(laboratoryId)
                 .map(LaboratoryEntity::getResearchGroupId);
+    }
+
+    @Override
+    public void lockForStockUpdate(UUID laboratoryId) {
+        repository.lockForStockUpdate(laboratoryId)
+                .orElseThrow(() -> new InventoryLaboratoryNotFoundException(laboratoryId));
     }
 }

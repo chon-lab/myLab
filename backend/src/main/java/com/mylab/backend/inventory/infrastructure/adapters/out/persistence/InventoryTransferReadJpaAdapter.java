@@ -1,85 +1,48 @@
 package com.mylab.backend.inventory.infrastructure.adapters.out.persistence;
 
-import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
-
 import lombok.RequiredArgsConstructor;
-import com.mylab.backend.inventory.application.dto.InventoryTransferHistoryItem;
-import com.mylab.backend.inventory.application.dto.InventoryTransferHistoryRecord;
-import com.mylab.backend.inventory.application.dto.InventoryTransferSearchCriteria;
+import com.mylab.backend.inventory.application.dto.*;
 import com.mylab.backend.inventory.application.port.out.InventoryTransferQueryPort;
-import com.mylab.backend.inventory.infrastructure.adapters.out.persistence.entity.InventoryTransferEntity;
-import com.mylab.backend.inventory.infrastructure.adapters.out.persistence.entity.InventoryTransferItemEntity;
-import com.mylab.backend.inventory.infrastructure.adapters.out.persistence.repository.InventoryTransferJpaRepository;
+import com.mylab.backend.inventory.domain.model.*;
+import com.mylab.backend.inventory.infrastructure.adapters.out.persistence.entity.*;
+import com.mylab.backend.inventory.infrastructure.adapters.out.persistence.repository.InventoryMovementJpaRepository;
 
 @Component
 @RequiredArgsConstructor
 public class InventoryTransferReadJpaAdapter implements InventoryTransferQueryPort {
-    private final InventoryTransferJpaRepository transferRepository;
+    private final InventoryMovementJpaRepository repository;
 
     @Override
-    public List<InventoryTransferHistoryRecord> findHistory(
-            UUID researchGroupId,
-            InventoryTransferSearchCriteria criteria
-    ) {
-        return transferRepository.searchHistory(
-                        researchGroupId,
-                        criteria.sourceLaboratoryId(),
-                        criteria.destinationLaboratoryId(),
-                        criteria.inventoryItemId(),
-                        criteria.dateFrom(),
-                        criteria.dateTo()
-                )
-                .stream()
-                .map(this::toTransferHistoryRecord)
-                .toList();
+    public List<InventoryTransferHistoryRecord> findHistory(UUID groupId, InventoryTransferSearchCriteria criteria) {
+        return repository.findGroupWithDetails(groupId).stream().filter(m -> m.getType() == InventoryMovementType.TRANSFER)
+                .filter(m -> criteria.sourceLaboratoryId() == null || criteria.sourceLaboratoryId().equals(m.getSourceLaboratoryId()))
+                .filter(m -> criteria.destinationLaboratoryId() == null || criteria.destinationLaboratoryId().equals(m.getDestinationLaboratoryId()))
+                .filter(m -> InventoryReadJpaAdapter.matchesItem(m, criteria.inventoryItemId()))
+                .filter(m -> InventoryReadJpaAdapter.matchesDates(m, criteria.dateFrom(), criteria.dateTo()))
+                .map(this::toRecord).toList();
     }
 
     @Override
     public Optional<InventoryTransferHistoryRecord> findById(UUID id) {
-        return transferRepository.findByIdWithDetails(id).map(this::toTransferHistoryRecord);
+        return repository.findByIdWithDetails(id).filter(m -> m.getType() == InventoryMovementType.TRANSFER)
+                .map(this::toRecord);
     }
 
-    private InventoryTransferHistoryRecord toTransferHistoryRecord(InventoryTransferEntity transfer) {
-        List<InventoryTransferHistoryItem> items = transfer.getItems().stream()
-                .map(this::toTransferHistoryItem)
-                .toList();
-        return new InventoryTransferHistoryRecord(
-                transfer.getId(),
-                transfer.getResearchGroupId(),
-                transfer.getSourceLaboratoryId(),
-                transfer.getSourceLaboratory().getName(),
-                transfer.getDestinationLaboratoryId(),
-                transfer.getDestinationLaboratory().getName(),
-                transfer.getTransferredAt(),
-                transfer.getNotes(),
-                transfer.getStatus(),
-                transfer.getReversedAt(),
-                transfer.getReversalReason(),
-                transfer.getCreatedAt(),
-                items
-        );
-    }
-
-    private InventoryTransferHistoryItem toTransferHistoryItem(InventoryTransferItemEntity item) {
-        BigDecimal totalCost = item.getQuantity() != null && item.getUnitCost() != null
-                ? item.getQuantity().multiply(item.getUnitCost()).setScale(2, RoundingMode.HALF_UP)
-                : BigDecimal.ZERO;
-        return new InventoryTransferHistoryItem(
-                item.getId(),
-                item.getInventoryItemId(),
-                item.getInventoryItem().getName(),
-                item.getInventoryItem().getItemType(),
-                item.getInventoryItem().getUnitOfMeasure(),
-                item.getQuantity(),
-                item.getUnitCost(),
-                totalCost
-        );
+    private InventoryTransferHistoryRecord toRecord(InventoryMovementEntity m) {
+        return new InventoryTransferHistoryRecord(m.getId(), m.getResearchGroupId(), m.getSourceLaboratoryId(),
+                m.getSourceLaboratory().getName(), m.getDestinationLaboratoryId(),
+                m.getDestinationLaboratory().getName(), m.getOccurredAt(), m.getNotes(),
+                InventoryTransferStatus.valueOf(m.getStatus().name()), m.getReversedAt(), m.getReversalReason(),
+                m.getCreatedAt(), m.getItems().stream().map(line -> new InventoryTransferHistoryItem(
+                    line.getId(), line.getInventoryItemId(), line.getInventoryItem().getName(),
+                    line.getInventoryItem().getItemType(), line.getInventoryItem().getUnitOfMeasure(),
+                    line.getQuantity(), line.getUnitCost(), line.getQuantity().multiply(line.getUnitCost())
+                    .setScale(2, RoundingMode.HALF_UP))).toList());
     }
 }
-

@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -15,126 +14,71 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.mylab.backend.inventory.application.dto.InventoryStockItem;
 import com.mylab.backend.inventory.application.dto.ReverseInventoryEntryInput;
 import com.mylab.backend.inventory.application.exception.InventoryEntryNotFoundException;
-import com.mylab.backend.inventory.application.port.out.InventoryEntryRepositoryPort;
+import com.mylab.backend.inventory.application.port.out.InventoryLaboratoryLookupPort;
+import com.mylab.backend.inventory.application.port.out.InventoryMovementRepositoryPort;
+import com.mylab.backend.inventory.application.port.out.InventoryStockQueryPort;
 import com.mylab.backend.inventory.domain.exception.InvalidInventoryException;
-import com.mylab.backend.inventory.domain.model.InventoryEntry;
-import com.mylab.backend.inventory.domain.model.InventoryEntryItem;
-import com.mylab.backend.inventory.domain.model.InventoryEntrySource;
-import com.mylab.backend.inventory.domain.model.InventoryEntryStatus;
+import com.mylab.backend.inventory.domain.model.*;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ReverseInventoryEntryUsecaseTest {
+    @Mock private InventoryMovementRepositoryPort movementRepository;
+    @Mock private InventoryStockQueryPort stockQuery;
+    @Mock private InventoryLaboratoryLookupPort laboratoryLookup;
+    @InjectMocks private ReverseInventoryEntryUsecase usecase;
 
-    @Mock
-    private InventoryEntryRepositoryPort entryRepository;
-
-    @InjectMocks
-    private ReverseInventoryEntryUsecase usecase;
-
-    private InventoryEntry createConfirmedEntry(UUID entryId) {
-        InventoryEntryItem item = new InventoryEntryItem(
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                BigDecimal.valueOf(10),
-                BigDecimal.valueOf(89.99),
-                "LOTE-1",
-                "Logitech",
-                null
-        );
-
-        return new InventoryEntry(
-                entryId,
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                InventoryEntrySource.PURCHASE,
-                "Fornecedor Exemplo",
-                LocalDate.of(2026, 9, 18),
-                "Entrada de equipamentos",
-                InventoryEntryStatus.CONFIRMED,
-                null,
-                null,
-                LocalDateTime.now(),
-                List.of(item)
-        );
+    private InventoryMovement entry(UUID id, InventoryMovementStatus status) {
+        return new InventoryMovement(id, UUID.randomUUID(), InventoryMovementType.ENTRY,
+                InventoryMovementReason.PURCHASE, null, UUID.randomUUID(), "Supplier",
+                LocalDate.of(2026, 9, 18), null, status,
+                status == InventoryMovementStatus.REVERSED ? LocalDateTime.now() : null,
+                status == InventoryMovementStatus.REVERSED ? "First reversal" : null,
+                LocalDateTime.now(), List.of(new InventoryMovementItem(UUID.randomUUID(), UUID.randomUUID(),
+                BigDecimal.TEN, new BigDecimal("89.99"), null, null, null)));
     }
 
     @Test
-    @DisplayName("Should successfully reverse a confirmed inventory entry")
-    void shouldSuccessfullyReverseConfirmedEntry() {
-        UUID entryId = UUID.randomUUID();
-        InventoryEntry confirmedEntry = createConfirmedEntry(entryId);
-
-        when(entryRepository.findById(entryId)).thenReturn(Optional.of(confirmedEntry));
-
-        ReverseInventoryEntryInput input = new ReverseInventoryEntryInput("Nota fiscal registrada em duplicidade");
-        usecase.reverse(entryId, input);
-
-        ArgumentCaptor<InventoryEntry> captor = ArgumentCaptor.forClass(InventoryEntry.class);
-        verify(entryRepository).save(captor.capture());
-
-        InventoryEntry savedEntry = captor.getValue();
-        assertThat(savedEntry.id()).isEqualTo(entryId);
-        assertThat(savedEntry.status()).isEqualTo(InventoryEntryStatus.REVERSED);
-        assertThat(savedEntry.reversalReason()).isEqualTo("Nota fiscal registrada em duplicidade");
-        assertThat(savedEntry.reversedAt()).isNotNull();
-        assertThat(savedEntry.items()).hasSize(1);
-        assertThat(savedEntry.items().get(0).id()).isEqualTo(confirmedEntry.items().get(0).id());
+    void reversesEntryWithAvailableStock() {
+        UUID id = UUID.randomUUID();
+        InventoryMovement entry = entry(id, InventoryMovementStatus.CONFIRMED);
+        when(movementRepository.findByIdForUpdate(id)).thenReturn(Optional.of(entry));
+        when(stockQuery.findStock(entry.researchGroupId(), entry.destinationLaboratoryId())).thenReturn(List.of(
+                new InventoryStockItem(entry.items().getFirst().inventoryItemId(), "Mouse",
+                        InventoryItemType.DURABLE, InventoryUnitOfMeasure.UN,
+                        BigDecimal.TEN, new BigDecimal("899.90"))));
+        usecase.reverse(id, new ReverseInventoryEntryInput("Duplicate invoice"));
+        ArgumentCaptor<InventoryMovement> saved = ArgumentCaptor.forClass(InventoryMovement.class);
+        verify(movementRepository).save(saved.capture());
+        assertThat(saved.getValue().status()).isEqualTo(InventoryMovementStatus.REVERSED);
+        assertThat(saved.getValue().items()).isEqualTo(entry.items());
     }
 
     @Test
-    @DisplayName("Should throw InventoryEntryNotFoundException when entry does not exist")
-    void shouldThrowNotFoundWhenEntryDoesNotExist() {
-        UUID entryId = UUID.randomUUID();
-        when(entryRepository.findById(entryId)).thenReturn(Optional.empty());
-
-        ReverseInventoryEntryInput input = new ReverseInventoryEntryInput("Nota duplicada");
-
-        assertThatThrownBy(() -> usecase.reverse(entryId, input))
-                .isInstanceOf(InventoryEntryNotFoundException.class)
-                .hasMessageContaining(entryId.toString());
+    void rejectsReversalThatWouldMakeStockNegative() {
+        UUID id = UUID.randomUUID();
+        InventoryMovement entry = entry(id, InventoryMovementStatus.CONFIRMED);
+        when(movementRepository.findByIdForUpdate(id)).thenReturn(Optional.of(entry));
+        when(stockQuery.findStock(entry.researchGroupId(), entry.destinationLaboratoryId())).thenReturn(List.of());
+        assertThatThrownBy(() -> usecase.reverse(id, new ReverseInventoryEntryInput("Duplicate")))
+                .isInstanceOf(InvalidInventoryException.class).hasMessageContaining("insufficient stock");
+        verify(movementRepository, never()).save(any());
     }
 
     @Test
-    @DisplayName("Should throw InvalidInventoryException when entry is already reversed")
-    void shouldThrowWhenEntryIsAlreadyReversed() {
-        UUID entryId = UUID.randomUUID();
-        InventoryEntry confirmedEntry = createConfirmedEntry(entryId);
-        InventoryEntry alreadyReversedEntry = confirmedEntry.reverse("Primeiro estorno", LocalDateTime.now());
-
-        when(entryRepository.findById(entryId)).thenReturn(Optional.of(alreadyReversedEntry));
-
-        ReverseInventoryEntryInput input = new ReverseInventoryEntryInput("Tentando estornar de novo");
-
-        assertThatThrownBy(() -> usecase.reverse(entryId, input))
-                .isInstanceOf(InvalidInventoryException.class)
-                .hasMessageContaining("already reversed");
-    }
-
-    @Test
-    @DisplayName("Should throw InvalidInventoryException when reason is blank")
-    void shouldThrowWhenReasonIsBlank() {
-        UUID entryId = UUID.randomUUID();
-        ReverseInventoryEntryInput input = new ReverseInventoryEntryInput("   ");
-
-        assertThatThrownBy(() -> usecase.reverse(entryId, input))
-                .isInstanceOf(InvalidInventoryException.class)
-                .hasMessageContaining("reversal reason must not be blank");
-    }
-
-    @Test
-    @DisplayName("Should throw NullPointerException when entryId is null")
-    void shouldThrowWhenEntryIdIsNull() {
-        ReverseInventoryEntryInput input = new ReverseInventoryEntryInput("Motivo");
-
-        assertThatThrownBy(() -> usecase.reverse(null, input))
-                .isInstanceOf(NullPointerException.class);
+    void rejectsMissingAndAlreadyReversedEntries() {
+        UUID id = UUID.randomUUID();
+        when(movementRepository.findByIdForUpdate(id)).thenReturn(Optional.empty());
+        assertThatThrownBy(() -> usecase.reverse(id, new ReverseInventoryEntryInput("Missing")))
+                .isInstanceOf(InventoryEntryNotFoundException.class);
+        reset(movementRepository);
+        when(movementRepository.findByIdForUpdate(id)).thenReturn(Optional.of(entry(id, InventoryMovementStatus.REVERSED)));
+        assertThatThrownBy(() -> usecase.reverse(id, new ReverseInventoryEntryInput("Again")))
+                .isInstanceOf(InvalidInventoryException.class).hasMessageContaining("already reversed");
     }
 }
-

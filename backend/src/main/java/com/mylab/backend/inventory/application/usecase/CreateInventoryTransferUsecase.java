@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Isolation;
 
 import lombok.RequiredArgsConstructor;
 import com.mylab.backend.inventory.application.dto.CreateInventoryTransferInput;
@@ -27,25 +28,27 @@ import com.mylab.backend.inventory.application.port.in.CreateInventoryTransferPo
 import com.mylab.backend.inventory.application.port.out.InventoryItemRepositoryPort;
 import com.mylab.backend.inventory.application.port.out.InventoryLaboratoryLookupPort;
 import com.mylab.backend.inventory.application.port.out.InventoryStockQueryPort;
-import com.mylab.backend.inventory.application.port.out.InventoryTransferRepositoryPort;
+import com.mylab.backend.inventory.application.port.out.InventoryMovementRepositoryPort;
 import com.mylab.backend.inventory.application.port.out.ResearchGroupLookupPort;
 import com.mylab.backend.inventory.domain.exception.InvalidInventoryException;
 import com.mylab.backend.inventory.domain.model.InventoryItem;
-import com.mylab.backend.inventory.domain.model.InventoryTransfer;
-import com.mylab.backend.inventory.domain.model.InventoryTransferItem;
-import com.mylab.backend.inventory.domain.model.InventoryTransferStatus;
+import com.mylab.backend.inventory.domain.model.InventoryMovement;
+import com.mylab.backend.inventory.domain.model.InventoryMovementItem;
+import com.mylab.backend.inventory.domain.model.InventoryMovementType;
+import com.mylab.backend.inventory.domain.model.InventoryMovementReason;
+import com.mylab.backend.inventory.domain.model.InventoryMovementStatus;
 
 @Service
 @RequiredArgsConstructor
 public class CreateInventoryTransferUsecase implements CreateInventoryTransferPort {
-    private final InventoryTransferRepositoryPort transferRepository;
+    private final InventoryMovementRepositoryPort movementRepository;
     private final InventoryItemRepositoryPort itemRepository;
     private final ResearchGroupLookupPort researchGroupLookup;
     private final InventoryLaboratoryLookupPort laboratoryLookup;
     private final InventoryStockQueryPort stockQuery;
 
     @Override
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public UUID create(UUID researchGroupId, CreateInventoryTransferInput input) {
         Objects.requireNonNull(researchGroupId, "researchGroupId must not be null");
         Objects.requireNonNull(input, "input must not be null");
@@ -65,6 +68,13 @@ public class CreateInventoryTransferUsecase implements CreateInventoryTransferPo
 
         validateLaboratoryScope(researchGroupId, input.sourceLaboratoryId(), "source");
         validateLaboratoryScope(researchGroupId, input.destinationLaboratoryId(), "destination");
+        if (input.sourceLaboratoryId().compareTo(input.destinationLaboratoryId()) < 0) {
+            laboratoryLookup.lockForStockUpdate(input.sourceLaboratoryId());
+            laboratoryLookup.lockForStockUpdate(input.destinationLaboratoryId());
+        } else {
+            laboratoryLookup.lockForStockUpdate(input.destinationLaboratoryId());
+            laboratoryLookup.lockForStockUpdate(input.sourceLaboratoryId());
+        }
 
         if (input.transferredAt() == null) {
             throw new InvalidInventoryException("transferredAt must not be null");
@@ -78,7 +88,7 @@ public class CreateInventoryTransferUsecase implements CreateInventoryTransferPo
                 .collect(Collectors.toMap(InventoryStockItem::inventoryItemId, Function.identity()));
 
         Set<UUID> selectedItemIds = new HashSet<>();
-        List<InventoryTransferItem> transferItems = new ArrayList<>();
+        List<InventoryMovementItem> transferItems = new ArrayList<>();
         for (CreateInventoryTransferItemInput line : input.items()) {
             if (line == null || line.inventoryItemId() == null) {
                 throw new InvalidInventoryException("Every transfer line must reference an inventory item");
@@ -111,29 +121,32 @@ public class CreateInventoryTransferUsecase implements CreateInventoryTransferPo
                 unitCost = new BigDecimal("0.01");
             }
 
-            transferItems.add(new InventoryTransferItem(
+            transferItems.add(new InventoryMovementItem(
                     UUID.randomUUID(),
                     line.inventoryItemId(),
                     line.quantity(),
-                    unitCost
+                    unitCost, null, null, null
             ));
         }
 
-        InventoryTransfer transfer = new InventoryTransfer(
+        InventoryMovement transfer = new InventoryMovement(
                 UUID.randomUUID(),
                 researchGroupId,
+                InventoryMovementType.TRANSFER,
+                InventoryMovementReason.INTERNAL_TRANSFER,
                 input.sourceLaboratoryId(),
                 input.destinationLaboratoryId(),
+                null,
                 input.transferredAt(),
                 input.notes(),
-                InventoryTransferStatus.CONFIRMED,
+                InventoryMovementStatus.CONFIRMED,
                 null,
                 null,
                 LocalDateTime.now(),
                 transferItems
         );
 
-        transferRepository.save(transfer);
+        movementRepository.save(transfer);
         return transfer.id();
     }
 

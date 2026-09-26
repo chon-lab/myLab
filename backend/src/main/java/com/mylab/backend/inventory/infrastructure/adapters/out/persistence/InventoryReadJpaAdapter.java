@@ -193,6 +193,7 @@ public class InventoryReadJpaAdapter implements InventoryStockQueryPort, Invento
         );
     }
 
+<<<<<<< Updated upstream
     private InventoryEntryHistoryItem toHistoryItem(InventoryEntryItemEntity item) {
         return new InventoryEntryHistoryItem(
                 item.getId(),
@@ -206,5 +207,22 @@ public class InventoryReadJpaAdapter implements InventoryStockQueryPort, Invento
                 item.getManufacturer(),
                 item.getExpirationDate()
         );
+=======
+    static boolean matchesDates(InventoryMovementEntity m, LocalDate from, LocalDate to) {
+        return (from == null || !m.getOccurredAt().isBefore(from))
+                && (to == null || !m.getOccurredAt().isAfter(to));
+    }
+
+    private InventoryEntryHistoryRecord entryRecord(InventoryMovementEntity m) {
+        return new InventoryEntryHistoryRecord(m.getId(), m.getResearchGroupId(), m.getDestinationLaboratoryId(),
+                m.getDestinationLaboratory().getName(), InventoryEntrySource.valueOf(m.getReason().name()),
+                m.getPurchaseType(), m.getExternalSourceName(), m.getOccurredAt(), m.getNotes(),
+                InventoryEntryStatus.valueOf(m.getStatus().name()), m.getReversedAt(), m.getReversalReason(),
+                m.getCreatedAt(), m.getItems().stream().map(line -> new InventoryEntryHistoryItem(
+                    line.getId(), line.getInventoryItemId(), line.getInventoryItem().getName(),
+                    line.getInventoryItem().getItemType(), line.getInventoryItem().getUnitOfMeasure(),
+                    line.getQuantity(), line.getUnitCost(), line.getBatchNumber(), line.getManufacturer(),
+                    line.getExpirationDate())).toList());
+>>>>>>> Stashed changes
     }
 }

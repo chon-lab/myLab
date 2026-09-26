@@ -23,9 +23,19 @@ import com.mylab.backend.inventory.application.port.out.InventoryItemRepositoryP
 import com.mylab.backend.inventory.application.port.out.InventoryLaboratoryLookupPort;
 import com.mylab.backend.inventory.application.port.out.ResearchGroupLookupPort;
 import com.mylab.backend.inventory.domain.exception.InvalidInventoryException;
+<<<<<<< Updated upstream
 import com.mylab.backend.inventory.domain.model.InventoryEntry;
 import com.mylab.backend.inventory.domain.model.InventoryEntryItem;
 import com.mylab.backend.inventory.domain.model.InventoryEntryStatus;
+=======
+import com.mylab.backend.inventory.domain.model.InventoryMovement;
+import com.mylab.backend.inventory.domain.model.InventoryMovementItem;
+import com.mylab.backend.inventory.domain.model.InventoryMovementType;
+import com.mylab.backend.inventory.domain.model.InventoryMovementReason;
+import com.mylab.backend.inventory.domain.model.InventoryMovementStatus;
+import com.mylab.backend.inventory.domain.model.InventoryPurchaseType;
+import com.mylab.backend.inventory.domain.model.InventoryEntrySource;
+>>>>>>> Stashed changes
 import com.mylab.backend.inventory.domain.model.InventoryItem;
 
 @Service
@@ -59,6 +69,10 @@ public class CreateInventoryEntryUsecase implements CreateInventoryEntryPort {
         if (input.items() == null || input.items().isEmpty()) {
             throw new InvalidInventoryException("At least one entry item is required");
         }
+        if ((input.source() == InventoryEntrySource.PURCHASE && input.purchaseType() == null)
+                || (input.source() == InventoryEntrySource.DONATION && input.purchaseType() != null)) {
+            throw new InvalidInventoryException("purchaseType is required only for purchase entries");
+        }
 
         Set<UUID> selectedItemIds = new HashSet<>();
         List<InventoryEntryItem> entryItems = new ArrayList<>();
@@ -82,6 +96,13 @@ public class CreateInventoryEntryUsecase implements CreateInventoryEntryPort {
         InventoryEntry entry = new InventoryEntry(
                 UUID.randomUUID(),
                 researchGroupId,
+<<<<<<< Updated upstream
+=======
+                InventoryMovementType.ENTRY,
+                input.source() == null ? null : InventoryMovementReason.valueOf(input.source().name()),
+                input.purchaseType(),
+                null,
+>>>>>>> Stashed changes
                 input.laboratoryId(),
                 input.source(),
                 input.sourceName(),

@@ -123,6 +123,12 @@ public class CreateInventoryExitUsecase implements CreateInventoryExitPort {
         InventoryExit exit = new InventoryExit(
                 UUID.randomUUID(),
                 researchGroupId,
+<<<<<<< Updated upstream
+=======
+                InventoryMovementType.EXIT,
+                InventoryMovementReason.valueOf(input.type().name()),
+                null,
+>>>>>>> Stashed changes
                 input.laboratoryId(),
                 input.type(),
                 input.occurredAt(),

@@ -39,8 +39,21 @@ public class InventoryTransferEntity {
 
     @Column(name = "research_group_id", nullable = false, updatable = false)
     private UUID researchGroupId;
+<<<<<<< Updated upstream:backend/src/main/java/com/mylab/backend/inventory/infrastructure/adapters/out/persistence/entity/InventoryTransferEntity.java
 
     @Column(name = "source_laboratory_id", nullable = false, updatable = false)
+=======
+    @Enumerated(EnumType.STRING)
+    @Column(name = "movement_type", nullable = false, updatable = false)
+    private InventoryMovementType type;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, updatable = false)
+    private InventoryMovementReason reason;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "purchase_type", updatable = false)
+    private InventoryPurchaseType purchaseType;
+    @Column(name = "source_laboratory_id", updatable = false)
+>>>>>>> Stashed changes:backend/src/main/java/com/mylab/backend/inventory/infrastructure/adapters/out/persistence/entity/InventoryMovementEntity.java
     private UUID sourceLaboratoryId;
 
     @ManyToOne(fetch = FetchType.LAZY)

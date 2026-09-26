@@ -122,6 +122,12 @@ public class CreateInventoryTransferUsecase implements CreateInventoryTransferPo
         InventoryTransfer transfer = new InventoryTransfer(
                 UUID.randomUUID(),
                 researchGroupId,
+<<<<<<< Updated upstream
+=======
+                InventoryMovementType.TRANSFER,
+                InventoryMovementReason.INTERNAL_TRANSFER,
+                null,
+>>>>>>> Stashed changes
                 input.sourceLaboratoryId(),
                 input.destinationLaboratoryId(),
                 input.transferredAt(),

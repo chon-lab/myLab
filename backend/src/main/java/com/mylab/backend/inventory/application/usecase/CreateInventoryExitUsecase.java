@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Isolation;
 
 import lombok.RequiredArgsConstructor;
 import com.mylab.backend.inventory.application.dto.CreateInventoryExitInput;
@@ -24,28 +25,30 @@ import com.mylab.backend.inventory.application.exception.InventoryItemNotFoundEx
 import com.mylab.backend.inventory.application.exception.InventoryLaboratoryNotFoundException;
 import com.mylab.backend.inventory.application.exception.ResearchGroupNotFoundException;
 import com.mylab.backend.inventory.application.port.in.CreateInventoryExitPort;
-import com.mylab.backend.inventory.application.port.out.InventoryExitRepositoryPort;
+import com.mylab.backend.inventory.application.port.out.InventoryMovementRepositoryPort;
 import com.mylab.backend.inventory.application.port.out.InventoryItemRepositoryPort;
 import com.mylab.backend.inventory.application.port.out.InventoryLaboratoryLookupPort;
 import com.mylab.backend.inventory.application.port.out.InventoryStockQueryPort;
 import com.mylab.backend.inventory.application.port.out.ResearchGroupLookupPort;
 import com.mylab.backend.inventory.domain.exception.InvalidInventoryException;
-import com.mylab.backend.inventory.domain.model.InventoryExit;
-import com.mylab.backend.inventory.domain.model.InventoryExitItem;
-import com.mylab.backend.inventory.domain.model.InventoryExitStatus;
+import com.mylab.backend.inventory.domain.model.InventoryMovement;
+import com.mylab.backend.inventory.domain.model.InventoryMovementItem;
+import com.mylab.backend.inventory.domain.model.InventoryMovementType;
+import com.mylab.backend.inventory.domain.model.InventoryMovementReason;
+import com.mylab.backend.inventory.domain.model.InventoryMovementStatus;
 import com.mylab.backend.inventory.domain.model.InventoryItem;
 
 @Service
 @RequiredArgsConstructor
 public class CreateInventoryExitUsecase implements CreateInventoryExitPort {
-    private final InventoryExitRepositoryPort exitRepository;
+    private final InventoryMovementRepositoryPort movementRepository;
     private final InventoryItemRepositoryPort itemRepository;
     private final ResearchGroupLookupPort researchGroupLookup;
     private final InventoryLaboratoryLookupPort laboratoryLookup;
     private final InventoryStockQueryPort stockQuery;
 
     @Override
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public UUID create(UUID researchGroupId, CreateInventoryExitInput input) {
         Objects.requireNonNull(researchGroupId, "researchGroupId must not be null");
         Objects.requireNonNull(input, "input must not be null");
@@ -63,6 +66,7 @@ public class CreateInventoryExitUsecase implements CreateInventoryExitPort {
         if (!researchGroupId.equals(laboratoryResearchGroupId)) {
             throw new InvalidInventoryException("laboratory must belong to the specified research group");
         }
+        laboratoryLookup.lockForStockUpdate(input.laboratoryId());
 
         if (input.type() == null) {
             throw new InvalidInventoryException("exit type must not be null");
@@ -79,7 +83,7 @@ public class CreateInventoryExitUsecase implements CreateInventoryExitPort {
                 .collect(Collectors.toMap(InventoryStockItem::inventoryItemId, Function.identity()));
 
         Set<UUID> selectedItemIds = new HashSet<>();
-        List<InventoryExitItem> exitItems = new ArrayList<>();
+        List<InventoryMovementItem> exitItems = new ArrayList<>();
         for (CreateInventoryExitItemInput line : input.items()) {
             if (line == null || line.inventoryItemId() == null) {
                 throw new InvalidInventoryException("Every exit line must reference an inventory item");
@@ -112,29 +116,32 @@ public class CreateInventoryExitUsecase implements CreateInventoryExitPort {
                 unitCost = new BigDecimal("0.01");
             }
 
-            exitItems.add(new InventoryExitItem(
+            exitItems.add(new InventoryMovementItem(
                     UUID.randomUUID(),
                     line.inventoryItemId(),
                     line.quantity(),
-                    unitCost
+                    unitCost, null, null, null
             ));
         }
 
-        InventoryExit exit = new InventoryExit(
+        InventoryMovement exit = new InventoryMovement(
                 UUID.randomUUID(),
                 researchGroupId,
+                InventoryMovementType.EXIT,
+                InventoryMovementReason.valueOf(input.type().name()),
                 input.laboratoryId(),
-                input.type(),
+                null,
+                null,
                 input.occurredAt(),
                 input.notes(),
-                InventoryExitStatus.CONFIRMED,
+                InventoryMovementStatus.CONFIRMED,
                 null,
                 null,
                 LocalDateTime.now(),
                 exitItems
         );
 
-        exitRepository.save(exit);
+        movementRepository.save(exit);
         return exit.id();
     }
 

@@ -5,4 +5,5 @@ import java.util.UUID;
 
 public interface InventoryLaboratoryLookupPort {
     Optional<UUID> findResearchGroupIdByLaboratoryId(UUID laboratoryId);
+    void lockForStockUpdate(UUID laboratoryId);
 }

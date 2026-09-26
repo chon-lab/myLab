@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Isolation;
 
 import lombok.RequiredArgsConstructor;
 import com.mylab.backend.inventory.application.dto.InventoryStockItem;
@@ -18,33 +19,44 @@ import com.mylab.backend.inventory.application.exception.InventoryTransferNotFou
 import com.mylab.backend.inventory.application.port.in.ReverseInventoryTransferPort;
 import com.mylab.backend.inventory.application.port.out.InventoryItemRepositoryPort;
 import com.mylab.backend.inventory.application.port.out.InventoryStockQueryPort;
-import com.mylab.backend.inventory.application.port.out.InventoryTransferRepositoryPort;
+import com.mylab.backend.inventory.application.port.out.InventoryMovementRepositoryPort;
+import com.mylab.backend.inventory.application.port.out.InventoryLaboratoryLookupPort;
 import com.mylab.backend.inventory.domain.exception.InvalidInventoryException;
 import com.mylab.backend.inventory.domain.model.InventoryItem;
-import com.mylab.backend.inventory.domain.model.InventoryTransfer;
-import com.mylab.backend.inventory.domain.model.InventoryTransferItem;
-import com.mylab.backend.inventory.domain.model.InventoryTransferStatus;
+import com.mylab.backend.inventory.domain.model.InventoryMovement;
+import com.mylab.backend.inventory.domain.model.InventoryMovementItem;
+import com.mylab.backend.inventory.domain.model.InventoryMovementStatus;
+import com.mylab.backend.inventory.domain.model.InventoryMovementType;
 
 @Service
 @RequiredArgsConstructor
 public class ReverseInventoryTransferUsecase implements ReverseInventoryTransferPort {
-    private final InventoryTransferRepositoryPort transferRepository;
+    private final InventoryMovementRepositoryPort movementRepository;
+    private final InventoryLaboratoryLookupPort laboratoryLookup;
     private final InventoryStockQueryPort stockQuery;
     private final InventoryItemRepositoryPort itemRepository;
 
     @Override
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void reverse(UUID transferId, ReverseInventoryTransferInput input) {
         Objects.requireNonNull(transferId, "transferId must not be null");
         if (input == null || input.reason() == null || input.reason().isBlank()) {
             throw new InvalidInventoryException("reversal reason must not be blank");
         }
 
-        InventoryTransfer transfer = transferRepository.findById(transferId)
+        InventoryMovement transfer = movementRepository.findByIdForUpdate(transferId)
+                .filter(candidate -> candidate.type() == InventoryMovementType.TRANSFER)
                 .orElseThrow(() -> new InventoryTransferNotFoundException(transferId));
 
-        if (transfer.status() == InventoryTransferStatus.REVERSED) {
+        if (transfer.status() == InventoryMovementStatus.REVERSED) {
             throw new InvalidInventoryException("Inventory transfer is already reversed");
+        }
+        if (transfer.sourceLaboratoryId().compareTo(transfer.destinationLaboratoryId()) < 0) {
+            laboratoryLookup.lockForStockUpdate(transfer.sourceLaboratoryId());
+            laboratoryLookup.lockForStockUpdate(transfer.destinationLaboratoryId());
+        } else {
+            laboratoryLookup.lockForStockUpdate(transfer.destinationLaboratoryId());
+            laboratoryLookup.lockForStockUpdate(transfer.sourceLaboratoryId());
         }
 
         Map<UUID, InventoryStockItem> destinationStock = stockQuery
@@ -52,7 +64,7 @@ public class ReverseInventoryTransferUsecase implements ReverseInventoryTransfer
                 .stream()
                 .collect(Collectors.toMap(InventoryStockItem::inventoryItemId, Function.identity()));
 
-        for (InventoryTransferItem line : transfer.items()) {
+        for (InventoryMovementItem line : transfer.items()) {
             InventoryStockItem stockItem = destinationStock.get(line.inventoryItemId());
             BigDecimal available = stockItem == null ? BigDecimal.ZERO : stockItem.quantity();
 
@@ -68,8 +80,8 @@ public class ReverseInventoryTransferUsecase implements ReverseInventoryTransfer
             }
         }
 
-        InventoryTransfer reversed = transfer.reverse(input.reason(), LocalDateTime.now());
-        transferRepository.save(reversed);
+        InventoryMovement reversed = transfer.reverse(input.reason(), LocalDateTime.now());
+        movementRepository.save(reversed);
     }
 }
 

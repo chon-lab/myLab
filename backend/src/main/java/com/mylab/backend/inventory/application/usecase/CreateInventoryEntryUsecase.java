@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Isolation;
 
 import lombok.RequiredArgsConstructor;
 import com.mylab.backend.inventory.application.dto.CreateInventoryEntryInput;
@@ -18,26 +19,28 @@ import com.mylab.backend.inventory.application.exception.InventoryItemNotFoundEx
 import com.mylab.backend.inventory.application.exception.InventoryLaboratoryNotFoundException;
 import com.mylab.backend.inventory.application.exception.ResearchGroupNotFoundException;
 import com.mylab.backend.inventory.application.port.in.CreateInventoryEntryPort;
-import com.mylab.backend.inventory.application.port.out.InventoryEntryRepositoryPort;
+import com.mylab.backend.inventory.application.port.out.InventoryMovementRepositoryPort;
 import com.mylab.backend.inventory.application.port.out.InventoryItemRepositoryPort;
 import com.mylab.backend.inventory.application.port.out.InventoryLaboratoryLookupPort;
 import com.mylab.backend.inventory.application.port.out.ResearchGroupLookupPort;
 import com.mylab.backend.inventory.domain.exception.InvalidInventoryException;
-import com.mylab.backend.inventory.domain.model.InventoryEntry;
-import com.mylab.backend.inventory.domain.model.InventoryEntryItem;
-import com.mylab.backend.inventory.domain.model.InventoryEntryStatus;
+import com.mylab.backend.inventory.domain.model.InventoryMovement;
+import com.mylab.backend.inventory.domain.model.InventoryMovementItem;
+import com.mylab.backend.inventory.domain.model.InventoryMovementType;
+import com.mylab.backend.inventory.domain.model.InventoryMovementReason;
+import com.mylab.backend.inventory.domain.model.InventoryMovementStatus;
 import com.mylab.backend.inventory.domain.model.InventoryItem;
 
 @Service
 @RequiredArgsConstructor
 public class CreateInventoryEntryUsecase implements CreateInventoryEntryPort {
-    private final InventoryEntryRepositoryPort entryRepository;
+    private final InventoryMovementRepositoryPort movementRepository;
     private final InventoryItemRepositoryPort itemRepository;
     private final ResearchGroupLookupPort researchGroupLookup;
     private final InventoryLaboratoryLookupPort laboratoryLookup;
 
     @Override
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public UUID create(UUID researchGroupId, CreateInventoryEntryInput input) {
         Objects.requireNonNull(researchGroupId, "researchGroupId must not be null");
         Objects.requireNonNull(input, "input must not be null");
@@ -55,13 +58,14 @@ public class CreateInventoryEntryUsecase implements CreateInventoryEntryPort {
         if (!researchGroupId.equals(laboratoryResearchGroupId)) {
             throw new InvalidInventoryException("laboratory must belong to the specified research group");
         }
+        laboratoryLookup.lockForStockUpdate(input.laboratoryId());
 
         if (input.items() == null || input.items().isEmpty()) {
             throw new InvalidInventoryException("At least one entry item is required");
         }
 
         Set<UUID> selectedItemIds = new HashSet<>();
-        List<InventoryEntryItem> entryItems = new ArrayList<>();
+        List<InventoryMovementItem> entryItems = new ArrayList<>();
         for (CreateInventoryEntryItemInput line : input.items()) {
             if (line == null || line.inventoryItemId() == null) {
                 throw new InvalidInventoryException("Every entry line must reference an inventory item");
@@ -79,22 +83,24 @@ public class CreateInventoryEntryUsecase implements CreateInventoryEntryPort {
             entryItems.add(toDomain(line));
         }
 
-        InventoryEntry entry = new InventoryEntry(
+        InventoryMovement entry = new InventoryMovement(
                 UUID.randomUUID(),
                 researchGroupId,
+                InventoryMovementType.ENTRY,
+                input.source() == null ? null : InventoryMovementReason.valueOf(input.source().name()),
+                null,
                 input.laboratoryId(),
-                input.source(),
                 input.sourceName(),
                 input.receivedAt(),
                 input.notes(),
-                InventoryEntryStatus.CONFIRMED,
+                InventoryMovementStatus.CONFIRMED,
                 null,
                 null,
                 LocalDateTime.now(),
                 entryItems
         );
 
-        entryRepository.save(entry);
+        movementRepository.save(entry);
         return entry.id();
     }
 
@@ -119,8 +125,8 @@ public class CreateInventoryEntryUsecase implements CreateInventoryEntryPort {
         }
     }
 
-    private InventoryEntryItem toDomain(CreateInventoryEntryItemInput line) {
-        return new InventoryEntryItem(
+    private InventoryMovementItem toDomain(CreateInventoryEntryItemInput line) {
+        return new InventoryMovementItem(
                 UUID.randomUUID(),
                 line.inventoryItemId(),
                 line.quantity(),

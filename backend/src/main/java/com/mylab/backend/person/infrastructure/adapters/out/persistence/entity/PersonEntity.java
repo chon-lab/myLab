@@ -2,9 +2,7 @@ package com.mylab.backend.person.infrastructure.adapters.out.persistence.entity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import jakarta.persistence.CollectionTable;
@@ -25,7 +23,6 @@ import lombok.NoArgsConstructor;
 @Table(
         name = "person",
         indexes = {
-                @Index(name = "idx_person_research_group", columnList = "research_group_id"),
                 @Index(name = "idx_person_name", columnList = "name")
         }
 )
@@ -38,9 +35,6 @@ public class PersonEntity {
     @Id
     @Column(nullable = false, updatable = false)
     private UUID id;
-
-    @Column(name = "research_group_id", nullable = false, updatable = false)
-    private UUID researchGroupId;
 
     @Column(nullable = false, length = 255)
     private String name;
@@ -66,12 +60,6 @@ public class PersonEntity {
     @Column(name = "area_of_expertise", nullable = false, length = 500)
     @Builder.Default
     private List<String> areasOfExpertise = new ArrayList<>();
-
-    @ElementCollection
-    @CollectionTable(name = "person_research_line", joinColumns = @JoinColumn(name = "person_id"))
-    @Column(name = "research_line_id", nullable = false)
-    @Builder.Default
-    private Set<UUID> researchLineIds = new HashSet<>();
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

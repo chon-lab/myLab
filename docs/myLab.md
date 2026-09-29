@@ -14,15 +14,7 @@ Dentro disso, os principais pontos são:
 
 ## 2. Perfis de usuário
 
-| Perfil | Descrição |
-|---|---|
-| **Admin Geral** | Administração geral do sistema. |
-| **Admin Grupo** | Administra um grupo de pesquisa específico. |
-| **Responsável** | Responsável por laboratório(s) do grupo. |
-| **Estudante** | Vinculado ao grupo, uso restrito (ver regras na seção 4). |
-| **Parceiro** | Pessoa externa vinculada ao grupo via CPF, uso restrito (ver regras na seção 4). |
-
-> Perfis e permissões detalhadas ainda podem ser refinados — ver seção 7, "Pontos em aberto".
+Perfis sao criados por grupo, e os perfis tem permissao de dinamica. Ou seja, posso ter 10 perfis cada um com permissao de escrita e leitura completamente diferentes de forma unica.
 
 ## 3. Movimentação de estoque
 
@@ -73,7 +65,6 @@ Grupo de Pesquisa (entidade raiz)
 
 ## 7. Pontos em aberto
 
-- Detalhar permissões específicas de cada perfil (Admin Geral x Admin Grupo x Responsável) — hoje só está definida a restrição de Estudante/Parceiro.
 - Definir regras de estoque mínimo, lote, validade e unidade de medida.
 - Definir se haverá compartilhamento de itens entre laboratórios de um mesmo grupo (ou entre grupos).
 - Definir fluxo de aprovação/devolução para saída por empréstimo.

@@ -7,10 +7,10 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.mylab.backend.person.application.exception.ResearchGroupNotFoundException;
+import com.mylab.backend.groupmember.application.port.in.GetAllGroupMembersPort;
+import com.mylab.backend.groupmember.domain.model.GroupMember;
 import com.mylab.backend.person.application.port.in.GetAllPersonPort;
 import com.mylab.backend.person.application.port.out.PersonRepositoryPort;
-import com.mylab.backend.person.application.port.out.ResearchGroupLookupPort;
 import com.mylab.backend.person.domain.model.Person;
 
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 public class GetAllPersonsUsecase implements GetAllPersonPort {
 
     private final PersonRepositoryPort repositoryPort;
-    private final ResearchGroupLookupPort researchGroupLookupPort;
+    private final GetAllGroupMembersPort getAllGroupMembersPort;
 
     @Override
     @Transactional(readOnly = true)
@@ -30,10 +30,10 @@ public class GetAllPersonsUsecase implements GetAllPersonPort {
         Objects.requireNonNull(researchGroupId, "researchGroupId must not be null");
         log.debug("Listing people for research group: {}", researchGroupId);
 
-        if (!researchGroupLookupPort.existsById(researchGroupId)) {
-            throw new ResearchGroupNotFoundException(researchGroupId);
-        }
+        List<UUID> personIds = getAllGroupMembersPort.getAllByResearchGroup(researchGroupId).stream()
+                .map(GroupMember::getPersonId)
+                .toList();
 
-        return repositoryPort.findAllByResearchGroupId(researchGroupId);
+        return repositoryPort.findAllByIds(personIds);
     }
 }

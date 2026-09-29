@@ -1,4 +1,4 @@
-package com.mylab.backend.person.application.port.out;
+package com.mylab.backend.groupmember.application.port.out;
 
 import java.util.UUID;
 

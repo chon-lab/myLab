@@ -25,6 +25,22 @@ Gerenciador de pacotes: **npm**.
    - Contexto, decisões e pendências vão para este arquivo, para `../docs/` ou para a descrição do commit/PR.
 6. **Formulários**: `react-hook-form` + `zod` (schema em `types/<modulo>/*.schema.ts`) com os componentes `Field` do shadcn.
 
+## Cores do sistema
+
+`src/index.css` é a fonte de verdade dos tokens e dos valores, inclusive das variantes do tema escuro. A paleta principal no tema claro é:
+
+| Uso | Token Tailwind | Valor atual |
+| --- | --- | --- |
+| Azul-marinho da marca, cabeçalhos | `bg-brand-navy`, `text-brand-navy` | `#1b2742` |
+| Azul-marinho suave | `bg-brand-navy-soft` | `#273452` |
+| Amarelo da marca, destaques | `bg-brand-yellow`, `text-brand-yellow` | `#f2c94c` |
+| Azul de ações primárias e foco | `bg-primary`, `text-primary`, `ring-ring` | `#2848a8` |
+| Texto principal | `text-foreground` | `#1b2742` |
+| Texto secundário | `text-muted-foreground` | `#5b6474` |
+| Fundo e superfícies | `bg-background`, `bg-card` | branco |
+
+Use as classes semânticas correspondentes e os tokens de `src/index.css`; não copie os valores hexadecimais para componentes. Para bordas, estados destrutivos e outras superfícies, consulte os tokens existentes no mesmo arquivo.
+
 ## Estrutura
 
 ```

@@ -58,6 +58,8 @@ src/
 
 - Módulos seguem o domínio: `auth`, `research-groups`, `people`, `laboratories`, `projects`, `inventory`…
 - Um componente vai para `src/components/` só quando é usado por mais de uma página; senão fica em `pages/<tela>/components/`.
+- `pages/navigation-placeholder/` é uma tela genérica temporária para destinos de navegação ainda sem implementação. Ao criar a tela real, registre a rota específica e substitua esse placeholder para aquele destino; a presença de um item no menu ou de uma rota provisória não significa que a funcionalidade está pronta.
+- `pages/research-group-route/` contém a lógica de entrada e validação das rotas com grupo selecionado. Ela resolve o grupo da URL, fornece seu contexto e monta o `AppShell`; não representa uma tela de negócio. Para acessar o grupo atual dentro de uma tela, use `useResearchGroup()` de `components/layout/research-group-context.ts`.
 
 - Imports sempre pelo alias `@/`.
 - Textos da interface em português (pt-BR).

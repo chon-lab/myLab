@@ -1,18 +1,25 @@
 import { createBrowserRouter, Navigate } from 'react-router'
 
-import { AppShell } from '@/components/layout/app-shell'
 import { RequireAuth } from '@/components/require-auth'
 import { HomePage } from '@/pages/home'
 import { LoginPage } from '@/pages/login'
+import { GroupPlaceholderRoute } from '@/pages/navigation-placeholder'
+import { ResearchGroupIndexRoute, ResearchGroupRoute } from '@/pages/research-group-route'
 
 export const router = createBrowserRouter([
   { path: '/entrar', element: <LoginPage /> },
   {
     element: <RequireAuth />,
     children: [
+      { index: true, element: <ResearchGroupIndexRoute /> },
       {
-        element: <AppShell />,
-        children: [{ index: true, element: <HomePage /> }],
+        path: 'grupos/:researchGroupId',
+        element: <ResearchGroupRoute />,
+        children: [
+          { index: true, element: <Navigate to="painel" replace /> },
+          { path: 'painel', element: <HomePage /> },
+          { path: '*', element: <GroupPlaceholderRoute /> },
+        ],
       },
     ],
   },

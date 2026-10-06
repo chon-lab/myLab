@@ -4,6 +4,7 @@ import { RequireAuth } from '@/components/require-auth'
 import { HomePage } from '@/pages/home'
 import { LoginPage } from '@/pages/login'
 import { GroupPlaceholderRoute } from '@/pages/navigation-placeholder'
+import { ResearchGroupDetailsPage } from '@/pages/research-group-details'
 import { ResearchGroupIndexRoute, ResearchGroupRoute } from '@/pages/research-group-route'
 
 export const router = createBrowserRouter([
@@ -18,6 +19,7 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <Navigate to="painel" replace /> },
           { path: 'painel', element: <HomePage /> },
+          { path: 'dados-do-grupo', element: <ResearchGroupDetailsPage /> },
           { path: '*', element: <GroupPlaceholderRoute /> },
         ],
       },

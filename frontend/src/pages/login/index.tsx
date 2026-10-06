@@ -18,14 +18,14 @@ export function LoginPage() {
   }
 
   return (
-    <main className="grid min-h-svh lg:grid-cols-2">
+    <main className="grid min-h-svh lg:grid-cols-[46fr_54fr]">
       <LoginBrandPanel />
 
       <section
         aria-labelledby="login-title"
         className="flex flex-col justify-center px-4 py-12 sm:px-8"
       >
-        <div className="mx-auto w-full max-w-md">
+        <div className="mx-auto w-full max-w-[25rem]">
           <header className="mb-8">
             <BrandLogo className="mb-10 text-brand-navy lg:hidden" />
             <h1 id="login-title" className="text-3xl font-bold tracking-tight">

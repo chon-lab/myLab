@@ -104,9 +104,14 @@ export function LoginForm({ onSubmit, isPending = false, errorMessage }: LoginFo
               </Field>
             )}
           />
-          <a href="#" className="text-sm font-semibold text-primary hover:underline">
+          <button
+            type="button"
+            disabled
+            title="Recuperação de senha indisponível no momento"
+            className="text-sm font-semibold text-primary disabled:cursor-not-allowed disabled:opacity-60"
+          >
             Esqueci minha senha
-          </a>
+          </button>
         </div>
 
         {errorMessage && (

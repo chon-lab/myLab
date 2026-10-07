@@ -46,12 +46,12 @@ export function IdentificationCard({ group }: { group: ResearchGroup }) {
       <DetailsList items={items} />
       <section
         aria-labelledby="group-repercussions-title"
-        className="border-t border-slate-200 px-5 py-6 sm:px-6"
+        className="border-t border-slate-200 px-4 py-4 sm:px-5"
       >
         <h3 id="group-repercussions-title" className="text-xs font-semibold text-muted-foreground">
           Repercussões
         </h3>
-        <p className="mt-2 text-sm leading-6 whitespace-pre-line text-brand-navy">
+        <p className="mt-1.5 text-sm leading-5 whitespace-pre-line text-brand-navy">
           {group.repercussions || (
             <span className="text-muted-foreground">Nenhuma repercussão cadastrada.</span>
           )}

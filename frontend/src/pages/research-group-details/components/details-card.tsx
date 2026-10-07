@@ -20,7 +20,7 @@ export function DetailsCard({
       aria-labelledby={id}
       className={cn('rounded-xl border border-slate-200 bg-card shadow-sm', className)}
     >
-      <header className="flex min-h-16 items-center justify-between gap-4 border-b border-slate-200 px-5 sm:px-6">
+      <header className="flex min-h-12 items-center justify-between gap-3 border-b border-slate-200 px-4 sm:px-5">
         <h2 id={id} className="text-base font-bold text-brand-navy">
           {title}
         </h2>
@@ -31,13 +31,18 @@ export function DetailsCard({
   )
 }
 
-export function DetailsList({ items }: { items: { label: string; value: ReactNode }[] }) {
+export function DetailsList({ items, compact = false }: { items: { label: string; value: ReactNode }[]; compact?: boolean }) {
   return (
-    <dl className="grid gap-x-6 gap-y-4 px-5 py-6 text-sm sm:grid-cols-[minmax(9rem,12rem)_minmax(0,1fr)] sm:px-6">
+    <dl className={cn(
+      'grid gap-x-4 gap-y-2 px-4 py-3 text-sm sm:px-5',
+      compact
+        ? 'sm:grid-cols-[minmax(6rem,7rem)_minmax(0,1fr)]'
+        : 'sm:grid-cols-[minmax(9rem,10rem)_minmax(0,1fr)]',
+    )}>
       {items.map((item) => (
         <div key={item.label} className="contents">
           <dt className="text-muted-foreground">{item.label}</dt>
-          <dd className="-mt-3 font-medium break-words text-brand-navy sm:mt-0">
+          <dd className="-mt-1 min-w-0 font-medium break-words text-brand-navy sm:mt-0">
             {item.value ?? <span className="font-normal text-muted-foreground">Não informado</span>}
           </dd>
         </div>

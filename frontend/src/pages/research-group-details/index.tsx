@@ -72,16 +72,13 @@ export function ResearchGroupDetailsPage() {
 
   return (
     <section aria-labelledby="group-details-title">
-      <header className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+      <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 id="group-details-title" className="text-3xl font-bold tracking-tight text-brand-navy">
             <span className="inline-block -rotate-1 bg-brand-yellow px-3 py-1">Dados do grupo</span>
           </h1>
-          <p className="mt-4 text-sm text-muted-foreground">
-            Informações do grupo de pesquisa, usadas como base para laboratórios, projetos, membros e estoque.
-          </p>
         </div>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
             size="lg"
@@ -98,15 +95,11 @@ export function ResearchGroupDetailsPage() {
         </div>
       </header>
 
-      <p className="mt-6 flex items-start gap-2.5 rounded-lg bg-primary/8 px-4 py-3 text-sm text-brand-navy">
-        <Info aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-primary" />
-        <span>
-          Os dados de identificação vêm do Diretório dos Grupos de Pesquisa (CNPq/DGP).
-          {lastDgpUpdate && ` Última atualização no DGP em ${lastDgpUpdate}.`}
-        </span>
+      <p className="mt-3 text-sm text-muted-foreground">
+        Informações do grupo de pesquisa, usadas como base para laboratórios, projetos, membros e estoque.
       </p>
 
-      <div role="status" className="empty:hidden mt-4">
+      <div role="status" className="empty:hidden mt-3">
         {feedback === 'saved' && (
           <p className="flex items-start gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
             <CircleCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
@@ -122,16 +115,16 @@ export function ResearchGroupDetailsPage() {
         )}
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] lg:items-start">
-        <IdentificationCard group={group} />
-        <div className="grid gap-6">
-          <AddressCard address={group.address} />
-          <ContactsCard
-            contacts={group.contacts}
-            onAddContact={() => openDialog({ mode: 'add-contact' })}
-            onEditContact={(focusField) => openDialog({ mode: 'edit', focusField })}
-          />
+      <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] lg:items-start">
+        <div className="min-w-0 lg:row-span-2">
+          <IdentificationCard group={group} />
         </div>
+        <AddressCard address={group.address} />
+        <ContactsCard
+          contacts={group.contacts}
+          onAddContact={() => openDialog({ mode: 'add-contact' })}
+          onEditContact={(focusField) => openDialog({ mode: 'edit', focusField })}
+        />
       </div>
 
       <EditResearchGroupDialog

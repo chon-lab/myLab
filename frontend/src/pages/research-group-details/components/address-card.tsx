@@ -17,7 +17,7 @@ export function AddressCard({ address }: { address: GroupAddress | null }) {
   return (
     <DetailsCard id="group-address-title" title="Endereço">
       {hasAddress ? (
-        <DetailsList items={items} />
+        <DetailsList items={items} compact />
       ) : (
         <p className="px-5 py-6 text-sm text-muted-foreground sm:px-6">Nenhum endereço cadastrado.</p>
       )}

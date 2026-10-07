@@ -1,6 +1,7 @@
 import { Globe, Mail, Pencil, Phone, Plus, Printer, type LucideIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import type { GroupContact } from '@/types/research-groups/research-group.types'
 
 import { toExternalUrl, withoutProtocol } from '@/pages/research-group-details/research-group-format'
@@ -44,6 +45,7 @@ export function ContactsCard({
       .filter(({ field }) => contact[field])
       .map((item) => ({ ...item, index, value: contact[item.field] as string })),
   )
+  const compactEntries = entries.length > 4
 
   return (
     <DetailsCard
@@ -59,15 +61,27 @@ export function ContactsCard({
       {entries.length === 0 ? (
         <p className="px-5 py-6 text-sm text-muted-foreground sm:px-6">Nenhum contato cadastrado.</p>
       ) : (
-        <ul className="divide-y divide-slate-200 px-5 py-2 sm:px-6">
+        <ul className={cn(
+          'divide-y divide-slate-200 px-4 py-1 sm:px-5',
+          compactEntries && 'grid grid-cols-2 gap-x-3 divide-y-0 px-3 sm:px-4',
+        )}>
           {entries.map(({ field, label, icon: Icon, index, value }) => (
-            <li key={`${index}-${field}`} className="flex items-center gap-3 py-3.5">
-              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+            <li
+              key={`${index}-${field}`}
+              className={cn(
+                'flex items-center gap-2 py-1',
+                compactEntries && 'min-w-0 gap-1 border-b border-slate-200',
+              )}
+            >
+              <span className={cn(
+                'grid size-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary',
+                compactEntries && 'size-7',
+              )}>
                 <Icon aria-hidden="true" className="size-4" />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-xs text-muted-foreground">{label}</span>
-                <span className="block truncate text-sm font-semibold text-brand-navy">
+                <span className="block truncate text-sm font-semibold text-brand-navy" title={value}>
                   <ContactValue field={field} value={value} />
                 </span>
               </span>
@@ -76,7 +90,7 @@ export function ContactsCard({
                 size="icon"
                 aria-label={`Editar ${label.toLowerCase()} ${value}`}
                 onClick={() => onEditContact(`contacts.${index}.${field}`)}
-                className="text-muted-foreground"
+                className={cn('text-muted-foreground', compactEntries && 'size-7')}
               >
                 <Pencil aria-hidden="true" />
               </Button>

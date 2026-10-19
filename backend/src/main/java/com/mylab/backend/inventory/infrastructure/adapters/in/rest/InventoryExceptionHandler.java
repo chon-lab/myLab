@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import jakarta.servlet.http.HttpServletRequest;
 import com.mylab.backend.inventory.application.exception.InventoryEntryNotFoundException;
+import com.mylab.backend.inventory.application.exception.InventoryEntryDocumentNotFoundException;
 import com.mylab.backend.inventory.application.exception.InventoryExitNotFoundException;
 import com.mylab.backend.inventory.application.exception.InventoryItemNotFoundException;
 import com.mylab.backend.inventory.application.exception.InventoryLaboratoryNotFoundException;
@@ -26,6 +27,7 @@ public class InventoryExceptionHandler {
             InventoryLaboratoryNotFoundException.class,
             ResearchGroupNotFoundException.class,
             InventoryEntryNotFoundException.class,
+            InventoryEntryDocumentNotFoundException.class,
             InventoryExitNotFoundException.class,
             InventoryTransferNotFoundException.class
     })

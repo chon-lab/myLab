@@ -20,11 +20,13 @@ import com.mylab.backend.inventory.application.port.out.InventoryStockQueryPort;
 import com.mylab.backend.inventory.domain.model.*;
 import com.mylab.backend.inventory.infrastructure.adapters.out.persistence.entity.*;
 import com.mylab.backend.inventory.infrastructure.adapters.out.persistence.repository.InventoryMovementJpaRepository;
+import com.mylab.backend.inventory.application.port.out.InventoryEntryDocumentRepositoryPort;
 
 @Component
 @RequiredArgsConstructor
 public class InventoryReadJpaAdapter implements InventoryStockQueryPort, InventoryEntryQueryPort {
     private final InventoryMovementJpaRepository repository;
+    private final InventoryEntryDocumentRepositoryPort documentRepository;
 
     @Override
     public List<InventoryStockItem> findStock(UUID researchGroupId, UUID laboratoryId) {
@@ -97,6 +99,10 @@ public class InventoryReadJpaAdapter implements InventoryStockQueryPort, Invento
                     line.getId(), line.getInventoryItemId(), line.getInventoryItem().getName(),
                     line.getInventoryItem().getItemType(), line.getInventoryItem().getUnitOfMeasure(),
                     line.getQuantity(), line.getUnitCost(), line.getBatchNumber(), line.getManufacturer(),
-                    line.getExpirationDate())).toList());
+                    line.getExpirationDate())).toList(),
+                documentRepository.findAllByEntryId(m.getId()).stream().map(document ->
+                    new InventoryEntryDocumentSummary(document.id(), document.documentNumber(), document.issuer(),
+                            document.documentDate(), document.fileName(), document.contentType(), document.sizeBytes(),
+                            document.checksumSha256(), document.uploadedAt(), document.hasFile())).toList());
     }
 }

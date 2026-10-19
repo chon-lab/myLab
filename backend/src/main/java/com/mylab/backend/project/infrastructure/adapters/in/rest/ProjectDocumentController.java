@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -47,13 +48,13 @@ public class ProjectDocumentController {
         }
 
         UUID documentId;
-        try {
+        try (var content = file.getInputStream()) {
             documentId = uploadProjectDocumentPort.upload(new UploadProjectDocumentInput(
                     projectId,
                     file.getOriginalFilename(),
                     file.getContentType() != null ? file.getContentType() : "application/octet-stream",
                     file.getSize(),
-                    file.getInputStream()));
+                    content));
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to read uploaded file", e);
         }
@@ -71,7 +72,8 @@ public class ProjectDocumentController {
 
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(content.contentType()))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + content.fileName() + "\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
+                        .filename(content.fileName(), java.nio.charset.StandardCharsets.UTF_8).build().toString())
                 .contentLength(content.sizeBytes())
                 .body(content.resource());
     }

@@ -23,9 +23,11 @@ public record InventoryEntryHistoryRecord(
         LocalDateTime reversedAt,
         String reversalReason,
         LocalDateTime createdAt,
-        List<InventoryEntryHistoryItem> items
+        List<InventoryEntryHistoryItem> items,
+        List<InventoryEntryDocumentSummary> documents
 ) {
     public InventoryEntryHistoryRecord {
         items = List.copyOf(items);
+        documents = List.copyOf(documents);
     }
 }

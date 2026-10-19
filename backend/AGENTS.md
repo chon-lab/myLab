@@ -68,7 +68,7 @@ Pessoa: `name` obrigatório; `socialName`, `email`, `phone`, `cpf`, `academicDeg
 | `GET /projects/{projectId}/documents/{documentId}` | Baixa o arquivo binário, com `Content-Disposition: attachment`. |
 | `DELETE /projects/{projectId}/documents/{documentId}` | Remove documento. |
 
-Laboratório: `name` obrigatório, `description`, `status` e `address` opcionais na criação; atualização exige `status`. Status: `ACTIVE`, `INACTIVE`, `MAINTENANCE`. Projeto: criação exige `researchLineId`, `name`, `objective`, `startDate`; aceita `description`, `status`, `endDate`, `knowledgeAreas`. Atualização exige `name`, `objective`, `status`, `startDate`; não altera `researchLineId`. Status: `EM_ANDAMENTO`, `CONCLUIDO`, `CANCELADO`, `SUSPENSO`. O upload está limitado a 20 MB pela configuração Spring; os arquivos de projeto usam armazenamento local. Não há rota própria para listar documentos: os metadados vêm em `ProjectResponse.documents`.
+Laboratório: `name` obrigatório, `description`, `status` e `address` opcionais na criação; atualização exige `status`. Status: `ACTIVE`, `INACTIVE`, `MAINTENANCE`. Projeto: criação exige `researchLineId`, `name`, `objective`, `startDate`; aceita `description`, `status`, `endDate`, `knowledgeAreas`. Atualização exige `name`, `objective`, `status`, `startDate`; não altera `researchLineId`. Status: `EM_ANDAMENTO`, `CONCLUIDO`, `CANCELADO`, `SUSPENSO`. O upload está limitado a 20 MB pela configuração Spring; os binários ficam no MinIO e os metadados em `project_document`. Não há rota própria para listar documentos: os metadados vêm em `ProjectResponse.documents`.
 
 ## Catálogo de itens de estoque
 
@@ -90,6 +90,13 @@ Criação exige `name`, `itemType`, `unitOfMeasure`, `referenceUnitValue`; aceit
 | `POST /research-groups/{groupId}/inventory/entries` | Registra entrada; `CreateInventoryEntryRequest`. |
 | `GET /inventory/entries/{entryId}` | Detalhe da entrada. |
 | `POST /inventory/entries/{entryId}/reverse` | Estorna entrada; corpo `{ "reason": "..." }`. |
+| `GET /inventory/entries/{entryId}/documents` | Lista metadados dos documentos da entrada; os mesmos metadados vêm em `GET /inventory/entries/{entryId}`. |
+| `POST /inventory/entries/{entryId}/documents` | Cria documento somente com metadados; corpo `CreateInventoryEntryDocumentRequest` com pelo menos um campo entre `documentNumber`, `issuer` e `documentDate`. |
+| `POST /inventory/entries/{entryId}/documents/file` | Cria documento com arquivo e metadados opcionais; `multipart/form-data`, campo obrigatório `file`, campos opcionais `documentNumber`, `issuer`, `documentDate`. |
+| `GET /inventory/entries/{entryId}/documents/{documentId}` | Obtém metadados do documento. |
+| `PUT /inventory/entries/{entryId}/documents/{documentId}/file` | Anexa arquivo a um documento criado só com metadados; multipart campo `file`. |
+| `GET /inventory/entries/{entryId}/documents/{documentId}/file` | Baixa o binário do documento. |
+| `DELETE /inventory/entries/{entryId}/documents/{documentId}` | Remove documento e arquivo associado. |
 | `GET /research-groups/{groupId}/inventory/exits` | Histórico de saídas; filtros `laboratoryId`, `type`, `inventoryItemId`, `dateFrom`, `dateTo`. |
 | `POST /research-groups/{groupId}/inventory/exits` | Registra saída; `CreateInventoryExitRequest`. |
 | `GET /inventory/exits/{exitId}` | Detalhe da saída. |
@@ -109,4 +116,4 @@ Saída: `laboratoryId`, `type` (`CONSUMPTION`, `DISPOSAL`, `LOSS`), `occurredAt`
 
 ## Limites atuais
 
-Não há endpoints de login, permissões, documentos de entrada de estoque, empréstimos, devoluções, edição direta de saldo ou vínculo de saídas a projetos. Não deduza implementação apenas porque uma funcionalidade aparece nos planos em `../docs/`.
+Não há endpoints de login, permissões, empréstimos, devoluções, edição direta de saldo ou vínculo de saídas a projetos. Documentos de estoque só podem ser associados a entradas (`movement_type = ENTRY`). Não deduza implementação apenas porque uma funcionalidade aparece nos planos em `../docs/`.

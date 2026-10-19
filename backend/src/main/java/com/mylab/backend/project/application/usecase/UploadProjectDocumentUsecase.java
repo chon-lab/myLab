@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.mylab.backend.project.application.dto.UploadProjectDocumentInput;
 import com.mylab.backend.project.application.exception.ProjectNotFoundException;
 import com.mylab.backend.project.application.port.in.UploadProjectDocumentPort;
-import com.mylab.backend.project.application.port.out.FileStoragePort;
+import com.mylab.backend.shared.application.port.out.FileStoragePort;
 import com.mylab.backend.project.application.port.out.ProjectDocumentRepositoryPort;
 import com.mylab.backend.project.application.port.out.ProjectRepositoryPort;
 import com.mylab.backend.project.domain.model.ProjectDocument;
@@ -38,7 +38,8 @@ public class UploadProjectDocumentUsecase implements UploadProjectDocumentPort {
             throw new ProjectNotFoundException(input.projectId());
         }
 
-        String storedPath = fileStoragePort.store(input.projectId(), input.fileName(), input.content());
+        String storedPath = fileStoragePort.store(
+                input.projectId(), input.fileName(), input.contentType(), input.sizeBytes(), input.content());
 
         ProjectDocument document = ProjectDocument.builder()
                 .id(UUID.randomUUID())
@@ -50,7 +51,16 @@ public class UploadProjectDocumentUsecase implements UploadProjectDocumentPort {
                 .uploadedAt(LocalDateTime.now())
                 .build();
 
-        documentRepositoryPort.save(document);
+        try {
+            documentRepositoryPort.save(document);
+        } catch (RuntimeException exception) {
+            try {
+                fileStoragePort.delete(storedPath);
+            } catch (RuntimeException cleanupException) {
+                exception.addSuppressed(cleanupException);
+            }
+            throw exception;
+        }
         log.info("Document uploaded successfully with ID: {}", document.getId());
         return document.getId();
     }

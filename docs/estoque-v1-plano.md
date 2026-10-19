@@ -10,7 +10,7 @@ Implementar o módulo de estoque focado em cadastro de itens e entradas. Ele con
 - Criar uma entrada com cabeçalho em `inventory_entry`: grupo, laboratório de destino, origem (`PURCHASE` ou `DONATION`), tipo de compra (`FUNDING` ou `OTHER`, obrigatório para compras), nome obrigatório da entidade de origem, data de recebimento, observação e status (`CONFIRMED`, `REVERSED`).
 - Criar linhas em `inventory_entry_item`, permitindo uma única entrada para vários itens de uma nota: item, quantidade positiva, valor unitário histórico obrigatório, lote/fabricante/validade opcionais.
 - O valor do estoque será calculado pelas linhas confirmadas: `quantidade disponível × valor unitário histórico`. Em doações, o valor unitário será uma avaliação estimada; não poderá ser omitido.
-- Criar `inventory_entry_document`, com zero ou mais documentos por entrada: número, emissor, data e arquivo opcionais. Metadados do arquivo incluem nome original, tipo, tamanho, checksum e chave de armazenamento.
+- Criar `inventory_movement_document`, com zero ou mais documentos por entrada: número, emissor, data e arquivo opcionais. Metadados do arquivo incluem nome original, tipo, tamanho, checksum e chave de armazenamento; o binário fica no MinIO.
 - Validar que item e laboratório pertencem ao grupo informado; o laboratório é obrigatório. Não permitir valor ou quantidade zero/negativos.
 - Correções serão feitas por estorno: a entrada permanece no histórico, recebe motivo/data de estorno e deixa de compor saldo e valor. Não haverá exclusão física.
 - Após uma entrada confirmada, unidade e tipo do item ficam protegidos para preservar o histórico; nome, descrição e valor de referência continuam atualizáveis.
@@ -20,8 +20,8 @@ Implementar o módulo de estoque focado em cadastro de itens e entradas. Ele con
 - Expor CRUD do catálogo em `/api/v1/research-groups/{groupId}/inventory/items`, com arquivamento em vez de exclusão quando houver movimentação.
 - Expor criação, consulta e estorno de entradas em `/api/v1/research-groups/{groupId}/inventory/entries`; a criação receberá cabeçalho e lista de linhas.
 - Expor consulta de saldo em `/api/v1/research-groups/{groupId}/inventory/stock`: sem `laboratoryId`, consolidar por item em todo o grupo; com `laboratoryId`, consolidar por item naquele laboratório. Retornar o valor total de cada item e o total monetário do escopo consultado. O histórico de entradas será filtrável por laboratório, origem, item e período.
-- Expor upload e consulta de documentos por entrada via `multipart/form-data`.
-- Adicionar MinIO ao ambiente Docker e criar um adaptador de armazenamento compatível com S3. O MariaDB guardará apenas metadados e a chave do objeto, nunca Base64 ou binários de nota.
+- Expor cadastro de metadados, upload, consulta e download de documentos por entrada. Um documento pode ser criado sem arquivo e receber o arquivo depois.
+- Adicionar MinIO AIStor Free ao ambiente Docker e usar o adaptador Java do MinIO. O MariaDB guardará apenas metadados e a chave do objeto, nunca Base64 ou binários de nota.
 
 ## Fluxo da aplicação
 

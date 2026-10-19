@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.mylab.backend.project.application.exception.ProjectDocumentNotFoundException;
 import com.mylab.backend.project.application.port.in.DeleteProjectDocumentPort;
-import com.mylab.backend.project.application.port.out.FileStoragePort;
+import com.mylab.backend.shared.application.port.out.FileStoragePort;
 import com.mylab.backend.project.application.port.out.ProjectDocumentRepositoryPort;
 import com.mylab.backend.project.domain.model.ProjectDocument;
 

@@ -77,7 +77,7 @@ export function ResearchGroupDetailsPage() {
 
   return (
     <section aria-labelledby="group-details-title">
-      <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <header className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between md:gap-4">
         <div>
           <h1 id="group-details-title" className="text-3xl font-bold tracking-tight text-brand-navy">
             <span className="inline-block -rotate-1 bg-brand-yellow px-3 py-1">Dados do grupo</span>
@@ -100,11 +100,11 @@ export function ResearchGroupDetailsPage() {
         </div>
       </header>
 
-      <p className="mt-3 text-sm text-muted-foreground">
+      <p className="mt-4 text-sm text-muted-foreground sm:mt-3">
         Informações do grupo de pesquisa, usadas como base para laboratórios, projetos, membros e estoque.
       </p>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] lg:items-start">
+      <div className="mt-5 grid gap-5 lg:mt-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] lg:items-start lg:gap-4">
         <div className="min-w-0 lg:row-span-2">
           <IdentificationCard group={group} />
         </div>

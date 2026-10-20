@@ -1,3 +1,4 @@
+import { publishToast } from '@/lib/api-error-toasts'
 import { authService } from '@/services/auth/auth.service'
 
 export type ApiErrorResponse = {
@@ -32,6 +33,26 @@ async function toApiError(response: Response) {
   )
 }
 
+function publishSuccessMessages(body: unknown) {
+  if (typeof body !== 'object' || body === null) return
+
+  const response = body as { message?: unknown; messages?: unknown }
+  const messages = [
+    ...(typeof response.message === 'string' ? [response.message] : []),
+    ...(Array.isArray(response.messages)
+      ? response.messages.filter((message): message is string => typeof message === 'string')
+      : []),
+  ].map((message) => message.trim()).filter(Boolean)
+
+  if (messages.length > 0) {
+    publishToast({
+      kind: 'success',
+      title: 'Mensagem da API',
+      description: messages.join('\n'),
+    })
+  }
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers)
   const token = authService.getAccessToken()
@@ -46,7 +67,9 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (!response.ok) throw await toApiError(response)
   if (response.status === 204) return undefined as T
 
-  return (await response.json()) as T
+  const body = await response.json()
+  publishSuccessMessages(body)
+  return body as T
 }
 
 const withBody = (body: unknown) =>

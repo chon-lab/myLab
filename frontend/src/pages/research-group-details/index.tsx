@@ -1,9 +1,10 @@
 import { useState, type ReactNode } from 'react'
-import { CircleCheck, Info, Pencil, RotateCcw } from 'lucide-react'
+import { Pencil, RotateCcw } from 'lucide-react'
 
 import { useResearchGroup } from '@/components/layout/research-group-context'
 import { Button } from '@/components/ui/button'
 import { ApiError } from '@/lib/api-client'
+import { publishToast } from '@/lib/api-error-toasts'
 import { useResearchGroupQuery } from '@/queries/research-groups/research-groups.queries'
 import { AddressCard } from '@/pages/research-group-details/components/address-card'
 import { ContactsCard } from '@/pages/research-group-details/components/contacts-card'
@@ -12,7 +13,6 @@ import {
   type EditDialogIntent,
 } from '@/pages/research-group-details/components/edit-research-group-dialog'
 import { IdentificationCard } from '@/pages/research-group-details/components/identification-card'
-import { formatDate } from '@/pages/research-group-details/research-group-format'
 
 function PageState({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -32,7 +32,6 @@ export function ResearchGroupDetailsPage() {
     open: false,
     intent: { mode: 'edit' },
   })
-  const [feedback, setFeedback] = useState<'saved' | 'cnpq-unavailable' | null>(null)
 
   if (isPending) {
     return (
@@ -63,11 +62,17 @@ export function ResearchGroupDetailsPage() {
     )
   }
 
-  const lastDgpUpdate = formatDate(group.lastSubmittedAt)
-
   function openDialog(intent: EditDialogIntent) {
-    setFeedback(null)
     setDialog({ open: true, intent })
+  }
+
+  function showCnpqUnavailable() {
+    publishToast({
+      kind: 'info',
+      title: 'Atualização pelo CNPq indisponível',
+      description:
+        'A API do myLab ainda não permite importar dados do DGP. Use “Editar dados” para fazer alterações manualmente.',
+    })
   }
 
   return (
@@ -83,7 +88,7 @@ export function ResearchGroupDetailsPage() {
             variant="outline"
             size="lg"
             className="h-10 bg-card px-4 font-semibold"
-            onClick={() => setFeedback('cnpq-unavailable')}
+            onClick={showCnpqUnavailable}
           >
             <RotateCcw aria-hidden="true" />
             Atualizar pelo CNPq
@@ -98,22 +103,6 @@ export function ResearchGroupDetailsPage() {
       <p className="mt-3 text-sm text-muted-foreground">
         Informações do grupo de pesquisa, usadas como base para laboratórios, projetos, membros e estoque.
       </p>
-
-      <div role="status" className="empty:hidden mt-3">
-        {feedback === 'saved' && (
-          <p className="flex items-start gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-            <CircleCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-            Dados do grupo atualizados.
-          </p>
-        )}
-        {feedback === 'cnpq-unavailable' && (
-          <p className="flex items-start gap-2.5 rounded-lg border border-brand-yellow bg-brand-yellow/15 px-4 py-3 text-sm text-brand-navy">
-            <Info aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-            A atualização pelo CNPq ainda não está disponível: a API do myLab não tem um endpoint de
-            importação do DGP. Por enquanto, use “Editar dados” para corrigir as informações manualmente.
-          </p>
-        )}
-      </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)] lg:items-start">
         <div className="min-w-0 lg:row-span-2">
@@ -134,7 +123,11 @@ export function ResearchGroupDetailsPage() {
         onOpenChange={(open) => setDialog((current) => ({ ...current, open }))}
         onSaved={() => {
           setDialog((current) => ({ ...current, open: false }))
-          setFeedback('saved')
+          publishToast({
+            kind: 'success',
+            title: 'Dados do grupo atualizados',
+            description: 'As alterações foram salvas com sucesso.',
+          })
         }}
       />
     </section>

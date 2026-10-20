@@ -1,8 +1,11 @@
-import { QueryClient } from '@tanstack/react-query'
+import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query'
 
 import { ApiError } from '@/lib/api-client'
+import { publishApiErrorToast } from '@/lib/api-error-toasts'
 
 export const queryClient = new QueryClient({
+  queryCache: new QueryCache({ onError: publishApiErrorToast }),
+  mutationCache: new MutationCache({ onError: publishApiErrorToast }),
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,

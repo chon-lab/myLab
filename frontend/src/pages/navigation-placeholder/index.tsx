@@ -7,7 +7,6 @@ const pages = [
   ['membros', 'Membros'],
   ['laboratorios', 'Laboratórios'],
   ['projetos', 'Projetos'],
-  ['estoque/saldo', 'Saldo do estoque'],
   ['estoque/itens', 'Itens do estoque'],
   ['estoque/entradas', 'Entradas de estoque'],
   ['estoque/saidas', 'Saídas de estoque'],

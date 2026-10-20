@@ -12,7 +12,6 @@ import {
   type EditDialogIntent,
 } from '@/pages/research-group-details/components/edit-research-group-dialog'
 import { IdentificationCard } from '@/pages/research-group-details/components/identification-card'
-import { formatDate } from '@/pages/research-group-details/research-group-format'
 
 function PageState({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -62,8 +61,6 @@ export function ResearchGroupDetailsPage() {
       </PageState>
     )
   }
-
-  const lastDgpUpdate = formatDate(group.lastSubmittedAt)
 
   function openDialog(intent: EditDialogIntent) {
     setFeedback(null)

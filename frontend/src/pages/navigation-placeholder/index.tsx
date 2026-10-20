@@ -4,7 +4,6 @@ import { useResearchGroupsQuery } from '@/queries/research-groups/research-group
 import type { ResearchGroup } from '@/types/research-groups/research-group.types'
 
 const pages = [
-  ['linhas-de-pesquisa', 'Linhas de pesquisa'],
   ['membros', 'Membros'],
   ['laboratorios', 'Laboratórios'],
   ['projetos', 'Projetos'],

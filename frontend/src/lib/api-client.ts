@@ -46,7 +46,15 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (!response.ok) throw await toApiError(response)
   if (response.status === 204) return undefined as T
 
-  return (await response.json()) as T
+  const text = await response.text()
+
+  if (!text) {
+    const location = response.headers.get('Location')
+    const createdId = location?.split('/').filter(Boolean).pop()
+    return createdId as T
+  }
+
+  return JSON.parse(text) as T
 }
 
 const withBody = (body: unknown) =>

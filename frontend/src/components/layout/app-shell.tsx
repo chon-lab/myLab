@@ -16,8 +16,10 @@ import {
   Menu,
   Search,
   UsersRound,
+  X,
 } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
+import { Dialog as DialogPrimitive } from 'radix-ui'
 import { NavLink, Outlet, useLocation, useNavigate, useParams } from 'react-router'
 
 import { BrandLogo } from '@/components/brand-logo'
@@ -70,11 +72,13 @@ function SidebarNavigation({
   selectedGroup,
   onSelectGroup,
   onLogout,
+  onNavigate,
 }: {
   groups: ResearchGroup[]
   selectedGroup: ResearchGroup
   onSelectGroup: (group: ResearchGroup) => void
   onLogout: () => void
+  onNavigate: () => void
 }) {
   const { user } = useAuth()
   const { researchGroupId } = useParams()
@@ -109,7 +113,13 @@ function SidebarNavigation({
             <DropdownMenuLabel>Grupos de pesquisa</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {groups.map((group) => (
-              <DropdownMenuItem key={group.id} onSelect={() => onSelectGroup(group)}>
+              <DropdownMenuItem
+                key={group.id}
+                onSelect={() => {
+                  onNavigate()
+                  onSelectGroup(group)
+                }}
+              >
                 <span className="grid size-7 place-items-center rounded-md bg-brand-yellow/30 text-xs font-bold text-brand-navy">
                   {initials(group.name)}
                 </span>
@@ -127,7 +137,7 @@ function SidebarNavigation({
         <ul className="space-y-1">
           {groupNavigation.map((item) => (
             <li key={item.path}>
-              <SidebarLink item={item} basePath={basePath} />
+              <SidebarLink item={item} basePath={basePath} onNavigate={onNavigate} />
             </li>
           ))}
         </ul>
@@ -138,7 +148,7 @@ function SidebarNavigation({
         <ul className="space-y-1">
           {inventoryNavigation.map((item) => (
             <li key={item.path}>
-              <SidebarLink item={item} basePath={basePath} />
+              <SidebarLink item={item} basePath={basePath} onNavigate={onNavigate} />
             </li>
           ))}
         </ul>
@@ -161,7 +171,10 @@ function SidebarNavigation({
               size="icon"
               className="size-9 text-white/60 hover:bg-white/10 hover:text-white"
               aria-label="Sair da conta"
-              onClick={onLogout}
+              onClick={() => {
+                onNavigate()
+                onLogout()
+              }}
             >
               <LogOut aria-hidden="true" className="size-4" />
             </Button>
@@ -172,20 +185,21 @@ function SidebarNavigation({
   )
 }
 
-function SidebarLink({ item, basePath }: {
+function SidebarLink({ item, basePath, onNavigate }: {
   item: (typeof navigationItems)[number]
   basePath: string
+  onNavigate: () => void
 }) {
   const Icon = item.icon
 
   return (
-    <NavItemLink to={`${basePath}/${item.path}`} label={item.label} icon={<Icon aria-hidden="true" className="size-[1.05rem]" />} />
+    <NavItemLink to={`${basePath}/${item.path}`} label={item.label} icon={<Icon aria-hidden="true" className="size-[1.05rem]" />} onNavigate={onNavigate} />
   )
 }
 
-function NavItemLink({ to, label, icon }: { to: string; label: string; icon: ReactNode }) {
+function NavItemLink({ to, label, icon, onNavigate }: { to: string; label: string; icon: ReactNode; onNavigate: () => void }) {
   return (
-    <NavLink to={to} className={({ isActive }) => cn(
+    <NavLink to={to} onClick={onNavigate} className={({ isActive }) => cn(
       'relative flex min-h-10 items-center gap-3 rounded-lg px-3 text-[0.82rem] font-medium text-white/65 transition-colors hover:bg-white/5 hover:text-white [@media(max-height:760px)]:min-h-8',
       isActive && 'bg-white/10 text-white',
     )}>
@@ -212,6 +226,7 @@ export function AppShell({
   const navigate = useNavigate()
   const location = useLocation()
   const { researchGroupId } = useParams()
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
   const currentItem = navigationItems.find((item) => location.pathname.endsWith(`/${item.path}`))
   const pageTitle = currentItem?.label ?? 'Painel'
 
@@ -225,6 +240,7 @@ export function AppShell({
   }
 
   return (
+    <DialogPrimitive.Root open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
     <div className="min-h-svh bg-slate-50 lg:flex lg:h-svh lg:overflow-hidden">
       <aside className="hidden w-[17rem] shrink-0 flex-col bg-brand-navy text-white lg:flex lg:min-h-0">
         <SidebarNavigation
@@ -232,6 +248,7 @@ export function AppShell({
           selectedGroup={selectedGroup}
           onSelectGroup={selectGroup}
           onLogout={() => logout.mutate()}
+          onNavigate={() => {}}
         />
       </aside>
 
@@ -239,20 +256,41 @@ export function AppShell({
         <header className="sticky top-0 z-20 border-b border-slate-200 bg-white">
           <div className="flex min-h-[4.5rem] items-center justify-between gap-4 px-4 sm:px-8">
             <div className="flex min-w-0 items-center gap-3">
-              <details className="group relative lg:hidden">
-                <summary className="grid size-10 list-none place-items-center rounded-lg border border-slate-200 text-brand-navy [&::-webkit-details-marker]:hidden">
+              <DialogPrimitive.Trigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="size-10 border-slate-200 text-brand-navy lg:hidden"
+                  aria-label="Abrir navegação"
+                  aria-expanded={mobileSidebarOpen}
+                  aria-controls="mobile-sidebar"
+                >
                   <Menu aria-hidden="true" className="size-5" />
-                  <span className="sr-only">Abrir navegação</span>
-                </summary>
-                <aside className="absolute left-0 top-12 z-30 flex max-h-[calc(100svh-5rem)] w-[17rem] flex-col overflow-y-auto rounded-xl bg-brand-navy text-white shadow-xl">
+                </Button>
+              </DialogPrimitive.Trigger>
+              <DialogPrimitive.Portal>
+                <DialogPrimitive.Overlay className="fixed inset-0 z-40 bg-black/30 data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 lg:hidden" />
+                <DialogPrimitive.Content id="mobile-sidebar" className="fixed inset-y-0 left-0 z-50 flex h-svh w-[17rem] max-w-[calc(100%-2rem)] flex-col overflow-y-auto bg-brand-navy text-white shadow-2xl outline-none data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left lg:hidden">
+                  <DialogPrimitive.Title className="sr-only">Navegação do myLab</DialogPrimitive.Title>
+                  <DialogPrimitive.Close asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Fechar navegação"
+                      className="absolute right-3 top-3 z-10 text-white/70 hover:bg-white/10 hover:text-white"
+                    >
+                      <X aria-hidden="true" className="size-4" />
+                    </Button>
+                  </DialogPrimitive.Close>
                   <SidebarNavigation
                     groups={groups}
                     selectedGroup={selectedGroup}
                     onSelectGroup={selectGroup}
                     onLogout={() => logout.mutate()}
+                    onNavigate={() => setMobileSidebarOpen(false)}
                   />
-                </aside>
-              </details>
+                </DialogPrimitive.Content>
+              </DialogPrimitive.Portal>
               <nav aria-label="Trilha de navegação" className="flex min-w-0 items-center gap-2 text-sm">
                 <span className="hidden text-muted-foreground sm:inline">{selectedGroup.name}</span>
                 <ChevronRight aria-hidden="true" className="hidden size-4 text-slate-300 sm:inline" />
@@ -292,5 +330,6 @@ export function AppShell({
         </main>
       </div>
     </div>
+    </DialogPrimitive.Root>
   )
 }

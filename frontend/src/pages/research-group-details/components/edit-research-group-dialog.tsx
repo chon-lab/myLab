@@ -50,17 +50,6 @@ type TextFieldPath = {
 
 export type EditDialogIntent = { mode: 'edit'; focusField?: TextFieldPath } | { mode: 'add-contact' }
 
-function saveErrorMessage(error: unknown) {
-  if (!(error instanceof ApiError)) return 'Não foi possível salvar as alterações. Tente novamente.'
-  if (error.status === 404) return 'Este grupo não foi encontrado. Ele pode ter sido removido.'
-  if (error.status === 409) return 'Os dados informados conflitam com informações já cadastradas.'
-  if (error.status === 400 && Object.keys(error.fieldErrors).length > 0) {
-    return 'Revise os campos destacados e tente novamente.'
-  }
-  if (error.status === 400) return 'O servidor recusou os dados informados. Revise os campos e tente novamente.'
-  return 'Não foi possível salvar as alterações. Tente novamente.'
-}
-
 function TextField({
   control,
   name,
@@ -112,7 +101,6 @@ function EditResearchGroupForm({
   })
   const contacts = useFieldArray({ control, name: 'contacts' })
   const updateGroup = useUpdateResearchGroupMutation(group.id)
-  const [formError, setFormError] = useState<string | null>(null)
   const initialFocus: TextFieldPath =
     intent.mode === 'add-contact'
       ? `contacts.${initialValues.contacts.length}.phone`
@@ -123,7 +111,6 @@ function EditResearchGroupForm({
   }, [initialFocus, setFocus])
 
   function submit(values: ResearchGroupFormValues) {
-    setFormError(null)
     updateGroup.mutate(toUpdateResearchGroupRequest(values, group), {
       onSuccess: onSaved,
       onError: (error) => {
@@ -132,7 +119,6 @@ function EditResearchGroupForm({
             setError(toFormFieldPath(apiField) as FormPath, { type: 'server', message }),
           )
         }
-        setFormError(saveErrorMessage(error))
       },
     })
   }
@@ -312,11 +298,6 @@ function EditResearchGroupForm({
       </div>
 
       <DialogFooter className="mx-0 mb-0 gap-3 px-6 py-4 sm:items-center">
-        {formError && (
-          <p role="alert" className="mr-auto text-sm text-destructive">
-            {formError}
-          </p>
-        )}
         <DialogClose asChild>
           <Button type="button" variant="outline" disabled={updateGroup.isPending}>
             Cancelar

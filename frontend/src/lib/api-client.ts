@@ -1,3 +1,4 @@
+import { publishToast } from '@/lib/api-error-toasts'
 import { authService } from '@/services/auth/auth.service'
 
 export type ApiErrorResponse = {
@@ -32,6 +33,26 @@ async function toApiError(response: Response) {
   )
 }
 
+function publishSuccessMessages(body: unknown) {
+  if (typeof body !== 'object' || body === null) return
+
+  const response = body as { message?: unknown; messages?: unknown }
+  const messages = [
+    ...(typeof response.message === 'string' ? [response.message] : []),
+    ...(Array.isArray(response.messages)
+      ? response.messages.filter((message): message is string => typeof message === 'string')
+      : []),
+  ].map((message) => message.trim()).filter(Boolean)
+
+  if (messages.length > 0) {
+    publishToast({
+      kind: 'success',
+      title: 'Mensagem da API',
+      description: messages.join('\n'),
+    })
+  }
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers)
   const token = authService.getAccessToken()
@@ -51,10 +72,12 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (!text) {
     const location = response.headers.get('Location')
     const createdId = location?.split('/').filter(Boolean).pop()
-    return createdId as T
+    return (createdId ?? undefined) as T
   }
 
-  return JSON.parse(text) as T
+  const body = JSON.parse(text) as unknown
+  publishSuccessMessages(body)
+  return body as T
 }
 
 const withBody = (body: unknown) =>

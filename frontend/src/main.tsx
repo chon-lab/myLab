@@ -7,11 +7,13 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { queryClient } from '@/lib/query-client'
 import { router } from '@/app/router'
 import { RouterProvider } from 'react-router'
+import { ApiErrorToaster } from '@/components/layout/api-error-toaster'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
+      <ApiErrorToaster />
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   </StrictMode>,

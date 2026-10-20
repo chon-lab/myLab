@@ -34,7 +34,7 @@ export function DetailsCard({
 export function DetailsList({ items, compact = false }: { items: { label: string; value: ReactNode }[]; compact?: boolean }) {
   return (
     <dl className={cn(
-      'grid gap-x-4 gap-y-2 px-4 py-3 text-sm sm:px-5',
+      'grid gap-x-4 gap-y-3 px-4 py-4 text-sm sm:gap-y-2 sm:px-5 sm:py-3',
       compact
         ? 'sm:grid-cols-[minmax(6rem,7rem)_minmax(0,1fr)]'
         : 'sm:grid-cols-[minmax(9rem,10rem)_minmax(0,1fr)]',

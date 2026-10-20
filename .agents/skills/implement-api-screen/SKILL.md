@@ -9,6 +9,14 @@ Leia `frontend/AGENTS.md` para as regras obrigatórias de código, acessibilidad
 
 Para o visual da tela, siga a seção **Cores do sistema** de `frontend/AGENTS.md`. A paleta usa azul-marinho (`brand-navy`), amarelo (`brand-yellow`) e azul para ações primárias (`primary`); `foreground` e `muted-foreground` definem a hierarquia de texto. Use classes Tailwind desses tokens, inclusive nos estados de carregamento, erro e vazio. Consulte `frontend/src/index.css` para os valores atuais e variantes de tema; não fixe cores hexadecimais nos componentes.
 
+## Responsividade e mobile
+
+- Toda tela deve funcionar bem em celulares, tablets e desktops. Comece pelo layout estreito e amplie com breakpoints Tailwind; evite larguras, alturas e posicionamentos fixos que causem cortes ou rolagem horizontal da página.
+- Em larguras pequenas, tabelas de dados devem virar uma lista de cards por registro. Cada card precisa identificar os campos com rótulos, manter a ordem e a hierarquia das informações e preservar todas as ações disponíveis na linha desktop. Mantenha a tabela para telas maiores e evite exigir rolagem horizontal para ler registros.
+- Use os mesmos dados e a mesma lógica nas apresentações desktop e mobile. Garanta que apenas uma versão seja exposta visualmente e à acessibilidade em cada breakpoint.
+- Em mobile, formulários devem fluir em uma coluna, textos longos devem quebrar sem alargar o layout e ações devem continuar visíveis e confortáveis para toque. Modais e drawers devem caber na viewport e rolar internamente quando o conteúdo for maior.
+- Revise a tela em uma largura estreita de celular e em desktop. Corrija conteúdo cortado, sobreposição, controles difíceis de tocar e espaçamento que comprometa a leitura.
+
 ## Fluxo de implementação
 
 1. Identifique o grupo/laboratório/projeto necessário para a tela e como ela receberá esses IDs pela rota ou pelo contexto existente. Não invente endpoints nem dados de sessão para obtê-los. Se a navegação atual não fornece o ID, ajuste a rota e o fluxo de seleção de forma coerente.

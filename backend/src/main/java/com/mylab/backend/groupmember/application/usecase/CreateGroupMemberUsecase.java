@@ -21,6 +21,8 @@ import com.mylab.backend.groupmember.application.port.out.PersonLookupPort;
 import com.mylab.backend.groupmember.application.port.out.ResearchGroupLookupPort;
 import com.mylab.backend.groupmember.application.port.out.ResearchLineLookupPort;
 import com.mylab.backend.groupmember.domain.model.GroupMember;
+import com.mylab.backend.groupmember.domain.model.GroupMemberRole;
+import com.mylab.backend.groupmember.domain.exception.InvalidGroupMemberException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +43,7 @@ public class CreateGroupMemberUsecase implements CreateGroupMemberPort {
         Objects.requireNonNull(input, "input must not be null");
         Objects.requireNonNull(input.researchGroupId(), "researchGroupId must not be null");
         Objects.requireNonNull(input.personId(), "personId must not be null");
+        Objects.requireNonNull(input.role(), "role must not be null");
 
         log.info(
                 "Creating or reactivating group member for person {} in research group {}",
@@ -55,6 +58,8 @@ public class CreateGroupMemberUsecase implements CreateGroupMemberPort {
         if (!personLookupPort.existsById(input.personId())) {
             throw new PersonNotFoundException(input.personId());
         }
+
+        validateRoleRequirements(input.personId(), input.role());
 
         LocalDateTime now = LocalDateTime.now();
 
@@ -71,7 +76,7 @@ public class CreateGroupMemberUsecase implements CreateGroupMemberPort {
             Set<UUID> researchLineIds = input.researchLineIds() != null
                     ? validateResearchLineIds(input.researchLineIds(), input.researchGroupId())
                     : member.getResearchLineIds();
-            member.update(true, researchLineIds, now);
+            member.update(true, input.role(), researchLineIds, now);
             repositoryPort.save(member);
             log.info("Group member reactivated with ID: {}", member.getId());
             return member.getId();
@@ -84,6 +89,7 @@ public class CreateGroupMemberUsecase implements CreateGroupMemberPort {
                 .personId(input.personId())
                 .researchGroupId(input.researchGroupId())
                 .active(true)
+                .role(input.role())
                 .researchLineIds(researchLineIds)
                 .createdAt(now)
                 .updatedAt(now)
@@ -107,5 +113,11 @@ public class CreateGroupMemberUsecase implements CreateGroupMemberPort {
             validated.add(researchLineId);
         }
         return Set.copyOf(validated);
+    }
+
+    private void validateRoleRequirements(UUID personId, GroupMemberRole role) {
+        if (role == GroupMemberRole.PARTNER && !personLookupPort.hasCpf(personId)) {
+            throw new InvalidGroupMemberException("cpf is required for partner members");
+        }
     }
 }

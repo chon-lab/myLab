@@ -5,10 +5,14 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import com.mylab.backend.groupmember.domain.model.GroupMemberRole;
+
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
@@ -49,6 +53,10 @@ public class GroupMemberEntity {
 
     @Column(nullable = false)
     private boolean active;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 32)
+    private GroupMemberRole role;
 
     @ElementCollection
     @CollectionTable(

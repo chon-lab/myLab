@@ -4,4 +4,5 @@ import java.util.UUID;
 
 public interface PersonLookupPort {
     boolean existsById(UUID personId);
+    boolean hasCpf(UUID personId);
 }

@@ -48,7 +48,7 @@ Corpos de criação/atualização exigem `name` e `objective`; aceitam `keywords
 | `GET /people/{personId}/members` | Lista vínculos da pessoa. |
 | `GET /members/{id}` | Obtém vínculo pelo ID próprio. |
 
-Pessoa: `name` obrigatório; `socialName`, `email`, `phone`, `cpf`, `academicDegree` e `areasOfExpertise` opcionais. A criação também aceita `researchLineIds`. Vínculo: criação exige `personId` e aceita `researchLineIds`; PATCH aceita `active` e `researchLineIds`. `GroupMemberResponse` traz `id`, `personId`, `researchGroupId`, `active`, linhas e timestamps. Não existe `DELETE /members`.
+Pessoa: `name` e `role` obrigatórios na criação; `socialName`, `email`, `phone`, `cpf`, `academicDegree` e `areasOfExpertise` opcionais, exceto que CPF é obrigatório para `PARTNER`. `role` representa o perfil do vínculo e aceita `ADMIN`, `RESPONSIBLE`, `STUDENT` ou `PARTNER`. A criação também aceita `researchLineIds` e cria pessoa e vínculo na mesma transação. Vínculo: criação exige `personId` e `role`, aceita `researchLineIds`; PATCH aceita `active`, `role` e `researchLineIds`. `GroupMemberResponse` traz `id`, `personId`, `researchGroupId`, `active`, `role`, linhas e timestamps. Vínculos existentes antes da migração V18 ficam com `role` nulo até serem editados. Não existe `DELETE /members`.
 
 ## Laboratórios, projetos e documentos
 

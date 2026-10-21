@@ -294,6 +294,12 @@ export function AppShell({
               <nav aria-label="Trilha de navegação" className="flex min-w-0 items-center gap-2 text-sm">
                 <span className="hidden text-muted-foreground sm:inline">{selectedGroup.name}</span>
                 <ChevronRight aria-hidden="true" className="hidden size-4 text-slate-300 sm:inline" />
+                {currentItem?.path.startsWith('estoque/') && (
+                  <>
+                    <span className="hidden text-muted-foreground sm:inline">Estoque</span>
+                    <ChevronRight aria-hidden="true" className="hidden size-4 text-slate-300 sm:inline" />
+                  </>
+                )}
                 <span className="truncate font-semibold text-brand-navy" aria-current="page">{pageTitle}</span>
               </nav>
             </div>

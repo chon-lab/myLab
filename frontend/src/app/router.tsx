@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router'
 
 import { RequireAuth } from '@/components/require-auth'
 import { HomePage } from '@/pages/home'
+import { InventoryStockPage } from '@/pages/inventory-stock'
 import { LoginPage } from '@/pages/login'
 import { GroupPlaceholderRoute } from '@/pages/navigation-placeholder'
 import { ResearchGroupDetailsPage } from '@/pages/research-group-details'
@@ -24,6 +25,7 @@ export const router = createBrowserRouter([
           { path: 'dados-do-grupo', element: <ResearchGroupDetailsPage /> },
           { path: 'linhas-de-pesquisa', element: <ResearchLinesPage /> },
           { path: 'membros', element: <MembersPage /> },
+          { path: 'estoque/saldo', element: <InventoryStockPage /> },
           { path: '*', element: <GroupPlaceholderRoute /> },
         ],
       },

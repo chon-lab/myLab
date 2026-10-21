@@ -11,6 +11,8 @@ import type {
   CreateInventoryEntryRequest,
   CreateInventoryExitRequest,
   CreateInventoryTransferRequest,
+  InventoryEntryDocumentUploadRequest,
+  InventoryEntryFilters,
   InventoryLaboratory,
   InventoryLaboratoryStockBreakdown,
   InventoryMovementFilters,
@@ -50,6 +52,22 @@ export const inventoryKeys = {
   entries: () => [...inventoryKeys.all, 'entries'] as const,
   entriesByGroup: (researchGroupId: string) =>
     [...inventoryKeys.entries(), researchGroupId] as const,
+  entriesByGroupWithFilters: (
+    researchGroupId: string,
+    filters: InventoryEntryFilters = {},
+  ) =>
+    [
+      ...inventoryKeys.entriesByGroup(researchGroupId),
+      {
+        laboratoryId: filters.laboratoryId ?? null,
+        source: filters.source ?? null,
+        inventoryItemId: filters.inventoryItemId ?? null,
+        dateFrom: filters.dateFrom ?? null,
+        dateTo: filters.dateTo ?? null,
+      },
+    ] as const,
+  entryDocuments: (entryId: string | null) =>
+    [...inventoryKeys.entries(), 'documents', entryId] as const,
   exits: () => [...inventoryKeys.all, 'exits'] as const,
   exitsByGroup: (researchGroupId: string) =>
     [...inventoryKeys.exits(), researchGroupId] as const,
@@ -88,6 +106,15 @@ export const inventoryMovementsQueryOptions = (
     queryFn: () => inventoryService.listMovements(researchGroupId, filters),
   })
 
+export const inventoryEntriesQueryOptions = (
+  researchGroupId: string,
+  filters: InventoryEntryFilters = {},
+) =>
+  queryOptions({
+    queryKey: inventoryKeys.entriesByGroupWithFilters(researchGroupId, filters),
+    queryFn: () => inventoryService.listEntries(researchGroupId, filters),
+  })
+
 export function useInventoryStockQuery(
   researchGroupId: string,
   laboratoryId?: string | null,
@@ -97,6 +124,25 @@ export function useInventoryStockQuery(
 
 export function useInventoryItemsQuery(researchGroupId: string) {
   return useQuery(inventoryItemsByGroupQueryOptions(researchGroupId))
+}
+
+export function useInventoryEntriesQuery(
+  researchGroupId: string,
+  filters: InventoryEntryFilters = {},
+  enabled = true,
+) {
+  return useQuery({
+    ...inventoryEntriesQueryOptions(researchGroupId, filters),
+    enabled,
+  })
+}
+
+export function useInventoryEntryDocumentsQuery(entryId: string | null) {
+  return useQuery({
+    queryKey: inventoryKeys.entryDocuments(entryId),
+    queryFn: () => inventoryService.listEntryDocuments(entryId!),
+    enabled: entryId !== null,
+  })
 }
 
 export function useInventoryLaboratoriesQuery(researchGroupId: string) {
@@ -188,6 +234,44 @@ export function useReverseInventoryEntryMutation(researchGroupId: string) {
       body: ReverseInventoryMovementRequest
     }) => inventoryService.reverseEntry(entryId, body),
     onSuccess: () => invalidateInventoryGroupBalance(queryClient, researchGroupId),
+  })
+}
+
+export function useUploadInventoryEntryDocumentMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({
+      entryId,
+      body,
+    }: {
+      entryId: string
+      body: InventoryEntryDocumentUploadRequest
+    }) => inventoryService.uploadEntryDocument(entryId, body),
+    onSuccess: (_document, { entryId }) => {
+      void queryClient.invalidateQueries({ queryKey: inventoryKeys.entryDocuments(entryId) })
+      void queryClient.invalidateQueries({ queryKey: inventoryKeys.entries() })
+    },
+  })
+}
+
+export function useDownloadInventoryEntryDocumentMutation() {
+  return useMutation({
+    mutationFn: ({ entryId, documentId }: { entryId: string; documentId: string }) =>
+      inventoryService.downloadEntryDocument(entryId, documentId),
+  })
+}
+
+export function useDeleteInventoryEntryDocumentMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ entryId, documentId }: { entryId: string; documentId: string }) =>
+      inventoryService.deleteEntryDocument(entryId, documentId),
+    onSuccess: (_result, { entryId }) => {
+      void queryClient.invalidateQueries({ queryKey: inventoryKeys.entryDocuments(entryId) })
+      void queryClient.invalidateQueries({ queryKey: inventoryKeys.entries() })
+    },
   })
 }
 

@@ -49,5 +49,7 @@ export type ProjectSummary = {
 export type ResearchLineUsageCounts = {
   membersCountByLineId: Record<string, number> | null
   projectsCountByLineId: Record<string, number> | null
+  membersError: unknown
+  projectsError: unknown
 }
 

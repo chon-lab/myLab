@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import {
   ArrowDownToLine,
   ArrowLeftRight,
@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { ApiError } from '@/lib/api-client'
+import { publishApiErrorToast } from '@/lib/api-error-toasts'
 import { cn } from '@/lib/utils'
 import { InventoryStockCard } from '@/pages/inventory-stock/components/inventory-stock-card'
 import { InventoryStockItemDetailsDialog } from '@/pages/inventory-stock/components/inventory-stock-item-details-dialog'
@@ -104,6 +105,22 @@ export function InventoryStockPage() {
     selectedGroup.id,
     laboratories,
   )
+
+  useEffect(() => {
+    if (stockQuery.isError) publishApiErrorToast(stockQuery.error)
+  }, [stockQuery.error, stockQuery.isError])
+
+  useEffect(() => {
+    if (laboratoriesQuery.isError) publishApiErrorToast(laboratoriesQuery.error)
+  }, [laboratoriesQuery.error, laboratoriesQuery.isError])
+
+  useEffect(() => {
+    if (catalogQuery.isError) publishApiErrorToast(catalogQuery.error)
+  }, [catalogQuery.error, catalogQuery.isError])
+
+  useEffect(() => {
+    if (breakdownsQuery.isError) publishApiErrorToast(breakdownsQuery.error)
+  }, [breakdownsQuery.error, breakdownsQuery.isError])
 
   const catalogById = useMemo(() => {
     const items = catalogQuery.data ?? []

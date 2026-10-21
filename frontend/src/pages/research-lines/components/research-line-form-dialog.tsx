@@ -25,6 +25,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { ApiError } from '@/lib/api-client'
+import { publishApiErrorToast } from '@/lib/api-error-toasts'
 import {
   researchLinesKeys,
   useCreateResearchLineMutation,
@@ -117,6 +118,10 @@ function ResearchLineFormContent({
   const updateLine = useUpdateResearchLineMutation()
   const isSubmitting = createLine.isPending || updateLine.isPending
   const [formError, setFormError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (detailQuery.isError) publishApiErrorToast(detailQuery.error)
+  }, [detailQuery.error, detailQuery.isError])
 
   useEffect(() => {
     setFocus('name')
@@ -237,6 +242,7 @@ function ResearchLineFormContent({
       })
     }
     setFormError(getSaveErrorMessage(error, mode))
+    publishApiErrorToast(error)
   }
 
   function submit(values: ResearchLineFormValues) {

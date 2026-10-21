@@ -109,7 +109,7 @@ function SidebarNavigation({
               <ChevronDown aria-hidden="true" className="size-4 shrink-0 text-white/60" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-64">
+          <DropdownMenuContent align="start">
             <DropdownMenuLabel>Grupos de pesquisa</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {groups.map((group) => (
@@ -120,10 +120,10 @@ function SidebarNavigation({
                   onSelectGroup(group)
                 }}
               >
-                <span className="grid size-7 place-items-center rounded-md bg-brand-yellow/30 text-xs font-bold text-brand-navy">
+                <span className="grid size-7 shrink-0 place-items-center rounded-md bg-brand-yellow/30 text-xs font-bold text-brand-navy">
                   {initials(group.name)}
                 </span>
-                <span className="truncate">{group.name}</span>
+                <span className="min-w-0 flex-1 truncate">{group.name}</span>
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
@@ -134,7 +134,7 @@ function SidebarNavigation({
         <p className="px-3 pb-1.5 text-[0.65rem] font-bold uppercase tracking-[0.14em] text-white/40">
           Grupo
         </p>
-        <ul className="space-y-0.5">
+        <ul className="space-y-0.5 [@media(max-width:1023px)_and_(min-height:761px)]:space-y-1.5 [@media(max-width:1023px)_and_(min-height:821px)]:space-y-2">
           {groupNavigation.map((item) => (
             <li key={item.path}>
               <SidebarLink item={item} basePath={basePath} onNavigate={onNavigate} />
@@ -145,7 +145,7 @@ function SidebarNavigation({
         <p className="mt-4 px-3 pb-1.5 text-[0.65rem] font-bold uppercase tracking-[0.14em] text-white/40">
           Estoque
         </p>
-        <ul className="space-y-0.5">
+        <ul className="space-y-0.5 [@media(max-width:1023px)_and_(min-height:761px)]:space-y-1.5 [@media(max-width:1023px)_and_(min-height:821px)]:space-y-2">
           {inventoryNavigation.map((item) => (
             <li key={item.path}>
               <SidebarLink item={item} basePath={basePath} onNavigate={onNavigate} />
@@ -200,7 +200,7 @@ function SidebarLink({ item, basePath, onNavigate }: {
 function NavItemLink({ to, label, icon, onNavigate }: { to: string; label: string; icon: ReactNode; onNavigate: () => void }) {
   return (
     <NavLink to={to} onClick={onNavigate} className={({ isActive }) => cn(
-      'relative flex min-h-8 items-center gap-2.5 rounded-lg px-2.5 text-[0.78rem] font-medium text-white/65 transition-colors hover:bg-white/5 hover:text-white [@media(max-height:760px)]:min-h-7',
+      'relative flex min-h-8 items-center gap-2.5 rounded-lg px-2.5 text-[0.78rem] font-medium text-white/65 transition-colors hover:bg-white/5 hover:text-white [@media(max-width:1023px)_and_(min-height:761px)]:min-h-9 [@media(max-width:1023px)_and_(min-height:761px)]:text-[0.82rem] [@media(max-width:1023px)_and_(min-height:821px)]:min-h-10 [@media(max-width:1023px)_and_(min-height:821px)]:text-sm [@media(max-height:760px)]:min-h-7',
       isActive && 'bg-white/10 text-white',
     )}>
       {({ isActive }) => (

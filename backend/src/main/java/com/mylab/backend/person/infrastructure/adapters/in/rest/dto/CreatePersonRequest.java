@@ -3,8 +3,11 @@ package com.mylab.backend.person.infrastructure.adapters.in.rest.dto;
 import java.util.List;
 import java.util.UUID;
 
+import com.mylab.backend.groupmember.domain.model.GroupMemberRole;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -38,4 +41,7 @@ public class CreatePersonRequest {
     private List<@NotBlank @Size(max = 500) String> areasOfExpertise;
 
     private List<UUID> researchLineIds;
+
+    @NotNull
+    private GroupMemberRole role;
 }

@@ -14,7 +14,8 @@ Para o visual da tela, siga a seção **Cores do sistema** de `frontend/AGENTS.m
 - Toda tela deve funcionar bem em celulares, tablets e desktops. Comece pelo layout estreito e amplie com breakpoints Tailwind; evite larguras, alturas e posicionamentos fixos que causem cortes ou rolagem horizontal da página.
 - Em larguras pequenas, tabelas de dados devem virar uma lista de cards por registro. Cada card precisa identificar os campos com rótulos, manter a ordem e a hierarquia das informações e preservar todas as ações disponíveis na linha desktop. Mantenha a tabela para telas maiores e evite exigir rolagem horizontal para ler registros.
 - Use os mesmos dados e a mesma lógica nas apresentações desktop e mobile. Garanta que apenas uma versão seja exposta visualmente e à acessibilidade em cada breakpoint.
-- Em mobile, formulários devem fluir em uma coluna, textos longos devem quebrar sem alargar o layout e ações devem continuar visíveis e confortáveis para toque. Modais e drawers devem caber na viewport e rolar internamente quando o conteúdo for maior.
+- Em mobile, formulários devem fluir em uma coluna, textos longos devem quebrar sem alargar o layout e ações devem continuar visíveis e confortáveis para toque. Todo modal exibido como janela centralizada no desktop deve ocupar a viewport inteira no mobile (largura e altura totais, sem margens ou cantos arredondados), mantendo cabeçalho e ações visíveis e rolando internamente a área de conteúdo quando necessário. No desktop, mantenha o modal centralizado e limitado ao tamanho adequado ao conteúdo.
+- Em ações compostas apenas por ícone, use ícones ligeiramente maiores no mobile (`size-5`) e o tamanho padrão compacto no desktop (`sm:size-4`), mantendo `aria-label` descritivo e área de toque confortável.
 - Revise a tela em uma largura estreita de celular e em desktop. Corrija conteúdo cortado, sobreposição, controles difíceis de tocar e espaçamento que comprometa a leitura.
 
 ## Fluxo de implementação

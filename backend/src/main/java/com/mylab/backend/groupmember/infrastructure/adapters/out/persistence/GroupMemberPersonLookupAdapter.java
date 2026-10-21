@@ -22,4 +22,11 @@ public class GroupMemberPersonLookupAdapter implements PersonLookupPort {
         log.debug("Checking if person exists by ID: {}", personId);
         return personJpaRepository.existsById(personId);
     }
+
+    @Override
+    public boolean hasCpf(UUID personId) {
+        return personJpaRepository.findById(personId)
+                .map(person -> person.getCpf() != null && !person.getCpf().isBlank())
+                .orElse(false);
+    }
 }

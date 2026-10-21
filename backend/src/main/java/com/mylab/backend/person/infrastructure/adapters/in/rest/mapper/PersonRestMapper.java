@@ -26,6 +26,7 @@ public class PersonRestMapper {
                 request.getCpf(),
                 request.getAcademicDegree(),
                 request.getAreasOfExpertise(),
+                request.getRole(),
                 request.getResearchLineIds()
         );
     }

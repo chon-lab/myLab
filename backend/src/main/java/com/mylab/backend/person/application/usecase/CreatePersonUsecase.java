@@ -55,6 +55,7 @@ public class CreatePersonUsecase implements CreatePersonPort {
         createGroupMemberPort.create(new CreateGroupMemberInput(
                 input.researchGroupId(),
                 person.getId(),
+                input.role(),
                 input.researchLineIds()
         ));
 

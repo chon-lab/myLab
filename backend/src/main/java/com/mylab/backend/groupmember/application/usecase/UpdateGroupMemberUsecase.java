@@ -16,9 +16,12 @@ import com.mylab.backend.groupmember.application.exception.ResearchGroupNotFound
 import com.mylab.backend.groupmember.application.exception.ResearchLineNotFoundException;
 import com.mylab.backend.groupmember.application.port.in.UpdateGroupMemberPort;
 import com.mylab.backend.groupmember.application.port.out.GroupMemberRepositoryPort;
+import com.mylab.backend.groupmember.application.port.out.PersonLookupPort;
 import com.mylab.backend.groupmember.application.port.out.ResearchGroupLookupPort;
 import com.mylab.backend.groupmember.application.port.out.ResearchLineLookupPort;
 import com.mylab.backend.groupmember.domain.model.GroupMember;
+import com.mylab.backend.groupmember.domain.model.GroupMemberRole;
+import com.mylab.backend.groupmember.domain.exception.InvalidGroupMemberException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +34,7 @@ public class UpdateGroupMemberUsecase implements UpdateGroupMemberPort {
     private final GroupMemberRepositoryPort repositoryPort;
     private final ResearchGroupLookupPort researchGroupLookupPort;
     private final ResearchLineLookupPort researchLineLookupPort;
+    private final PersonLookupPort personLookupPort;
 
     @Override
     @Transactional
@@ -50,11 +54,15 @@ public class UpdateGroupMemberUsecase implements UpdateGroupMemberPort {
 
         LocalDateTime now = LocalDateTime.now();
         boolean active = input.active() != null ? input.active() : member.isActive();
+        var role = input.role() != null ? input.role() : member.getRole();
+        if (role == GroupMemberRole.PARTNER && !personLookupPort.hasCpf(personId)) {
+            throw new InvalidGroupMemberException("cpf is required for partner members");
+        }
         Set<UUID> researchLineIds = input.researchLineIds() != null
                 ? validateResearchLineIds(input.researchLineIds(), researchGroupId)
                 : member.getResearchLineIds();
 
-        member.update(active, researchLineIds, now);
+        member.update(active, role, researchLineIds, now);
         repositoryPort.save(member);
         log.info("Group member updated successfully with ID: {}", member.getId());
     }

@@ -142,7 +142,7 @@ export function ContactsCard({
             </Button>
           </div>
           <Dialog open={showAllContacts} onOpenChange={setShowAllContacts}>
-            <DialogContent className="fixed left-1/2 top-1/2 flex max-h-[80vh] w-[calc(100%_-_2rem)] -translate-x-1/2 -translate-y-1/2 flex-col gap-0 overflow-hidden sm:max-w-6xl">
+            <DialogContent className="flex max-h-dvh flex-col gap-0 overflow-hidden p-4 sm:max-h-[80vh] sm:max-w-6xl">
               <DialogHeader className="pb-4">
                 <DialogTitle className="text-lg font-bold text-brand-navy">Contatos do grupo</DialogTitle>
                 <DialogDescription>

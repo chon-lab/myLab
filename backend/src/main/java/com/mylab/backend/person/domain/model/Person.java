@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import com.mylab.backend.common.domain.service.TextCaseNormalizer;
 import com.mylab.backend.person.domain.exception.InvalidPersonException;
 
 import lombok.Builder;
@@ -40,13 +41,13 @@ public class Person {
       LocalDateTime updatedAt,
       LocalDateTime deletedAt) {
     this.id = requireNonNull(id, "id");
-    this.name = requireNonBlank(name, "name");
-    this.socialName = socialName;
+    this.name = TextCaseNormalizer.personName(requireNonBlank(name, "name"));
+    this.socialName = TextCaseNormalizer.personName(socialName);
     this.email = validateEmail(email);
     this.phone = phone;
     this.cpf = validateCpf(cpf);
-    this.academicDegree = academicDegree;
-    this.areasOfExpertise = defaultIfNull(areasOfExpertise);
+    this.academicDegree = TextCaseNormalizer.sentence(academicDegree);
+    this.areasOfExpertise = TextCaseNormalizer.sentences(areasOfExpertise);
     this.createdAt = requireNonNull(createdAt, "createdAt");
     this.updatedAt = requireValidUpdatedAt(updatedAt, createdAt);
     this.deletedAt = deletedAt;
@@ -92,10 +93,6 @@ public class Person {
     return digits;
   }
 
-  private static List<String> defaultIfNull(List<String> values) {
-    return values == null ? List.of() : List.copyOf(values);
-  }
-
   private static LocalDateTime requireValidUpdatedAt(
       LocalDateTime updatedAt,
       LocalDateTime createdAt) {
@@ -118,7 +115,7 @@ public class Person {
       String academicDegree,
       List<String> areasOfExpertise,
       LocalDateTime occurredAt) {
-    String validName = requireNonBlank(name, "name");
+    String validName = TextCaseNormalizer.personName(requireNonBlank(name, "name"));
     String validEmail = validateEmail(email);
     String validCpf = validateCpf(cpf);
     LocalDateTime validUpdatedAt = requireValidUpdatedAt(occurredAt, this.createdAt);
@@ -128,12 +125,12 @@ public class Person {
     }
 
     this.name = validName;
-    this.socialName = socialName;
+    this.socialName = TextCaseNormalizer.personName(socialName);
     this.email = validEmail;
     this.phone = phone;
     this.cpf = validCpf;
-    this.academicDegree = academicDegree;
-    this.areasOfExpertise = defaultIfNull(areasOfExpertise);
+    this.academicDegree = TextCaseNormalizer.sentence(academicDegree);
+    this.areasOfExpertise = TextCaseNormalizer.sentences(areasOfExpertise);
     this.updatedAt = validUpdatedAt;
   }
 }

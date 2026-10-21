@@ -16,6 +16,7 @@ public class GroupMember {
     private final UUID personId;
     private final UUID researchGroupId;
     private boolean active;
+    private GroupMemberRole role;
     private Set<UUID> researchLineIds;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -26,6 +27,7 @@ public class GroupMember {
             UUID personId,
             UUID researchGroupId,
             boolean active,
+            GroupMemberRole role,
             Set<UUID> researchLineIds,
             LocalDateTime createdAt,
             LocalDateTime updatedAt) {
@@ -33,6 +35,7 @@ public class GroupMember {
         this.personId = requireNonNull(personId, "personId");
         this.researchGroupId = requireNonNull(researchGroupId, "researchGroupId");
         this.active = active;
+        this.role = role;
         this.researchLineIds = defaultIfNull(researchLineIds);
         this.createdAt = requireNonNull(createdAt, "createdAt");
         this.updatedAt = requireValidUpdatedAt(updatedAt, createdAt);
@@ -84,12 +87,13 @@ public class GroupMember {
         this.updatedAt = validUpdatedAt;
     }
 
-    public void update(boolean active, Set<UUID> researchLineIds, LocalDateTime occurredAt) {
+    public void update(boolean active, GroupMemberRole role, Set<UUID> researchLineIds, LocalDateTime occurredAt) {
         LocalDateTime validUpdatedAt = requireValidUpdatedAt(occurredAt, this.createdAt);
         if (validUpdatedAt.isBefore(this.updatedAt)) {
             throw new InvalidGroupMemberException("updatedAt must not move backwards");
         }
         this.active = active;
+        this.role = role;
         this.researchLineIds = defaultIfNull(researchLineIds);
         this.updatedAt = validUpdatedAt;
     }

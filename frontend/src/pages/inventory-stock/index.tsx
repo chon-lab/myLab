@@ -219,9 +219,8 @@ export function InventoryStockPage() {
         <div className="flex flex-wrap items-center gap-2.5 sm:shrink-0">
           <Button
             asChild
-            variant="outline"
             size="lg"
-            className="h-10 bg-card px-4 font-semibold text-brand-navy"
+            className="h-10 px-4 font-semibold"
           >
             <Link
               to={buildInventoryShortcutPath(selectedGroup.id, 'transferencias', {
@@ -235,9 +234,8 @@ export function InventoryStockPage() {
 
           <Button
             asChild
-            variant="outline"
             size="lg"
-            className="h-10 bg-card px-4 font-semibold text-brand-navy"
+            className="h-10 px-4 font-semibold"
           >
             <Link
               to={buildInventoryShortcutPath(selectedGroup.id, 'saidas', {

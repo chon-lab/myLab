@@ -86,13 +86,13 @@ function SidebarNavigation({
 
   return (
     <>
-      <div className="border-b border-white/10 px-6 py-6 [@media(max-height:760px)]:py-3">
+      <div className="border-b border-white/10 px-5 py-4">
         <BrandLogo className="text-[1.35rem]" />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className="mt-7 h-auto w-full justify-between gap-3 rounded-xl bg-white/5 px-3 py-3 text-left text-white hover:bg-white/10 hover:text-white [@media(max-height:760px)]:mt-3 [@media(max-height:760px)]:py-2"
+              className="mt-4 h-auto w-full justify-between gap-3 rounded-xl bg-white/5 px-3 py-2.5 text-left text-white hover:bg-white/10 hover:text-white"
               aria-label={`Grupo selecionado: ${selectedGroup.name}. Trocar grupo`}
             >
               <span className="flex min-w-0 items-center gap-3">
@@ -109,7 +109,7 @@ function SidebarNavigation({
               <ChevronDown aria-hidden="true" className="size-4 shrink-0 text-white/60" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-64">
+          <DropdownMenuContent align="start">
             <DropdownMenuLabel>Grupos de pesquisa</DropdownMenuLabel>
             <DropdownMenuSeparator />
             {groups.map((group) => (
@@ -120,21 +120,21 @@ function SidebarNavigation({
                   onSelectGroup(group)
                 }}
               >
-                <span className="grid size-7 place-items-center rounded-md bg-brand-yellow/30 text-xs font-bold text-brand-navy">
+                <span className="grid size-7 shrink-0 place-items-center rounded-md bg-brand-yellow/30 text-xs font-bold text-brand-navy">
                   {initials(group.name)}
                 </span>
-                <span className="truncate">{group.name}</span>
+                <span className="min-w-0 flex-1 truncate">{group.name}</span>
               </DropdownMenuItem>
             ))}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
 
-      <nav aria-label="Navegação do grupo" className="min-h-0 flex-1 overflow-y-auto px-4 py-5 [@media(max-height:760px)]:py-2">
-        <p className="px-3 pb-2 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-white/40">
+      <nav aria-label="Navegação do grupo" className="min-h-0 flex-1 overflow-hidden px-3 py-3">
+        <p className="px-3 pb-1.5 text-[0.65rem] font-bold uppercase tracking-[0.14em] text-white/40">
           Grupo
         </p>
-        <ul className="space-y-1">
+        <ul className="space-y-0.5 [@media(max-width:1023px)_and_(min-height:761px)]:space-y-1.5 [@media(max-width:1023px)_and_(min-height:821px)]:space-y-2">
           {groupNavigation.map((item) => (
             <li key={item.path}>
               <SidebarLink item={item} basePath={basePath} onNavigate={onNavigate} />
@@ -142,10 +142,10 @@ function SidebarNavigation({
           ))}
         </ul>
 
-        <p className="mt-7 px-3 pb-2 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-white/40 [@media(max-height:760px)]:mt-3">
+        <p className="mt-4 px-3 pb-1.5 text-[0.65rem] font-bold uppercase tracking-[0.14em] text-white/40">
           Estoque
         </p>
-        <ul className="space-y-1">
+        <ul className="space-y-0.5 [@media(max-width:1023px)_and_(min-height:761px)]:space-y-1.5 [@media(max-width:1023px)_and_(min-height:821px)]:space-y-2">
           {inventoryNavigation.map((item) => (
             <li key={item.path}>
               <SidebarLink item={item} basePath={basePath} onNavigate={onNavigate} />
@@ -155,9 +155,9 @@ function SidebarNavigation({
       </nav>
 
       {user && (
-        <footer className="border-t border-white/10 p-4 [@media(max-height:760px)]:p-2">
-          <div className="flex items-center gap-3 px-2 py-2">
-            <Avatar className="size-10 border border-white/10">
+        <footer className="border-t border-white/10 p-3">
+          <div className="flex items-center gap-3 px-2 py-1">
+            <Avatar className="size-9 border border-white/10">
               <AvatarFallback className="bg-brand-navy-soft text-xs font-bold text-white">
                 {initials(user.name)}
               </AvatarFallback>
@@ -200,7 +200,7 @@ function SidebarLink({ item, basePath, onNavigate }: {
 function NavItemLink({ to, label, icon, onNavigate }: { to: string; label: string; icon: ReactNode; onNavigate: () => void }) {
   return (
     <NavLink to={to} onClick={onNavigate} className={({ isActive }) => cn(
-      'relative flex min-h-10 items-center gap-3 rounded-lg px-3 text-[0.82rem] font-medium text-white/65 transition-colors hover:bg-white/5 hover:text-white [@media(max-height:760px)]:min-h-8',
+      'relative flex min-h-8 items-center gap-2.5 rounded-lg px-2.5 text-[0.78rem] font-medium text-white/65 transition-colors hover:bg-white/5 hover:text-white [@media(max-width:1023px)_and_(min-height:761px)]:min-h-9 [@media(max-width:1023px)_and_(min-height:761px)]:text-[0.82rem] [@media(max-width:1023px)_and_(min-height:821px)]:min-h-10 [@media(max-width:1023px)_and_(min-height:821px)]:text-sm [@media(max-height:760px)]:min-h-7',
       isActive && 'bg-white/10 text-white',
     )}>
       {({ isActive }) => (
@@ -242,7 +242,7 @@ export function AppShell({
   return (
     <DialogPrimitive.Root open={mobileSidebarOpen} onOpenChange={setMobileSidebarOpen}>
     <div className="min-h-svh bg-slate-50 lg:flex lg:h-svh lg:overflow-hidden">
-      <aside className="hidden w-[17rem] shrink-0 flex-col bg-brand-navy text-white lg:flex lg:min-h-0">
+      <aside className="hidden w-[17rem] shrink-0 flex-col overflow-hidden bg-brand-navy text-white lg:flex lg:h-svh lg:min-h-0">
         <SidebarNavigation
           groups={groups}
           selectedGroup={selectedGroup}
@@ -270,7 +270,7 @@ export function AppShell({
               </DialogPrimitive.Trigger>
               <DialogPrimitive.Portal>
                 <DialogPrimitive.Overlay className="fixed inset-0 z-40 bg-black/30 data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 lg:hidden" />
-                <DialogPrimitive.Content id="mobile-sidebar" className="fixed inset-y-0 left-0 z-50 flex h-svh w-[17rem] max-w-[calc(100%-2rem)] flex-col overflow-y-auto bg-brand-navy text-white shadow-2xl outline-none data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left lg:hidden">
+                <DialogPrimitive.Content id="mobile-sidebar" className="fixed inset-y-0 left-0 z-50 flex h-svh w-[17rem] max-w-[calc(100%-2rem)] flex-col overflow-hidden bg-brand-navy text-white shadow-2xl outline-none data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left lg:hidden">
                   <DialogPrimitive.Title className="sr-only">Navegação do myLab</DialogPrimitive.Title>
                   <DialogPrimitive.Close asChild>
                     <Button

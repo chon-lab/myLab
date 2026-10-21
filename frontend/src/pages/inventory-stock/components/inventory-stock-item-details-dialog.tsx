@@ -1,4 +1,5 @@
-import { ArrowDownToLine, ArrowLeftRight, ArrowUpFromLine } from 'lucide-react'
+import { useState, type ReactNode } from 'react'
+import { ArrowDownToLine, ArrowLeftRight, ArrowUpFromLine, ChevronDown } from 'lucide-react'
 import { Link } from 'react-router'
 
 import { Badge } from '@/components/ui/badge'
@@ -11,6 +12,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import {
   buildInventoryShortcutPath,
   formatCurrencyBRL,
@@ -41,6 +48,26 @@ function resolveMovementLaboratoryLabel(movement: InventoryMovementHistoryRecord
     movement.destinationLaboratoryName ??
     movement.sourceLaboratoryName ??
     'Laboratório não informado'
+  )
+}
+
+function DisclosureSection({ title, children }: { title: string; children: ReactNode }) {
+  const [open, setOpen] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia('(min-width: 640px)').matches,
+  )
+
+  return (
+    <details
+      open={open}
+      onToggle={(event) => setOpen(event.currentTarget.open)}
+      className="group rounded-xl border border-slate-200 bg-card"
+    >
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-brand-navy marker:content-none [&::-webkit-details-marker]:hidden">
+        {title}
+        <ChevronDown aria-hidden="true" className="size-4 shrink-0 transition-transform group-open:rotate-180" />
+      </summary>
+      <div className="border-t border-slate-200 px-4 py-3">{children}</div>
+    </details>
   )
 }
 
@@ -80,8 +107,8 @@ export function InventoryStockItemDetailsDialog({
 
   return (
     <Dialog open={Boolean(stockItem)} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90svh] overflow-y-auto sm:max-w-2xl">
-        <DialogHeader>
+      <DialogContent className="flex max-h-dvh flex-col gap-0 overflow-hidden p-0 sm:max-h-[90svh] sm:max-w-2xl sm:gap-4 sm:p-4">
+        <DialogHeader className="shrink-0 border-b px-4 pt-12 pb-3 sm:border-0 sm:p-0">
           <div className="flex flex-wrap items-center gap-2">
             <Badge
               variant="outline"
@@ -118,20 +145,14 @@ export function InventoryStockItemDetailsDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-5">
+        <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 py-4 sm:px-0 sm:py-0">
           {catalogItem?.description && (
-            <section aria-labelledby="item-details-description-heading">
-              <h3
-                id="item-details-description-heading"
-                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-              >
-                Descrição do catálogo
-              </h3>
-              <p className="mt-1 text-sm text-brand-navy">{catalogItem.description}</p>
-            </section>
+            <DisclosureSection title="Descrição do catálogo">
+              <p className="text-sm leading-relaxed text-brand-navy">{catalogItem.description}</p>
+            </DisclosureSection>
           )}
 
-          <dl className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50/70 p-4 sm:grid-cols-3">
+          <dl className="grid grid-cols-2 gap-x-3 gap-y-2 rounded-xl border border-slate-200 bg-slate-50/70 p-3 sm:grid-cols-3 sm:gap-3 sm:p-4">
             <div>
               <dt className="text-xs font-medium text-muted-foreground">Quantidade disponível</dt>
               <dd className="mt-1 text-base font-bold text-brand-navy">
@@ -145,7 +166,7 @@ export function InventoryStockItemDetailsDialog({
                 {formatCurrencyBRL(stockItem.totalValue)}
               </dd>
             </div>
-            <div>
+            <div className="col-span-2 border-t border-slate-200 pt-2 sm:col-span-1 sm:border-t-0 sm:pt-0">
               <dt className="text-xs font-medium text-muted-foreground">
                 Valor unitário de referência
               </dt>
@@ -156,21 +177,15 @@ export function InventoryStockItemDetailsDialog({
           </dl>
 
           {laboratoryBreakdown && laboratoryBreakdown.length > 0 && (
-            <section aria-labelledby="item-details-labs-heading">
-              <h3
-                id="item-details-labs-heading"
-                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-              >
-                Distribuição por laboratório
-              </h3>
-              <ul className="mt-2 divide-y divide-slate-200 rounded-xl border border-slate-200 bg-card">
+            <DisclosureSection title={`Distribuição por laboratório (${laboratoryBreakdown.length})`}>
+              <ul className="-mx-4 -my-3 divide-y divide-slate-200">
                 {laboratoryBreakdown.map((entry) => (
                   <li
                     key={entry.laboratoryId}
-                    className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm"
+                    className="flex flex-col gap-2 px-4 py-3 text-sm sm:flex-row sm:flex-wrap sm:items-center sm:justify-between"
                   >
                     <span className="font-semibold text-brand-navy">{entry.laboratoryName}</span>
-                    <div className="flex flex-wrap items-center gap-4">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                       <span className="text-brand-navy">
                         <strong className="font-bold">{formatQuantity(entry.quantity)}</strong>{' '}
                         <span className="text-muted-foreground">{unitLabel}</span>
@@ -178,55 +193,29 @@ export function InventoryStockItemDetailsDialog({
                       <span className="font-semibold text-brand-navy">
                         {formatCurrencyBRL(entry.totalValue)}
                       </span>
-                      <div className="flex items-center gap-3 text-xs font-semibold">
-                        <Link
-                          to={buildInventoryShortcutPath(researchGroupId, 'saidas', {
-                            itemId: stockItem.inventoryItemId,
-                            laboratoryId: entry.laboratoryId,
-                          })}
-                          className="text-primary hover:underline"
-                        >
-                          Registrar saída
-                        </Link>
-                        <Link
-                          to={buildInventoryShortcutPath(researchGroupId, 'transferencias', {
-                            itemId: stockItem.inventoryItemId,
-                            laboratoryId: entry.laboratoryId,
-                          })}
-                          className="text-primary hover:underline"
-                        >
-                          Transferir
-                        </Link>
-                      </div>
                     </div>
                   </li>
                 ))}
               </ul>
-            </section>
+            </DisclosureSection>
           )}
 
-          <section aria-labelledby="item-details-movements-heading">
-            <h3
-              id="item-details-movements-heading"
-              className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-            >
-              Histórico de movimentações
-            </h3>
+          <DisclosureSection title={`Histórico de movimentações${movementsQuery.data ? ` (${movementsQuery.data.length})` : ''}`}>
 
             {movementsQuery.isPending ? (
-              <p role="status" className="mt-2 text-sm text-muted-foreground">
+              <p role="status" className="text-sm text-muted-foreground">
                 Carregando movimentações do item…
               </p>
             ) : movementsQuery.isError ? (
-              <p className="mt-2 text-sm text-destructive">
+              <p className="text-sm text-destructive">
                 Não foi possível carregar o histórico de movimentações deste item.
               </p>
             ) : movementsQuery.data.length === 0 ? (
-              <p className="mt-2 text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Nenhuma movimentação registrada para este item no escopo selecionado.
               </p>
             ) : (
-              <ul className="mt-2 divide-y divide-slate-200 rounded-xl border border-slate-200 bg-card">
+              <ul className="-mx-4 -my-3 divide-y divide-slate-200">
                 {movementsQuery.data.slice(0, 8).map((movement) => {
                   const line = movement.items.find(
                     (movementItem) => movementItem.inventoryItemId === stockItem.inventoryItemId,
@@ -276,11 +265,53 @@ export function InventoryStockItemDetailsDialog({
                 })}
               </ul>
             )}
-          </section>
+          </DisclosureSection>
         </div>
 
-        <DialogFooter className="gap-2 sm:justify-between">
-          <div className="flex flex-wrap items-center gap-2">
+        <DialogFooter className="mx-0 mb-0 flex-row items-center justify-between gap-2 border-t bg-background px-4 py-3 sm:border-0 sm:bg-transparent sm:p-0">
+          <div className="flex items-center gap-2 sm:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button type="button" size="lg" className="h-10 px-4">
+                  <ArrowLeftRight aria-hidden="true" />
+                  Movimentar
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" side="top" className="w-60">
+                <DropdownMenuItem asChild className="min-h-11 gap-3 px-3 py-2.5 text-[0.95rem]">
+                  <Link to={buildInventoryShortcutPath(researchGroupId, 'entradas', {
+                    itemId: stockItem.inventoryItemId,
+                    laboratoryId: effectiveLaboratoryId,
+                  })}>
+                    <ArrowDownToLine aria-hidden="true" />
+                    Registrar entrada
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="min-h-11 gap-3 px-3 py-2.5 text-[0.95rem]">
+                  <Link to={buildInventoryShortcutPath(researchGroupId, 'saidas', {
+                    itemId: stockItem.inventoryItemId,
+                    laboratoryId: effectiveLaboratoryId,
+                  })}>
+                    <ArrowUpFromLine aria-hidden="true" />
+                    Registrar saída
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="min-h-11 gap-3 px-3 py-2.5 text-[0.95rem]">
+                  <Link to={buildInventoryShortcutPath(researchGroupId, 'transferencias', {
+                    itemId: stockItem.inventoryItemId,
+                    laboratoryId: effectiveLaboratoryId,
+                  })}>
+                    <ArrowLeftRight aria-hidden="true" />
+                    Transferir
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button variant="ghost" size="lg" className="h-10 px-4" onClick={() => onOpenChange(false)}>
+              Fechar
+            </Button>
+          </div>
+          <div className="hidden items-center gap-2 sm:flex">
             <Button asChild variant="outline" size="sm">
               <Link
                 to={buildInventoryShortcutPath(researchGroupId, 'transferencias', {
@@ -315,7 +346,7 @@ export function InventoryStockItemDetailsDialog({
               </Link>
             </Button>
           </div>
-          <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
+          <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => onOpenChange(false)}>
             Fechar
           </Button>
         </DialogFooter>

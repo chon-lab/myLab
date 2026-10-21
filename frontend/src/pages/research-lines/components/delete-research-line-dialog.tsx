@@ -115,7 +115,7 @@ export function DeleteResearchLineDialog({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="flex max-h-[90svh] flex-col gap-0 p-0 sm:max-w-lg"
+        className="flex max-h-dvh flex-col gap-0 p-0 sm:max-h-[90svh] sm:max-w-lg"
       >
         <DialogHeader className="relative border-b px-6 py-5 pr-14">
           <DialogClose asChild>

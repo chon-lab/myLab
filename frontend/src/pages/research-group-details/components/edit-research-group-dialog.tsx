@@ -1,4 +1,4 @@
-import { useEffect, useState, type ComponentProps } from 'react'
+import { useEffect, type ComponentProps } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus, Trash2, X } from 'lucide-react'
 import {
@@ -329,7 +329,7 @@ export function EditResearchGroupDialog({
       <DialogContent
         showCloseButton={false}
         onOpenAutoFocus={(event) => event.preventDefault()}
-        className="flex max-h-[90svh] flex-col gap-0 p-0 sm:max-w-3xl"
+        className="flex max-h-dvh flex-col gap-0 p-0 sm:max-h-[90svh] sm:max-w-3xl"
       >
         <DialogHeader className="relative border-b px-6 py-5 pr-14">
           <DialogClose asChild>

@@ -114,11 +114,14 @@ function EntryReverseButton({
 export function InventoryEntriesPage() {
   const researchGroup = useResearchGroup()
   const [searchParams, setSearchParams] = useSearchParams()
-  const [laboratoryId, setLaboratoryId] = useState('')
-  const [source, setSource] = useState('')
-  const [inventoryItemId, setInventoryItemId] = useState('')
-  const [dateFrom, setDateFrom] = useState('')
-  const [dateTo, setDateTo] = useState('')
+  const laboratoryId = searchParams.get('laboratoryId') ?? ''
+  const sourceParam = searchParams.get('source')
+  const source: InventoryEntrySource | '' = sourceParam === 'PURCHASE' || sourceParam === 'DONATION'
+    ? sourceParam
+    : ''
+  const inventoryItemId = searchParams.get('inventoryItemId') ?? ''
+  const dateFrom = searchParams.get('dateFrom') ?? ''
+  const dateTo = searchParams.get('dateTo') ?? ''
   const [formOpen, setFormOpen] = useState(() => searchParams.get('openEntry') === 'true')
   const [selectedEntry, setSelectedEntry] = useState<InventoryEntryHistoryRecord | null>(null)
   const [entryToReverse, setEntryToReverse] = useState<InventoryEntryHistoryRecord | null>(null)
@@ -158,12 +161,19 @@ export function InventoryEntriesPage() {
     if (entriesQuery.isError) publishApiErrorToast(entriesQuery.error)
   }, [entriesQuery.error, entriesQuery.isError])
 
+  function setFilterParam(key: string, value: string) {
+    const nextParams = new URLSearchParams(searchParams)
+    if (value) nextParams.set(key, value)
+    else nextParams.delete(key)
+    setSearchParams(nextParams, { replace: true })
+  }
+
   function clearFilters() {
-    setLaboratoryId('')
-    setSource('')
-    setInventoryItemId('')
-    setDateFrom('')
-    setDateTo('')
+    const nextParams = new URLSearchParams(searchParams)
+    for (const key of ['laboratoryId', 'source', 'inventoryItemId', 'dateFrom', 'dateTo']) {
+      nextParams.delete(key)
+    }
+    setSearchParams(nextParams, { replace: true })
   }
 
   return (
@@ -191,7 +201,7 @@ export function InventoryEntriesPage() {
       <section aria-label="Filtros das entradas" className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1.4fr_1fr_1fr]">
         <div className="space-y-1.5">
           <label htmlFor="inventory-entries-laboratory" className="text-xs font-semibold text-brand-navy">Laboratório</label>
-          <Select value={laboratoryId || '__all__'} onValueChange={(value) => setLaboratoryId(value === '__all__' ? '' : value)}>
+          <Select value={laboratoryId || '__all__'} onValueChange={(value) => setFilterParam('laboratoryId', value === '__all__' ? '' : value)}>
           <SelectTrigger id="inventory-entries-laboratory" className="h-10 w-full" disabled={laboratoriesQuery.isPending || laboratoriesQuery.isError}>
               <SelectValue placeholder="Todos" />
             </SelectTrigger>
@@ -206,7 +216,7 @@ export function InventoryEntriesPage() {
 
         <div className="space-y-1.5">
           <label htmlFor="inventory-entries-source" className="text-xs font-semibold text-brand-navy">Origem</label>
-          <Select value={source || '__all__'} onValueChange={(value) => setSource(value === '__all__' ? '' : value)}>
+          <Select value={source || '__all__'} onValueChange={(value) => setFilterParam('source', value === '__all__' ? '' : value)}>
             <SelectTrigger id="inventory-entries-source" className="h-10 w-full">
               <SelectValue placeholder="Todas" />
             </SelectTrigger>
@@ -220,7 +230,7 @@ export function InventoryEntriesPage() {
 
         <div className="space-y-1.5">
           <label htmlFor="inventory-entries-item" className="text-xs font-semibold text-brand-navy">Item</label>
-          <Select value={inventoryItemId || '__all__'} onValueChange={(value) => setInventoryItemId(value === '__all__' ? '' : value)}>
+          <Select value={inventoryItemId || '__all__'} onValueChange={(value) => setFilterParam('inventoryItemId', value === '__all__' ? '' : value)}>
             <SelectTrigger id="inventory-entries-item" className="h-10 w-full" disabled={itemsQuery.isPending || itemsQuery.isError}>
               <SelectValue placeholder="Qualquer item" />
             </SelectTrigger>
@@ -235,12 +245,12 @@ export function InventoryEntriesPage() {
 
         <div className="space-y-1.5">
           <label htmlFor="inventory-entries-date-from" className="text-xs font-semibold text-brand-navy">De</label>
-          <Input id="inventory-entries-date-from" type="date" value={dateFrom} onChange={(event) => setDateFrom(event.target.value)} className="h-10" />
+          <Input id="inventory-entries-date-from" type="date" value={dateFrom} onChange={(event) => setFilterParam('dateFrom', event.target.value)} className="h-10" />
         </div>
 
         <div className="space-y-1.5">
           <label htmlFor="inventory-entries-date-to" className="text-xs font-semibold text-brand-navy">Até</label>
-          <Input id="inventory-entries-date-to" type="date" value={dateTo} onChange={(event) => setDateTo(event.target.value)} className="h-10" />
+          <Input id="inventory-entries-date-to" type="date" value={dateTo} onChange={(event) => setFilterParam('dateTo', event.target.value)} className="h-10" />
         </div>
       </section>
 

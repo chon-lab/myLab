@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { Pencil, RotateCcw } from 'lucide-react'
+import { Pencil } from 'lucide-react'
 
 import { useResearchGroup } from '@/components/layout/research-group-context'
 import { Button } from '@/components/ui/button'
@@ -66,15 +66,6 @@ export function ResearchGroupDetailsPage() {
     setDialog({ open: true, intent })
   }
 
-  function showCnpqUnavailable() {
-    publishToast({
-      kind: 'info',
-      title: 'Atualização pelo CNPq indisponível',
-      description:
-        'A API do myLab ainda não permite importar dados do DGP. Use “Editar dados” para fazer alterações manualmente.',
-    })
-  }
-
   return (
     <section aria-labelledby="group-details-title">
       <header className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between md:gap-4">
@@ -84,15 +75,6 @@ export function ResearchGroupDetailsPage() {
           </h1>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            size="lg"
-            className="h-10 bg-card px-4 font-semibold"
-            onClick={showCnpqUnavailable}
-          >
-            <RotateCcw aria-hidden="true" />
-            Atualizar pelo CNPq
-          </Button>
           <Button size="lg" className="h-10 px-4 font-semibold" onClick={() => openDialog({ mode: 'edit' })}>
             <Pencil aria-hidden="true" />
             Editar dados

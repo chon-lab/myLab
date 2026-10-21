@@ -68,6 +68,8 @@ export const inventoryKeys = {
     ] as const,
   entryDocuments: (entryId: string | null) =>
     [...inventoryKeys.entries(), 'documents', entryId] as const,
+  entryDetail: (entryId: string | null) =>
+    [...inventoryKeys.entries(), 'detail', entryId] as const,
   exits: () => [...inventoryKeys.all, 'exits'] as const,
   exitsByGroup: (researchGroupId: string) =>
     [...inventoryKeys.exits(), researchGroupId] as const,
@@ -141,6 +143,14 @@ export function useInventoryEntryDocumentsQuery(entryId: string | null) {
   return useQuery({
     queryKey: inventoryKeys.entryDocuments(entryId),
     queryFn: () => inventoryService.listEntryDocuments(entryId!),
+    enabled: entryId !== null,
+  })
+}
+
+export function useInventoryEntryQuery(entryId: string | null) {
+  return useQuery({
+    queryKey: inventoryKeys.entryDetail(entryId),
+    queryFn: () => inventoryService.getEntry(entryId!),
     enabled: entryId !== null,
   })
 }
@@ -233,7 +243,12 @@ export function useReverseInventoryEntryMutation(researchGroupId: string) {
       entryId: string
       body: ReverseInventoryMovementRequest
     }) => inventoryService.reverseEntry(entryId, body),
-    onSuccess: () => invalidateInventoryGroupBalance(queryClient, researchGroupId),
+    onSuccess: async (_result, { entryId }) => {
+      await Promise.all([
+        invalidateInventoryGroupBalance(queryClient, researchGroupId),
+        queryClient.invalidateQueries({ queryKey: inventoryKeys.entryDetail(entryId) }),
+      ])
+    },
   })
 }
 

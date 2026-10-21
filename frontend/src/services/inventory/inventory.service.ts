@@ -53,6 +53,9 @@ export const inventoryService = {
       })}`,
     ),
 
+  getEntry: (entryId: string) =>
+    api.get<InventoryEntryHistoryRecord>(`/api/v1/inventory/entries/${entryId}`),
+
   listMovements: (researchGroupId: string, filters: InventoryMovementFilters = {}) =>
     api.get<InventoryMovementHistoryRecord[]>(
       `/api/v1/research-groups/${researchGroupId}/inventory/movements${buildQueryString({

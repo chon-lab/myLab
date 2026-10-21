@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { X } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
@@ -11,7 +12,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { publishApiErrorToast } from '@/lib/api-error-toasts'
 import { InventoryEntryDocuments } from '@/pages/inventory-entries/components/inventory-entry-documents'
+import { useInventoryEntryQuery } from '@/queries/inventory/inventory.queries'
 import {
   formatCurrencyBRL,
   formatMovementDate,
@@ -32,6 +35,13 @@ export function InventoryEntryDetailsDialog({
   entry: InventoryEntryHistoryRecord | null
   onOpenChange: (open: boolean) => void
 }) {
+  const detailQuery = useInventoryEntryQuery(entry?.id ?? null)
+  const detail = detailQuery.data
+
+  useEffect(() => {
+    if (detailQuery.isError) publishApiErrorToast(detailQuery.error)
+  }, [detailQuery.error, detailQuery.isError])
+
   return (
     <Dialog open={Boolean(entry)} onOpenChange={onOpenChange}>
       <DialogContent
@@ -53,55 +63,77 @@ export function InventoryEntryDetailsDialog({
                 </Button>
               </DialogClose>
               <DialogTitle className="text-lg font-bold text-brand-navy">Detalhes da entrada</DialogTitle>
-              <DialogDescription>
-                Recebida em {formatMovementDate(entry.receivedAt)} no laboratório {entry.laboratoryName}.
-              </DialogDescription>
+              {detail ? (
+                <DialogDescription>
+                  Recebida em {formatMovementDate(detail.receivedAt)} no laboratório {detail.laboratoryName}.
+                </DialogDescription>
+              ) : (
+                <DialogDescription>Carregando os dados atualizados da entrada.</DialogDescription>
+              )}
             </DialogHeader>
 
+            {detailQuery.isPending && !detail && (
+              <p role="status" className="px-5 py-10 text-center text-sm text-muted-foreground sm:px-6">
+                Carregando detalhes da entrada…
+              </p>
+            )}
+
+            {detailQuery.isError && !detail && (
+              <div className="space-y-4 px-5 py-8 text-center sm:px-6">
+                <p role="alert" className="text-sm text-destructive">
+                  Não foi possível carregar os detalhes desta entrada.
+                </p>
+                <Button type="button" variant="outline" onClick={() => void detailQuery.refetch()}>
+                  Tentar novamente
+                </Button>
+              </div>
+            )}
+
+            {detail && (
             <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5 sm:px-6">
               <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="outline" className="rounded-full border-slate-200 bg-slate-50 text-brand-navy">
-                  {getSourceLabel(entry)}
+                  {getSourceLabel(detail)}
                 </Badge>
                 <Badge
                   variant="outline"
-                  className={entry.status === 'CONFIRMED'
+                  className={detail.status === 'CONFIRMED'
                     ? 'rounded-full border-emerald-200 bg-emerald-50 text-emerald-800'
                     : 'rounded-full border-rose-200 bg-rose-50 text-rose-800'}
                 >
-                  {entry.status === 'CONFIRMED' ? 'Confirmada' : 'Estornada'}
+                  {detail.status === 'CONFIRMED' ? 'Confirmada' : 'Estornada'}
                 </Badge>
               </div>
 
               <dl className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <dt className="text-xs font-medium text-muted-foreground">Fornecedor, doador ou agência</dt>
-                  <dd className="mt-1 break-words text-sm font-semibold text-brand-navy">{entry.sourceName}</dd>
+                  <dd className="mt-1 break-words text-sm font-semibold text-brand-navy">{detail.sourceName}</dd>
                 </div>
                 <div>
                   <dt className="text-xs font-medium text-muted-foreground">Laboratório</dt>
-                  <dd className="mt-1 break-words text-sm font-semibold text-brand-navy">{entry.laboratoryName}</dd>
+                  <dd className="mt-1 break-words text-sm font-semibold text-brand-navy">{detail.laboratoryName}</dd>
                 </div>
-                {entry.reversalReason && (
+                {detail.reversalReason && (
                   <div className="sm:col-span-2">
                     <dt className="text-xs font-medium text-muted-foreground">Motivo do estorno</dt>
-                    <dd className="mt-1 break-words text-sm text-brand-navy">{entry.reversalReason}</dd>
+                    <dd className="mt-1 break-words text-sm text-brand-navy">{detail.reversalReason}</dd>
                   </div>
                 )}
-                {entry.notes && (
+                {detail.notes && (
                   <div className="sm:col-span-2">
                     <dt className="text-xs font-medium text-muted-foreground">Observações</dt>
-                    <dd className="mt-1 whitespace-pre-wrap break-words text-sm text-brand-navy">{entry.notes}</dd>
+                    <dd className="mt-1 whitespace-pre-wrap break-words text-sm text-brand-navy">{detail.notes}</dd>
                   </div>
                 )}
               </dl>
 
               <section aria-labelledby="inventory-entry-detail-items-title">
                 <h2 id="inventory-entry-detail-items-title" className="mb-3 text-sm font-bold text-brand-navy">
-                  Itens recebidos ({entry.items.length})
+                  Itens recebidos ({detail.items.length})
                 </h2>
                 <ul className="divide-y divide-slate-200 rounded-xl border border-slate-200">
-                  {entry.items.map((item) => (
+                  {detail.items.map((item) => (
                     <li key={item.id} className="space-y-2 p-3 sm:p-4">
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <div className="min-w-0">
@@ -133,8 +165,9 @@ export function InventoryEntryDetailsDialog({
                 </ul>
               </section>
 
-              <InventoryEntryDocuments entryId={entry.id} />
+              <InventoryEntryDocuments entryId={detail.id} />
             </div>
+            )}
 
             <DialogFooter className="mx-0 mb-0 border-t bg-background px-5 py-3 sm:px-6">
               <DialogClose asChild>

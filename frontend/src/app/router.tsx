@@ -7,6 +7,7 @@ import { GroupPlaceholderRoute } from '@/pages/navigation-placeholder'
 import { ResearchGroupDetailsPage } from '@/pages/research-group-details'
 import { ResearchGroupIndexRoute, ResearchGroupRoute } from '@/pages/research-group-route'
 import { ResearchLinesPage } from '@/pages/research-lines'
+import { MembersPage } from '@/pages/members'
 
 export const router = createBrowserRouter([
   { path: '/entrar', element: <LoginPage /> },
@@ -22,6 +23,7 @@ export const router = createBrowserRouter([
           { path: 'painel', element: <HomePage /> },
           { path: 'dados-do-grupo', element: <ResearchGroupDetailsPage /> },
           { path: 'linhas-de-pesquisa', element: <ResearchLinesPage /> },
+          { path: 'membros', element: <MembersPage /> },
           { path: '*', element: <GroupPlaceholderRoute /> },
         ],
       },

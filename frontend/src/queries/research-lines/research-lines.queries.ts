@@ -93,6 +93,8 @@ export function useResearchLineUsageCountsQuery(
   return {
     membersCountByLineId,
     projectsCountByLineId,
+    membersError: membersQuery.error,
+    projectsError: projectsQuery.error,
   }
 }
 

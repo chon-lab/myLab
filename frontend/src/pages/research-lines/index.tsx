@@ -1,5 +1,5 @@
-import { useState, type ReactNode } from 'react'
-import { CircleCheck, Layers3, Plus, Search } from 'lucide-react'
+import { useEffect, useState, type ReactNode } from 'react'
+import { Layers3, Plus, Search } from 'lucide-react'
 
 import { useResearchGroup } from '@/components/layout/research-group-context'
 import { Button } from '@/components/ui/button'
@@ -9,6 +9,7 @@ import {
   InputGroupInput,
 } from '@/components/ui/input-group'
 import { ApiError } from '@/lib/api-client'
+import { publishApiErrorToast, publishToast } from '@/lib/api-error-toasts'
 import { DeleteResearchLineDialog } from '@/pages/research-lines/components/delete-research-line-dialog'
 import { ResearchLineCard } from '@/pages/research-lines/components/research-line-card'
 import {
@@ -20,8 +21,6 @@ import {
   useResearchLineUsageCountsQuery,
 } from '@/queries/research-lines/research-lines.queries'
 import type { ResearchLine } from '@/types/research-lines/research-line.types'
-
-type FeedbackState = 'created' | 'updated' | 'deleted' | null
 
 function normalizeSearchText(value: string) {
   return value
@@ -64,7 +63,12 @@ export function ResearchLinesPage() {
     error,
     refetch,
   } = useResearchLinesQuery(selectedGroup.id)
-  const { membersCountByLineId, projectsCountByLineId } = useResearchLineUsageCountsQuery(
+  const {
+    membersCountByLineId,
+    projectsCountByLineId,
+    membersError,
+    projectsError,
+  } = useResearchLineUsageCountsQuery(
     selectedGroup.id,
     researchLines ?? [],
   )
@@ -72,7 +76,18 @@ export function ResearchLinesPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [formDialog, setFormDialog] = useState<ResearchLineDialogState>({ open: false })
   const [lineToDelete, setLineToDelete] = useState<ResearchLine | null>(null)
-  const [feedback, setFeedback] = useState<FeedbackState>(null)
+
+  useEffect(() => {
+    if (isError) publishApiErrorToast(error)
+  }, [error, isError])
+
+  useEffect(() => {
+    if (membersError) publishApiErrorToast(membersError)
+  }, [membersError])
+
+  useEffect(() => {
+    if (projectsError) publishApiErrorToast(projectsError)
+  }, [projectsError])
 
   if (isPending) {
     return (
@@ -114,17 +129,14 @@ export function ResearchLinesPage() {
   )
 
   function openCreateDialog() {
-    setFeedback(null)
     setFormDialog({ open: true, mode: 'create' })
   }
 
   function openEditDialog(line: ResearchLine) {
-    setFeedback(null)
     setFormDialog({ open: true, mode: 'edit', line })
   }
 
   function openDeleteDialog(line: ResearchLine) {
-    setFeedback(null)
     setLineToDelete(line)
   }
 
@@ -152,17 +164,6 @@ export function ResearchLinesPage() {
           Nova linha de pesquisa
         </Button>
       </header>
-
-      <div role="status" className="mt-4 empty:hidden">
-        {feedback && (
-          <p className="flex items-start gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-            <CircleCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-            {feedback === 'created' && 'Linha de pesquisa criada com sucesso.'}
-            {feedback === 'updated' && 'Linha de pesquisa atualizada com sucesso.'}
-            {feedback === 'deleted' && 'Linha de pesquisa excluída com sucesso.'}
-          </p>
-        )}
-      </div>
 
       <div className="mt-6">
         <label
@@ -249,7 +250,11 @@ export function ResearchLinesPage() {
         }}
         onSaved={(mode) => {
           setFormDialog({ open: false })
-          setFeedback(mode === 'create' ? 'created' : 'updated')
+          publishToast({
+            kind: 'success',
+            title: mode === 'create' ? 'Linha de pesquisa criada' : 'Linha de pesquisa atualizada',
+            description: 'As alterações foram salvas.',
+          })
         }}
       />
 
@@ -260,7 +265,11 @@ export function ResearchLinesPage() {
         }}
         onDeleted={() => {
           setLineToDelete(null)
-          setFeedback('deleted')
+          publishToast({
+            kind: 'success',
+            title: 'Linha de pesquisa excluída',
+            description: 'A linha foi removida do grupo.',
+          })
         }}
       />
     </section>

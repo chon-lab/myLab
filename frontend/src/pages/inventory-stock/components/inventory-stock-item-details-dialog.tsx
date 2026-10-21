@@ -1,9 +1,10 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { ArrowDownToLine, ArrowLeftRight, ArrowUpFromLine, ChevronDown } from 'lucide-react'
 import { Link } from 'react-router'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { publishApiErrorToast } from '@/lib/api-error-toasts'
 import {
   Dialog,
   DialogContent,
@@ -96,6 +97,10 @@ export function InventoryStockItemDetailsDialog({
     },
     Boolean(stockItem),
   )
+
+  useEffect(() => {
+    if (movementsQuery.isError) publishApiErrorToast(movementsQuery.error)
+  }, [movementsQuery.error, movementsQuery.isError])
 
   if (!stockItem) return null
 

@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { ApiError } from '@/lib/api-client'
+import { publishApiErrorToast } from '@/lib/api-error-toasts'
 import {
   researchLinesKeys,
   useDeleteResearchLineMutation,
@@ -59,6 +60,7 @@ function DeleteResearchLineDialogBody({
           void queryClient.invalidateQueries({ queryKey: researchLinesKeys.all })
         }
         setDeleteError(getDeleteErrorMessage(error))
+        publishApiErrorToast(error)
       },
     })
   }

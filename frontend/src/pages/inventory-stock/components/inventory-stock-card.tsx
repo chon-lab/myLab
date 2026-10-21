@@ -1,4 +1,4 @@
-import { Eye } from 'lucide-react'
+import { FileText } from 'lucide-react'
 import { Link } from 'react-router'
 
 import { Badge } from '@/components/ui/badge'
@@ -107,7 +107,7 @@ export function InventoryStockCard({
           aria-label={`Ver detalhes de ${item.itemName}`}
           onClick={() => onInspect(item)}
         >
-          <Eye aria-hidden="true" className="size-4" />
+          <FileText aria-hidden="true" className="size-5 sm:size-4" />
         </Button>
       </div>
     </article>

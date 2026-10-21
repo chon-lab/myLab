@@ -125,6 +125,10 @@ export function buildInventoryShortcutPath(
     }
   }
 
+  if (destination === 'entradas') {
+    searchParams.set('openEntry', 'true')
+  }
+
   const query = searchParams.toString()
   const basePath = `/grupos/${researchGroupId}/estoque/${destination}`
   return query ? `${basePath}?${query}` : basePath

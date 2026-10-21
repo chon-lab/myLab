@@ -18,6 +18,60 @@ export type InventoryPurchaseType = 'FUNDING' | 'OTHER'
 
 export type InventoryEntrySource = 'PURCHASE' | 'DONATION'
 
+export type InventoryEntryStatus = 'CONFIRMED' | 'REVERSED'
+
+export type InventoryEntryHistoryItem = {
+  id: string
+  inventoryItemId: string
+  itemName: string
+  itemType: InventoryItemType
+  unitOfMeasure: InventoryUnitOfMeasure
+  quantity: number
+  historicalUnitValue: number
+  batchNumber: string | null
+  manufacturer: string | null
+  expirationDate: string | null
+}
+
+export type InventoryEntryDocumentSummary = {
+  id: string
+  documentNumber: string | null
+  issuer: string | null
+  documentDate: string | null
+  fileName: string | null
+  contentType: string | null
+  sizeBytes: number | null
+  checksumSha256: string | null
+  uploadedAt: string | null
+  fileAvailable: boolean
+}
+
+export type InventoryEntryHistoryRecord = {
+  id: string
+  researchGroupId: string
+  laboratoryId: string
+  laboratoryName: string
+  source: InventoryEntrySource
+  purchaseType: InventoryPurchaseType | null
+  sourceName: string
+  receivedAt: string
+  notes: string | null
+  status: InventoryEntryStatus
+  reversedAt: string | null
+  reversalReason: string | null
+  createdAt: string
+  items: InventoryEntryHistoryItem[]
+  documents: InventoryEntryDocumentSummary[]
+}
+
+export type InventoryEntryFilters = {
+  laboratoryId?: string | null
+  source?: InventoryEntrySource | null
+  inventoryItemId?: string | null
+  dateFrom?: string | null
+  dateTo?: string | null
+}
+
 export type InventoryExitType = 'CONSUMPTION' | 'DISPOSAL' | 'LOSS'
 
 export type LaboratoryStatus = 'ACTIVE' | 'INACTIVE' | 'MAINTENANCE'
@@ -157,5 +211,9 @@ export type CreateInventoryTransferRequest = {
 
 export type ReverseInventoryMovementRequest = {
   reason: string
+}
+
+export type InventoryEntryDocumentUploadRequest = {
+  file: File
 }
 

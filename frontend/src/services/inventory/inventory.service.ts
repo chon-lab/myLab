@@ -3,6 +3,10 @@ import type {
   CreateInventoryEntryRequest,
   CreateInventoryExitRequest,
   CreateInventoryTransferRequest,
+  InventoryEntryFilters,
+  InventoryEntryDocumentSummary,
+  InventoryEntryHistoryRecord,
+  InventoryEntryDocumentUploadRequest,
   InventoryItem,
   InventoryLaboratory,
   InventoryMovementFilters,
@@ -38,6 +42,17 @@ export const inventoryService = {
   listGroupLaboratories: (researchGroupId: string) =>
     api.get<InventoryLaboratory[]>(`/api/v1/research-groups/${researchGroupId}/laboratories`),
 
+  listEntries: (researchGroupId: string, filters: InventoryEntryFilters = {}) =>
+    api.get<InventoryEntryHistoryRecord[]>(
+      `/api/v1/research-groups/${researchGroupId}/inventory/entries${buildQueryString({
+        laboratoryId: filters.laboratoryId,
+        source: filters.source,
+        inventoryItemId: filters.inventoryItemId,
+        dateFrom: filters.dateFrom,
+        dateTo: filters.dateTo,
+      })}`,
+    ),
+
   listMovements: (researchGroupId: string, filters: InventoryMovementFilters = {}) =>
     api.get<InventoryMovementHistoryRecord[]>(
       `/api/v1/research-groups/${researchGroupId}/inventory/movements${buildQueryString({
@@ -59,6 +74,24 @@ export const inventoryService = {
 
   reverseEntry: (entryId: string, body: ReverseInventoryMovementRequest) =>
     api.post<void>(`/api/v1/inventory/entries/${entryId}/reverse`, body),
+
+  listEntryDocuments: (entryId: string) =>
+    api.get<InventoryEntryDocumentSummary[]>(`/api/v1/inventory/entries/${entryId}/documents`),
+
+  uploadEntryDocument: (entryId: string, body: InventoryEntryDocumentUploadRequest) => {
+    const formData = new FormData()
+    formData.append('file', body.file)
+    return api.post<InventoryEntryDocumentSummary>(
+      `/api/v1/inventory/entries/${entryId}/documents/file`,
+      formData,
+    )
+  },
+
+  downloadEntryDocument: (entryId: string, documentId: string) =>
+    api.download(`/api/v1/inventory/entries/${entryId}/documents/${documentId}/file`),
+
+  deleteEntryDocument: (entryId: string, documentId: string) =>
+    api.delete<void>(`/api/v1/inventory/entries/${entryId}/documents/${documentId}`),
 
   createExit: (researchGroupId: string, body: CreateInventoryExitRequest) =>
     api.post<string | undefined>(

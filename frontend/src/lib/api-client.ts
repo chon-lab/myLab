@@ -85,6 +85,16 @@ const withBody = (body: unknown) =>
 
 export const api = {
   get: <T>(path: string) => request<T>(path),
+  download: async (path: string) => {
+    const headers = new Headers()
+    const token = authService.getAccessToken()
+
+    if (token) headers.set('Authorization', `Bearer ${token}`)
+
+    const response = await fetch(`${BASE_URL}${path}`, { headers })
+    if (!response.ok) throw await toApiError(response)
+    return response.blob()
+  },
   post: <T>(path: string, body?: unknown) =>
     request<T>(path, { method: 'POST', body: body === undefined ? undefined : withBody(body) }),
   put: <T>(path: string, body: unknown) => request<T>(path, { method: 'PUT', body: withBody(body) }),

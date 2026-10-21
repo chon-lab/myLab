@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import com.mylab.backend.common.domain.service.TextCaseNormalizer;
 import com.mylab.backend.researchline.domain.exception.InvalidResearchLineException;
 
 import lombok.Builder;
@@ -34,10 +35,10 @@ public class ResearchLine {
             LocalDateTime deletedAt) {
         this.id = requireNonNull(id, "id");
         this.researchGroupId = requireNonNull(researchGroupId, "researchGroupId");
-        this.name = requireNonBlank(name, "name");
-        this.objective = requireNonBlank(objective, "objective");
-        this.keywords = defaultIfNull(keywords);
-        this.knowledgeAreas = defaultIfNull(knowledgeAreas);
+        this.name = TextCaseNormalizer.sentence(requireNonBlank(name, "name"));
+        this.objective = TextCaseNormalizer.sentence(requireNonBlank(objective, "objective"));
+        this.keywords = TextCaseNormalizer.sentences(keywords);
+        this.knowledgeAreas = TextCaseNormalizer.sentences(knowledgeAreas);
         this.createdAt = requireNonNull(createdAt, "createdAt");
         this.updatedAt = requireValidUpdatedAt(updatedAt, createdAt);
         this.deletedAt = deletedAt;
@@ -55,10 +56,6 @@ public class ResearchLine {
             throw new InvalidResearchLineException(fieldName + " must not be null");
         }
         return value;
-    }
-
-    private static List<String> defaultIfNull(List<String> values) {
-        return values == null ? List.of() : List.copyOf(values);
     }
 
     private static LocalDateTime requireValidUpdatedAt(
@@ -82,8 +79,8 @@ public class ResearchLine {
             List<String> keywords,
             List<String> knowledgeAreas,
             LocalDateTime occurredAt) {
-        String validName = requireNonBlank(name, "name");
-        String validObjective = requireNonBlank(objective, "objective");
+        String validName = TextCaseNormalizer.sentence(requireNonBlank(name, "name"));
+        String validObjective = TextCaseNormalizer.sentence(requireNonBlank(objective, "objective"));
         LocalDateTime validUpdatedAt = requireValidUpdatedAt(occurredAt, this.createdAt);
 
         if (validUpdatedAt.isBefore(this.updatedAt)) {
@@ -92,8 +89,8 @@ public class ResearchLine {
 
         this.name = validName;
         this.objective = validObjective;
-        this.keywords = defaultIfNull(keywords);
-        this.knowledgeAreas = defaultIfNull(knowledgeAreas);
+        this.keywords = TextCaseNormalizer.sentences(keywords);
+        this.knowledgeAreas = TextCaseNormalizer.sentences(knowledgeAreas);
         this.updatedAt = validUpdatedAt;
     }
 }

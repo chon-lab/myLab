@@ -4,6 +4,7 @@ import { RequireAuth } from '@/components/require-auth'
 import { HomePage } from '@/pages/home'
 import { InventoryEntriesPage } from '@/pages/inventory-entries'
 import { InventoryStockPage } from '@/pages/inventory-stock'
+import { LaboratoriesPage } from '@/pages/laboratories'
 import { LoginPage } from '@/pages/login'
 import { GroupPlaceholderRoute } from '@/pages/navigation-placeholder'
 import { ResearchGroupDetailsPage } from '@/pages/research-group-details'
@@ -26,6 +27,7 @@ export const router = createBrowserRouter([
           { path: 'dados-do-grupo', element: <ResearchGroupDetailsPage /> },
           { path: 'linhas-de-pesquisa', element: <ResearchLinesPage /> },
           { path: 'membros', element: <MembersPage /> },
+          { path: 'laboratorios', element: <LaboratoriesPage /> },
           { path: 'estoque/saldo', element: <InventoryStockPage /> },
           { path: 'estoque/entradas', element: <InventoryEntriesPage /> },
           { path: '*', element: <GroupPlaceholderRoute /> },

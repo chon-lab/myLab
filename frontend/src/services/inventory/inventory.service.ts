@@ -7,6 +7,7 @@ import type {
   InventoryEntryDocumentSummary,
   InventoryEntryHistoryRecord,
   InventoryEntryDocumentUploadRequest,
+  InventoryExitHistoryRecord,
   InventoryItem,
   InventoryLaboratory,
   InventoryMovementFilters,
@@ -95,6 +96,11 @@ export const inventoryService = {
 
   deleteEntryDocument: (entryId: string, documentId: string) =>
     api.delete<void>(`/api/v1/inventory/entries/${entryId}/documents/${documentId}`),
+
+  listExits: (researchGroupId: string) =>
+    api.get<InventoryExitHistoryRecord[]>(
+      `/api/v1/research-groups/${researchGroupId}/inventory/exits`,
+    ),
 
   createExit: (researchGroupId: string, body: CreateInventoryExitRequest) =>
     api.post<string | undefined>(

@@ -10,13 +10,16 @@ import { inventoryService } from '@/services/inventory/inventory.service'
 import type {
   CreateInventoryEntryRequest,
   CreateInventoryExitRequest,
+  CreateInventoryItemRequest,
   CreateInventoryTransferRequest,
   InventoryEntryDocumentUploadRequest,
   InventoryEntryFilters,
+  InventoryItem,
   InventoryLaboratory,
   InventoryLaboratoryStockBreakdown,
   InventoryMovementFilters,
   ReverseInventoryMovementRequest,
+  UpdateInventoryItemRequest,
 } from '@/types/inventory/inventory.types'
 
 export const inventoryKeys = {
@@ -31,6 +34,7 @@ export const inventoryKeys = {
   items: () => [...inventoryKeys.all, 'items'] as const,
   itemsByGroup: (researchGroupId: string) =>
     [...inventoryKeys.items(), researchGroupId] as const,
+  itemDetail: (itemId: string) => [...inventoryKeys.items(), 'detail', itemId] as const,
   laboratories: () => [...inventoryKeys.all, 'laboratories'] as const,
   laboratoriesByGroup: (researchGroupId: string) =>
     [...inventoryKeys.laboratories(), researchGroupId] as const,
@@ -130,6 +134,48 @@ export function useInventoryStockQuery(
 
 export function useInventoryItemsQuery(researchGroupId: string) {
   return useQuery(inventoryItemsByGroupQueryOptions(researchGroupId))
+}
+
+export function useInventoryItemQuery(itemId: string | null, fallback?: InventoryItem) {
+  return useQuery({
+    queryKey: inventoryKeys.itemDetail(itemId ?? ''),
+    queryFn: () => inventoryService.getItem(itemId!),
+    enabled: itemId !== null,
+    placeholderData: fallback,
+  })
+}
+
+export function useCreateInventoryItemMutation(researchGroupId: string) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (body: CreateInventoryItemRequest) =>
+      inventoryService.createItem(researchGroupId, body),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: inventoryKeys.items() }),
+  })
+}
+
+export function useUpdateInventoryItemMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ itemId, body }: { itemId: string; body: UpdateInventoryItemRequest }) =>
+      inventoryService.updateItem(itemId, body),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: inventoryKeys.all }),
+  })
+}
+
+export function useArchiveInventoryItemMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (itemId: string) => inventoryService.archiveItem(itemId),
+    meta: { suppressGlobalErrorToast: true },
+    onSuccess: (_result, itemId) => {
+      queryClient.removeQueries({ queryKey: inventoryKeys.itemDetail(itemId) })
+      return queryClient.invalidateQueries({ queryKey: inventoryKeys.all })
+    },
+  })
 }
 
 export function useInventoryEntriesQuery(

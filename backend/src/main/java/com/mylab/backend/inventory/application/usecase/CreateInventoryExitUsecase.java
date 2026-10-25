@@ -94,7 +94,6 @@ public class CreateInventoryExitUsecase implements CreateInventoryExitPort {
 
             InventoryItem item = itemRepository.findById(line.inventoryItemId())
                     .filter(candidate -> candidate.getResearchGroupId().equals(researchGroupId))
-                    .filter(InventoryItem::isActive)
                     .orElseThrow(() -> new InventoryItemNotFoundException(line.inventoryItemId()));
 
             validateQuantityForUnit(line, item);

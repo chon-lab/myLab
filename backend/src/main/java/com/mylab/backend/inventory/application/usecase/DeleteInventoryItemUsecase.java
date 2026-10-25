@@ -18,6 +18,9 @@ public class DeleteInventoryItemUsecase implements DeleteInventoryItemPort {
     public void delete(UUID id) {
         var item = repository.findById(id)
                 .orElseThrow(() -> new InventoryItemNotFoundException(id));
+        if (item.getDeletedAt() != null) {
+            return;
+        }
         item.archive(LocalDateTime.now());
         repository.save(item);
     }

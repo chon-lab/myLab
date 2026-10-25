@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate } from 'react-router'
 import { RequireAuth } from '@/components/require-auth'
 import { HomePage } from '@/pages/home'
 import { InventoryEntriesPage } from '@/pages/inventory-entries'
+import { InventoryItemsPage } from '@/pages/inventory-items'
 import { InventoryStockPage } from '@/pages/inventory-stock'
 import { LaboratoriesPage } from '@/pages/laboratories'
 import { LoginPage } from '@/pages/login'
@@ -29,6 +30,7 @@ export const router = createBrowserRouter([
           { path: 'membros', element: <MembersPage /> },
           { path: 'laboratorios', element: <LaboratoriesPage /> },
           { path: 'estoque/saldo', element: <InventoryStockPage /> },
+          { path: 'estoque/itens', element: <InventoryItemsPage /> },
           { path: 'estoque/entradas', element: <InventoryEntriesPage /> },
           { path: '*', element: <GroupPlaceholderRoute /> },
         ],

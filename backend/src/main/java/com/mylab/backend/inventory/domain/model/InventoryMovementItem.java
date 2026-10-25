@@ -16,8 +16,8 @@ public record InventoryMovementItem(UUID id, UUID inventoryItemId, BigDecimal qu
         if (quantity.signum() <= 0 || quantity.stripTrailingZeros().scale() > 4) {
             throw new InvalidInventoryException("quantity must be positive with at most 4 decimal places");
         }
-        if (unitCost.signum() <= 0 || unitCost.stripTrailingZeros().scale() > 2) {
-            throw new InvalidInventoryException("unitCost must be positive with at most 2 decimal places");
+        if (unitCost.signum() <= 0 || unitCost.stripTrailingZeros().scale() > 24) {
+            throw new InvalidInventoryException("unitCost must be positive with at most 24 decimal places");
         }
         batchNumber = trimAndLimit(batchNumber, 100, "batchNumber");
         manufacturer = trimAndLimit(manufacturer, 255, "manufacturer");

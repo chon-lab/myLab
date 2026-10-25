@@ -74,6 +74,34 @@ export type InventoryEntryFilters = {
 
 export type InventoryExitType = 'CONSUMPTION' | 'DISPOSAL' | 'LOSS'
 
+export type InventoryExitStatus = 'CONFIRMED' | 'REVERSED'
+
+export type InventoryExitHistoryItem = {
+  id: string
+  inventoryItemId: string
+  itemName: string
+  itemType: InventoryItemType
+  unitOfMeasure: InventoryUnitOfMeasure
+  quantity: number
+  unitCost: number
+  totalCost: number
+}
+
+export type InventoryExitHistoryRecord = {
+  id: string
+  researchGroupId: string
+  laboratoryId: string
+  laboratoryName: string
+  type: InventoryExitType
+  occurredAt: string
+  notes: string | null
+  status: InventoryExitStatus
+  reversedAt: string | null
+  reversalReason: string | null
+  createdAt: string
+  items: InventoryExitHistoryItem[]
+}
+
 export type LaboratoryStatus = 'ACTIVE' | 'INACTIVE' | 'MAINTENANCE'
 
 export type InventoryLaboratory = {

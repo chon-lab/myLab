@@ -375,7 +375,9 @@ export function InventoryEntryFormDialog({
                           Itens recebidos <span className="text-destructive">*</span>
                         </h2>
                         <p className="mt-1 text-xs text-muted-foreground">
-                          Informe a quantidade e o valor unitário histórico de cada item.
+                          {source === 'DONATION'
+                            ? 'Informe a quantidade e o valor unitário atribuído à doação; ele compõe o valor do estoque.'
+                            : 'Informe a quantidade e o valor unitário de cada item nesta entrada.'}
                         </p>
                       </div>
                       <Button
@@ -454,14 +456,20 @@ export function InventoryEntryFormDialog({
 
                               <Controller name={`items.${index}.historicalUnitValue`} control={control} render={({ field, fieldState }) => (
                                 <Field data-invalid={fieldState.invalid}>
-                                  <FieldLabel htmlFor={`inventory-entry-unit-value-${index}`}>Valor unitário nesta entrada <span className="text-destructive">*</span></FieldLabel>
+                                  <FieldLabel htmlFor={`inventory-entry-unit-value-${index}`}>
+                                    {source === 'DONATION' ? 'Valor unitário atribuído à doação' : 'Valor unitário nesta entrada'}{' '}
+                                    <span className="text-destructive">*</span>
+                                  </FieldLabel>
                                   <div className="relative">
                                     <span aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-muted-foreground">R$</span>
                                     <Input {...field} id={`inventory-entry-unit-value-${index}`} type="text" inputMode="decimal" maxLength={20} className="pl-9" placeholder="0,00" aria-invalid={fieldState.invalid} />
                                   </div>
                                   {selectedItem && (
                                     <FieldDescription>
-                                      Informe o preço de uma unidade recebida. Referência atual do catálogo: {formatCurrencyBRL(selectedItem.referenceUnitValue)}.
+                                      {source === 'DONATION'
+                                        ? 'Informe o valor estimado da unidade doada; ele será contabilizado no saldo do estoque.'
+                                        : 'Informe o preço de uma unidade recebida.'}{' '}
+                                      Referência atual do catálogo: {formatCurrencyBRL(selectedItem.referenceUnitValue)}.
                                     </FieldDescription>
                                   )}
                                   <FieldError errors={[fieldState.error]} />

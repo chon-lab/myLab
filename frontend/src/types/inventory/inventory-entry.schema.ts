@@ -6,7 +6,7 @@ import type {
   InventoryUnitOfMeasure,
 } from '@/types/inventory/inventory.types'
 
-const fractionalUnits: InventoryUnitOfMeasure[] = ['M', 'KG', 'L']
+export const fractionalUnits: InventoryUnitOfMeasure[] = ['M', 'KG', 'L']
 
 export function parseInventoryDecimal(value: string) {
   const normalized = value.trim().replace(',', '.')
@@ -27,7 +27,7 @@ function integerDigits(value: string) {
   return (normalized.split('.')[0] ?? '').replace(/^[+-]?0*/, '').length
 }
 
-function isIsoDate(value: string) {
+export function isIsoDate(value: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
 
   const [year, month, day] = value.split('-').map(Number)
@@ -35,7 +35,7 @@ function isIsoDate(value: string) {
   return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
 }
 
-const positiveDecimal = (
+export const positiveDecimal = (
   label: string,
   maxIntegerDigits: number,
   maxDecimalDigits: number,

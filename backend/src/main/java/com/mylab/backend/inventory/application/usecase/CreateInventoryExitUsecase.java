@@ -110,9 +110,9 @@ public class CreateInventoryExitUsecase implements CreateInventoryExitPort {
                 );
             }
 
-            BigDecimal unitCost = currentStock.totalValue().divide(currentStock.quantity(), 2, RoundingMode.HALF_UP);
+            BigDecimal unitCost = currentStock.totalValue().divide(currentStock.quantity(), 24, RoundingMode.HALF_UP);
             if (unitCost.compareTo(BigDecimal.ZERO) <= 0) {
-                unitCost = new BigDecimal("0.01");
+                throw new InvalidInventoryException("Cannot calculate a positive unit cost for the current stock");
             }
 
             exitItems.add(new InventoryMovementItem(

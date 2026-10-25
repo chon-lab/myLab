@@ -121,6 +121,16 @@ export const inventoryEntriesQueryOptions = (
     queryFn: () => inventoryService.listEntries(researchGroupId, filters),
   })
 
+export const inventoryExitsQueryOptions = (researchGroupId: string) =>
+  queryOptions({
+    queryKey: inventoryKeys.exitsByGroup(researchGroupId),
+    queryFn: () => inventoryService.listExits(researchGroupId),
+  })
+
+export function useInventoryExitsQuery(researchGroupId: string) {
+  return useQuery(inventoryExitsQueryOptions(researchGroupId))
+}
+
 export function useInventoryStockQuery(
   researchGroupId: string,
   laboratoryId?: string | null,

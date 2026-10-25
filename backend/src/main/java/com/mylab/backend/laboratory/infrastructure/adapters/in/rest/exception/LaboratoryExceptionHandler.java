@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.mylab.backend.laboratory.application.exception.LaboratoryNotFoundException;
+import com.mylab.backend.laboratory.application.exception.LaboratoryHasStockException;
 import com.mylab.backend.laboratory.application.exception.ResearchGroupNotFoundException;
 import com.mylab.backend.laboratory.domain.exception.InvalidLaboratoryException;
 
@@ -33,6 +34,12 @@ public class LaboratoryExceptionHandler {
     public ResponseEntity<ApiErrorResponse> handleInvalidLaboratory(
             InvalidLaboratoryException exception, HttpServletRequest request) {
         return response(HttpStatus.BAD_REQUEST, exception.getMessage(), request);
+    }
+
+    @ExceptionHandler(LaboratoryHasStockException.class)
+    public ResponseEntity<ApiErrorResponse> handleLaboratoryHasStock(
+            LaboratoryHasStockException exception, HttpServletRequest request) {
+        return response(HttpStatus.CONFLICT, exception.getMessage(), request);
     }
 
     private ResponseEntity<ApiErrorResponse> response(

@@ -120,8 +120,12 @@ export const inventoryEntriesQueryOptions = (
 export function useInventoryStockQuery(
   researchGroupId: string,
   laboratoryId?: string | null,
+  enabled = true,
 ) {
-  return useQuery(inventoryStockQueryOptions(researchGroupId, laboratoryId))
+  return useQuery({
+    ...inventoryStockQueryOptions(researchGroupId, laboratoryId),
+    enabled,
+  })
 }
 
 export function useInventoryItemsQuery(researchGroupId: string) {
@@ -162,12 +166,13 @@ export function useInventoryLaboratoriesQuery(researchGroupId: string) {
 export function useInventoryLaboratoryBreakdownsQuery(
   researchGroupId: string,
   laboratories: InventoryLaboratory[],
+  enabled = true,
 ) {
   const laboratoryIds = laboratories.map((laboratory) => laboratory.id)
 
   return useQuery({
     queryKey: inventoryKeys.stockBreakdownByGroup(researchGroupId, laboratoryIds),
-    enabled: laboratories.length > 0,
+    enabled: enabled && laboratories.length > 0,
     queryFn: async () => {
       const responses = await Promise.all(
         laboratories.map(async (laboratory) => ({

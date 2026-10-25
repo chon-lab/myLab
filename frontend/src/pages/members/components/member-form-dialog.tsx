@@ -23,7 +23,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { publishApiErrorToast } from '@/lib/api-error-toasts'
 import {
   useCreateMemberMutation,
   useMemberDetailsQuery,
@@ -135,9 +134,8 @@ export function MemberFormDialog({
         },
       })
       onSaved('updated')
-    } catch (error) {
-      setFormError(error instanceof Error ? error.message : 'Não foi possível salvar o membro.')
-      publishApiErrorToast(error)
+    } catch {
+      setFormError('Não foi possível salvar o membro. Revise as informações e tente novamente.')
     }
   }
 

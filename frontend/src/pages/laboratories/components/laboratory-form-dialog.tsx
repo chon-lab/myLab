@@ -61,6 +61,10 @@ function getSaveErrorMessage(error: unknown, mode: 'create' | 'edit') {
       : 'Este laboratório não foi encontrado. Ele pode ter sido removido.'
   }
 
+  if (error.message.includes('updatedAt must not move backwards')) {
+    return 'A data de atualização do laboratório está inconsistente. Reinicie o backend e tente salvar novamente.'
+  }
+
   if (error.status === 400 && Object.keys(error.fieldErrors).length > 0) {
     return 'Revise os campos destacados e tente novamente.'
   }
@@ -167,7 +171,6 @@ function LaboratoryFormContent({
       })
     }
     setFormError(getSaveErrorMessage(error, mode))
-    publishApiErrorToast(error)
   }
 
   function submit(values: LaboratoryFormValues) {

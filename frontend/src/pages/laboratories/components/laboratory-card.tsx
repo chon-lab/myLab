@@ -96,6 +96,26 @@ export function LaboratoryCard({
               {laboratoryStatusLabels[laboratory.status]}
             </Badge>
 
+            <div className="flex items-center gap-1 sm:hidden">
+              <Button
+                variant="ghost"
+                size="icon-lg"
+                aria-label={`Editar ${laboratory.name}`}
+                onClick={() => onEdit(laboratory)}
+              >
+                <Pencil aria-hidden="true" className="size-5" />
+              </Button>
+              <Button
+                variant="destructive"
+                size="icon-lg"
+                aria-label={`Excluir ${laboratory.name}`}
+                onClick={() => onDelete(laboratory)}
+              >
+                <Trash2 aria-hidden="true" className="size-5" />
+              </Button>
+            </div>
+
+            <div className="hidden sm:block">
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -103,7 +123,7 @@ export function LaboratoryCard({
                   size="icon-sm"
                   aria-label={`Ações de ${laboratory.name}`}
                 >
-                  <MoreHorizontal aria-hidden="true" className="size-5 sm:size-4" />
+                  <MoreHorizontal aria-hidden="true" className="size-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44">
@@ -124,6 +144,7 @@ export function LaboratoryCard({
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            </div>
           </div>
         </div>
 

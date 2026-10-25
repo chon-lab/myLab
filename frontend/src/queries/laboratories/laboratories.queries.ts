@@ -126,6 +126,7 @@ export function useCreateLaboratoryMutation(researchGroupId: string) {
   return useMutation({
     mutationFn: (body: CreateLaboratoryRequest) =>
       laboratoriesService.create(researchGroupId, body),
+    meta: { suppressGlobalErrorToast: true },
     onSuccess: () => invalidateLaboratoryLists(queryClient),
   })
 }
@@ -136,6 +137,7 @@ export function useUpdateLaboratoryMutation() {
   return useMutation({
     mutationFn: ({ id, body }: { id: string; body: UpdateLaboratoryRequest }) =>
       laboratoriesService.update(id, body),
+    meta: { suppressGlobalErrorToast: true },
     onSuccess: () => invalidateLaboratoryLists(queryClient),
   })
 }

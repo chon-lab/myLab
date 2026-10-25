@@ -1,7 +1,6 @@
 package com.mylab.backend.inventory.application.dto;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.UUID;
 
 import com.mylab.backend.inventory.domain.model.InventoryItemType;
@@ -17,7 +16,6 @@ public record InventoryStockItem(
 ) {
     public InventoryStockItem {
         quantity = normalizeQuantity(quantity);
-        totalValue = totalValue.setScale(2, RoundingMode.HALF_UP);
     }
 
     private static BigDecimal normalizeQuantity(BigDecimal value) {

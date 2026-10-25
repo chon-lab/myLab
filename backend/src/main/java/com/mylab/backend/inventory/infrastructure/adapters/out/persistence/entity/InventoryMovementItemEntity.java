@@ -24,7 +24,7 @@ public class InventoryMovementItemEntity {
     private InventoryItemEntity inventoryItem;
     @Column(nullable = false, precision = 15, scale = 4, updatable = false)
     private BigDecimal quantity;
-    @Column(name = "unit_cost", nullable = false, precision = 15, scale = 2, updatable = false)
+    @Column(name = "unit_cost", nullable = false, precision = 38, scale = 24, updatable = false)
     private BigDecimal unitCost;
     @Column(name = "batch_number", updatable = false)
     private String batchNumber;

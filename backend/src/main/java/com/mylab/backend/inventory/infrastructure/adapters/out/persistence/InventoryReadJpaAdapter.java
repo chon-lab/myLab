@@ -1,7 +1,6 @@
 package com.mylab.backend.inventory.infrastructure.adapters.out.persistence;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -57,8 +56,7 @@ public class InventoryReadJpaAdapter implements InventoryStockQueryPort, Invento
             if (total[0].signum() > 0) {
                 InventoryItemEntity item = items.get(id);
                 result.add(new InventoryStockItem(id, item.getName(), item.getItemType(),
-                        item.getUnitOfMeasure(), total[0], total[1].max(BigDecimal.ZERO)
-                        .setScale(2, RoundingMode.HALF_UP)));
+                        item.getUnitOfMeasure(), total[0], total[1].max(BigDecimal.ZERO)));
             }
         });
         result.sort(Comparator.comparing(InventoryStockItem::itemName, String.CASE_INSENSITIVE_ORDER));

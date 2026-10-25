@@ -1,6 +1,7 @@
 package com.mylab.backend.inventory.application.usecase;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,7 +33,10 @@ public class GetInventoryStockUsecase implements GetInventoryStockPort {
             throw new ResearchGroupNotFoundException(researchGroupId);
         }
         validateLaboratoryScope(researchGroupId, laboratoryId);
-        List<InventoryStockItem> items = stockQuery.findStock(researchGroupId, laboratoryId);
+        List<InventoryStockItem> items = stockQuery.findStock(researchGroupId, laboratoryId).stream()
+                .map(item -> new InventoryStockItem(item.inventoryItemId(), item.itemName(), item.itemType(),
+                        item.unitOfMeasure(), item.quantity(), item.totalValue().setScale(2, RoundingMode.HALF_UP)))
+                .toList();
         BigDecimal totalValue = items.stream()
                 .map(InventoryStockItem::totalValue)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);

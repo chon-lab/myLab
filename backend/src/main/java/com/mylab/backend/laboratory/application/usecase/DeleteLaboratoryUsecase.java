@@ -8,8 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.mylab.backend.laboratory.application.exception.LaboratoryNotFoundException;
+import com.mylab.backend.laboratory.application.exception.LaboratoryHasStockException;
 import com.mylab.backend.laboratory.application.port.in.DeleteLaboratoryPort;
 import com.mylab.backend.laboratory.application.port.out.LaboratoryRepositoryPort;
+import com.mylab.backend.laboratory.application.port.out.LaboratoryStockLookupPort;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 public class DeleteLaboratoryUsecase implements DeleteLaboratoryPort {
 
     private final LaboratoryRepositoryPort repositoryPort;
+    private final LaboratoryStockLookupPort stockLookupPort;
 
     @Override
     @Transactional
@@ -27,8 +30,11 @@ public class DeleteLaboratoryUsecase implements DeleteLaboratoryPort {
         Objects.requireNonNull(id, "id must not be null");
         log.info("Archiving laboratory with ID: {}", id);
 
-        var laboratory = repositoryPort.findById(id)
+        var laboratory = repositoryPort.findByIdForUpdate(id)
                 .orElseThrow(() -> new LaboratoryNotFoundException(id));
+        if (stockLookupPort.hasStock(laboratory.getResearchGroupId(), id)) {
+            throw new LaboratoryHasStockException(id);
+        }
         laboratory.archive(LocalDateTime.now());
         repositoryPort.save(laboratory);
     }

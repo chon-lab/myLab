@@ -2,6 +2,7 @@ import { api } from '@/lib/api-client'
 import type {
   CreateInventoryEntryRequest,
   CreateInventoryExitRequest,
+  CreateInventoryItemRequest,
   CreateInventoryTransferRequest,
   InventoryEntryFilters,
   InventoryEntryDocumentSummary,
@@ -14,6 +15,7 @@ import type {
   InventoryMovementHistoryRecord,
   InventoryStockResponse,
   ReverseInventoryMovementRequest,
+  UpdateInventoryItemRequest,
 } from '@/types/inventory/inventory.types'
 
 function buildQueryString(params: Record<string, string | null | undefined>) {
@@ -39,6 +41,19 @@ export const inventoryService = {
 
   listItemsByGroup: (researchGroupId: string) =>
     api.get<InventoryItem[]>(`/api/v1/research-groups/${researchGroupId}/inventory/items`),
+
+  getItem: (itemId: string) => api.get<InventoryItem>(`/api/v1/inventory/items/${itemId}`),
+
+  createItem: (researchGroupId: string, body: CreateInventoryItemRequest) =>
+    api.post<string | undefined>(
+      `/api/v1/research-groups/${researchGroupId}/inventory/items`,
+      body,
+    ),
+
+  updateItem: (itemId: string, body: UpdateInventoryItemRequest) =>
+    api.put<void>(`/api/v1/inventory/items/${itemId}`, body),
+
+  archiveItem: (itemId: string) => api.delete<void>(`/api/v1/inventory/items/${itemId}`),
 
   listGroupLaboratories: (researchGroupId: string) =>
     api.get<InventoryLaboratory[]>(`/api/v1/research-groups/${researchGroupId}/laboratories`),

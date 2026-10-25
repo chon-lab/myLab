@@ -34,6 +34,11 @@ public class LaboratoryJpaAdapter implements LaboratoryRepositoryPort {
     }
 
     @Override
+    public Optional<Laboratory> findByIdForUpdate(UUID id) {
+        return jpaRepository.lockForStockUpdate(id).map(mapper::toDomain);
+    }
+
+    @Override
     public List<Laboratory> findAllByResearchGroupId(UUID researchGroupId) {
         return mapper.toDomainList(jpaRepository.findAllByResearchGroupIdAndDeletedAtIsNull(researchGroupId));
     }

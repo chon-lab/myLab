@@ -68,7 +68,7 @@ Pessoa: `name` e `role` obrigatórios na criação; `socialName`, `email`, `phon
 | `GET /projects/{projectId}/documents/{documentId}` | Baixa o arquivo binário, com `Content-Disposition: attachment`. |
 | `DELETE /projects/{projectId}/documents/{documentId}` | Remove documento. |
 
-Laboratório: `name` obrigatório, `description`, `status` e `address` opcionais na criação; atualização exige `status`. Status: `ACTIVE`, `INACTIVE`, `MAINTENANCE`. Projeto: criação exige `researchLineId`, `name`, `objective`, `startDate`; aceita `description`, `status`, `endDate`, `knowledgeAreas`. Atualização exige `name`, `objective`, `status`, `startDate`; não altera `researchLineId`. Status: `EM_ANDAMENTO`, `CONCLUIDO`, `CANCELADO`, `SUSPENSO`. O upload está limitado a 20 MB pela configuração Spring; os binários ficam no MinIO e os metadados em `project_document`. Não há rota própria para listar documentos: os metadados vêm em `ProjectResponse.documents`.
+Laboratório: `name` obrigatório, `description`, `status` e `address` opcionais na criação; atualização exige `status`. Status: `ACTIVE`, `INACTIVE`, `MAINTENANCE`. `DELETE` arquiva o laboratório somente quando todos os itens têm saldo zerado; com estoque disponível, retorna 409 e exige saída ou transferência antes da exclusão. As movimentações históricas permanecem consultáveis. Projeto: criação exige `researchLineId`, `name`, `objective`, `startDate`; aceita `description`, `status`, `endDate`, `knowledgeAreas`. Atualização exige `name`, `objective`, `status`, `startDate`; não altera `researchLineId`. Status: `EM_ANDAMENTO`, `CONCLUIDO`, `CANCELADO`, `SUSPENSO`. O upload está limitado a 20 MB pela configuração Spring; os binários ficam no MinIO e os metadados em `project_document`. Não há rota própria para listar documentos: os metadados vêm em `ProjectResponse.documents`.
 
 ## Catálogo de itens de estoque
 
@@ -78,9 +78,9 @@ Laboratório: `name` obrigatório, `description`, `status` e `address` opcionais
 | `POST /research-groups/{groupId}/inventory/items` | Cria item; `CreateInventoryItemRequest`. |
 | `GET /inventory/items/{id}` | Obtém item. |
 | `PUT /inventory/items/{id}` | Atualiza item; `UpdateInventoryItemRequest`. |
-| `DELETE /inventory/items/{id}` | Exclui ou arquiva o item conforme seu histórico. |
+| `DELETE /inventory/items/{id}` | Arquiva o item, preservando catálogo, saldo e histórico; repetir a exclusão de item já arquivado retorna sucesso sem alterar os dados. |
 
-Criação exige `name`, `itemType`, `unitOfMeasure`, `referenceUnitValue`; aceita `description`. Atualização permite `name`, `description` e `referenceUnitValue`. `InventoryItemResponse` inclui `active`. Tipos: `CONSUMABLE`, `PERMANENT`; unidades: `UN`, `CX`, `KIT`, `M`, `KG`, `L`. Quantidades fracionárias só para `M`, `KG`, `L`.
+Criação exige `name`, `itemType`, `unitOfMeasure`, `referenceUnitValue`; aceita `description`. Atualização permite `name`, `description` e `referenceUnitValue`. `InventoryItemResponse` inclui `active`. O catálogo e o detalhe incluem itens arquivados. Arquivar impede novas entradas, mas mantém histórico e saldo; saídas e transferências podem consumir ou mover saldo de item arquivado, respeitando o saldo disponível. Tipos: `CONSUMABLE`, `PERMANENT`; unidades: `UN`, `CX`, `KIT`, `M`, `KG`, `L`. Quantidades fracionárias só para `M`, `KG`, `L`.
 
 ## Entradas, saídas, transferências e saldo
 

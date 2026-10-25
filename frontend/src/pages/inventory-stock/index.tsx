@@ -95,20 +95,43 @@ export function InventoryStockPage() {
 
   const laboratoriesQuery = useInventoryLaboratoriesQuery(selectedGroup.id)
   const catalogQuery = useInventoryItemsQuery(selectedGroup.id)
-  const stockQuery = useInventoryStockQuery(selectedGroup.id, selectedLaboratoryId)
 
   const laboratories = useMemo(
     () => laboratoriesQuery.data ?? [],
     [laboratoriesQuery.data],
   )
+  const selectedLaboratory = useMemo(
+    () => laboratories.find((laboratory) => laboratory.id === selectedLaboratoryId) ?? null,
+    [laboratories, selectedLaboratoryId],
+  )
+  const laboratoryListReady = laboratoriesQuery.isSuccess && !laboratoriesQuery.isFetching
+  const selectedLaboratoryRemoved =
+    selectedLaboratoryId !== null && laboratoryListReady && selectedLaboratory === null
+  const canQueryStock =
+    selectedLaboratoryId === null || (laboratoryListReady && selectedLaboratory !== null)
+  const stockQuery = useInventoryStockQuery(
+    selectedGroup.id,
+    selectedLaboratoryId,
+    canQueryStock,
+  )
   const breakdownsQuery = useInventoryLaboratoryBreakdownsQuery(
     selectedGroup.id,
     laboratories,
+    laboratoryListReady,
   )
 
   useEffect(() => {
-    if (stockQuery.isError) publishApiErrorToast(stockQuery.error)
-  }, [stockQuery.error, stockQuery.isError])
+    if (!selectedLaboratoryRemoved) return
+    setSearchParams((currentParams) => {
+      const nextParams = new URLSearchParams(currentParams)
+      nextParams.delete('laboratoryId')
+      return nextParams
+    }, { replace: true })
+  }, [selectedLaboratoryRemoved, setSearchParams])
+
+  useEffect(() => {
+    if (canQueryStock && stockQuery.isError) publishApiErrorToast(stockQuery.error)
+  }, [canQueryStock, stockQuery.error, stockQuery.isError])
 
   useEffect(() => {
     if (laboratoriesQuery.isError) publishApiErrorToast(laboratoriesQuery.error)
@@ -119,8 +142,10 @@ export function InventoryStockPage() {
   }, [catalogQuery.error, catalogQuery.isError])
 
   useEffect(() => {
-    if (breakdownsQuery.isError) publishApiErrorToast(breakdownsQuery.error)
-  }, [breakdownsQuery.error, breakdownsQuery.isError])
+    if (laboratoryListReady && breakdownsQuery.isError) {
+      publishApiErrorToast(breakdownsQuery.error)
+    }
+  }, [breakdownsQuery.error, breakdownsQuery.isError, laboratoryListReady])
 
   const catalogById = useMemo(() => {
     const items = catalogQuery.data ?? []
@@ -129,11 +154,6 @@ export function InventoryStockPage() {
       return accumulator
     }, {})
   }, [catalogQuery.data])
-
-  const selectedLaboratory = useMemo(
-    () => laboratories.find((laboratory) => laboratory.id === selectedLaboratoryId) ?? null,
-    [laboratories, selectedLaboratoryId],
-  )
 
   function selectLaboratory(laboratoryId: string | null) {
     const nextParams = new URLSearchParams(searchParams)
@@ -145,7 +165,20 @@ export function InventoryStockPage() {
     setSearchParams(nextParams, { replace: true })
   }
 
-  if (stockQuery.isPending || laboratoriesQuery.isPending) {
+  if (laboratoriesQuery.isError) {
+    return (
+      <PageState title="Não foi possível carregar os laboratórios">
+        <p className="mt-2 text-sm text-muted-foreground">
+          Confira sua conexão e tente novamente.
+        </p>
+        <Button className="mt-6" onClick={() => void laboratoriesQuery.refetch()}>
+          Tentar novamente
+        </Button>
+      </PageState>
+    )
+  }
+
+  if (stockQuery.isPending || laboratoriesQuery.isPending || selectedLaboratoryRemoved) {
     return (
       <PageState title="Saldo do estoque">
         <p role="status" className="mt-2 text-sm text-muted-foreground">

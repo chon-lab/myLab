@@ -127,6 +127,20 @@ export type InventoryItem = {
   updatedAt: string
 }
 
+export type CreateInventoryItemRequest = {
+  name: string
+  description?: string
+  itemType: InventoryItemType
+  unitOfMeasure: InventoryUnitOfMeasure
+  referenceUnitValue: number
+}
+
+export type UpdateInventoryItemRequest = {
+  name: string
+  description?: string
+  referenceUnitValue: number
+}
+
 export type InventoryStockItem = {
   inventoryItemId: string
   itemName: string

@@ -10,7 +10,7 @@ import com.mylab.backend.inventory.infrastructure.adapters.out.persistence.entit
 @Repository
 public interface InventoryItemJpaRepository extends JpaRepository<InventoryItemEntity, UUID> {
 
-    Optional<InventoryItemEntity> findByIdAndDeletedAtIsNull(UUID id);
+    Optional<InventoryItemEntity> findById(UUID id);
 
-    List<InventoryItemEntity> findAllByResearchGroupIdAndDeletedAtIsNullOrderByName(UUID researchGroupId);
+    List<InventoryItemEntity> findAllByResearchGroupIdOrderByName(UUID researchGroupId);
 }

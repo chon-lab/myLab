@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { ApiError } from '@/lib/api-client'
-import { publishApiErrorToast } from '@/lib/api-error-toasts'
+import { publishToast } from '@/lib/api-error-toasts'
 import {
   inventoryKeys,
   useArchiveInventoryItemMutation,
@@ -56,7 +56,11 @@ function ArchiveInventoryItemDialogBody({
           void queryClient.invalidateQueries({ queryKey: inventoryKeys.items() })
         }
         setArchiveError(getArchiveErrorMessage(error))
-        publishApiErrorToast(error)
+        publishToast({
+          kind: 'error',
+          title: 'Não foi possível arquivar o item',
+          description: getArchiveErrorMessage(error),
+        })
       },
     })
   }
@@ -69,8 +73,9 @@ function ArchiveInventoryItemDialogBody({
           <strong className="font-semibold">“{item.name}”</strong>?
         </p>
         <p className="text-xs leading-relaxed text-muted-foreground">
-          O item sai do catálogo e não aparece nas novas movimentações. O histórico de entradas,
-          saídas e transferências é preservado.
+          O item continuará no catálogo e no saldo dos laboratórios. Ele não poderá receber novas
+          entradas, mas poderá ser consumido ou transferido enquanto houver saldo. O histórico de
+          movimentações será preservado.
         </p>
         {archiveError && (
           <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 px-3.5 py-2.5 text-sm text-destructive">

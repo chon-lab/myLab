@@ -166,6 +166,7 @@ export function useArchiveInventoryItemMutation() {
 
   return useMutation({
     mutationFn: (itemId: string) => inventoryService.archiveItem(itemId),
+    meta: { suppressGlobalErrorToast: true },
     onSuccess: (_result, itemId) => {
       queryClient.removeQueries({ queryKey: inventoryKeys.itemDetail(itemId) })
       return queryClient.invalidateQueries({ queryKey: inventoryKeys.all })

@@ -78,9 +78,9 @@ Laboratório: `name` obrigatório, `description`, `status` e `address` opcionais
 | `POST /research-groups/{groupId}/inventory/items` | Cria item; `CreateInventoryItemRequest`. |
 | `GET /inventory/items/{id}` | Obtém item. |
 | `PUT /inventory/items/{id}` | Atualiza item; `UpdateInventoryItemRequest`. |
-| `DELETE /inventory/items/{id}` | Exclui ou arquiva o item conforme seu histórico. |
+| `DELETE /inventory/items/{id}` | Arquiva o item, preservando catálogo, saldo e histórico; repetir a exclusão de item já arquivado retorna sucesso sem alterar os dados. |
 
-Criação exige `name`, `itemType`, `unitOfMeasure`, `referenceUnitValue`; aceita `description`. Atualização permite `name`, `description` e `referenceUnitValue`. `InventoryItemResponse` inclui `active`. Tipos: `CONSUMABLE`, `PERMANENT`; unidades: `UN`, `CX`, `KIT`, `M`, `KG`, `L`. Quantidades fracionárias só para `M`, `KG`, `L`.
+Criação exige `name`, `itemType`, `unitOfMeasure`, `referenceUnitValue`; aceita `description`. Atualização permite `name`, `description` e `referenceUnitValue`. `InventoryItemResponse` inclui `active`. O catálogo e o detalhe incluem itens arquivados. Arquivar impede novas entradas, mas mantém histórico e saldo; saídas e transferências podem consumir ou mover saldo de item arquivado, respeitando o saldo disponível. Tipos: `CONSUMABLE`, `PERMANENT`; unidades: `UN`, `CX`, `KIT`, `M`, `KG`, `L`. Quantidades fracionárias só para `M`, `KG`, `L`.
 
 ## Entradas, saídas, transferências e saldo
 

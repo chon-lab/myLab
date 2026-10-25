@@ -368,7 +368,7 @@ function InventoryItemFormContent({
             {formError}
           </p>
         )}
-        {isEditing && effectiveItem && (
+        {isEditing && effectiveItem?.active && (
           <Button
             type="button"
             variant="ghost"

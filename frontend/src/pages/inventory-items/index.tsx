@@ -308,7 +308,7 @@ export function InventoryItemsPage() {
           publishToast({
             kind: 'success',
             title: 'Item arquivado',
-            description: 'O item foi removido do catálogo.',
+            description: 'O item segue no catálogo e no saldo existente, sem receber novas entradas.',
           })
         }}
       />

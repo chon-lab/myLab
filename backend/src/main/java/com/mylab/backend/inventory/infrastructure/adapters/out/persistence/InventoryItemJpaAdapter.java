@@ -23,12 +23,12 @@ public class InventoryItemJpaAdapter implements InventoryItemRepositoryPort {
 
     @Override
     public Optional<InventoryItem> findById(UUID id) {
-        return repository.findByIdAndDeletedAtIsNull(id).map(mapper::toDomain);
+        return repository.findById(id).map(mapper::toDomain);
     }
 
     @Override
     public List<InventoryItem> findAllByResearchGroupId(UUID id) {
-        return repository.findAllByResearchGroupIdAndDeletedAtIsNullOrderByName(id)
+        return repository.findAllByResearchGroupIdOrderByName(id)
                 .stream()
                 .map(mapper::toDomain)
                 .toList();

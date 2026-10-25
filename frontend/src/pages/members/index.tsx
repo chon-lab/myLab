@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { CircleCheck, FileText, Pencil, Plus, Search, Trash2, UsersRound } from 'lucide-react'
+import { FileText, Pencil, Plus, Search, Trash2, UsersRound } from 'lucide-react'
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -25,6 +25,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { ApiError } from '@/lib/api-client'
+import { publishToast } from '@/lib/api-error-toasts'
 import { useResearchGroup } from '@/components/layout/research-group-context'
 import { MemberFormDialog } from '@/pages/members/components/member-form-dialog'
 import { MemberDetailsDialog } from '@/pages/members/components/member-details-dialog'
@@ -185,7 +186,6 @@ export function MembersPage() {
   const [selectedMember, setSelectedMember] = useState<GroupMemberListItem | null>(null)
   const [memberToView, setMemberToView] = useState<GroupMemberListItem | null>(null)
   const [memberToRemove, setMemberToRemove] = useState<GroupMemberListItem | null>(null)
-  const [feedback, setFeedback] = useState<'created' | 'updated' | 'removed' | null>(null)
 
   if (isPending || linesPending) {
     return (
@@ -266,7 +266,6 @@ export function MembersPage() {
           className="h-10 w-full shrink-0 px-4 font-semibold sm:w-auto"
           onClick={() => {
             setSelectedMember(null)
-            setFeedback(null)
             setDialogOpen(true)
           }}
         >
@@ -274,17 +273,6 @@ export function MembersPage() {
           Novo membro
         </Button>
       </header>
-
-      <div role="status" className="mt-4 empty:hidden">
-        {feedback && (
-          <p className="flex items-start gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-            <CircleCheck aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-            {feedback === 'created' && 'Membro cadastrado com sucesso.'}
-            {feedback === 'updated' && 'Membro atualizado com sucesso.'}
-            {feedback === 'removed' && 'Vínculo removido do grupo.'}
-          </p>
-        )}
-      </div>
 
       <nav aria-label="Filtrar membros por perfil" className="mt-6 overflow-x-auto border-b border-border">
         <ul className="flex min-w-max items-center gap-1">
@@ -437,7 +425,6 @@ export function MembersPage() {
                           onRemove={setMemberToRemove}
                           onEdit={(selected) => {
                             setSelectedMember(selected)
-                            setFeedback(null)
                             setDialogOpen(true)
                           }}
                         />
@@ -459,7 +446,6 @@ export function MembersPage() {
                 onRemove={setMemberToRemove}
                 onEdit={(selected) => {
                   setSelectedMember(selected)
-                  setFeedback(null)
                   setDialogOpen(true)
                 }}
               />
@@ -481,7 +467,13 @@ export function MembersPage() {
         onSaved={(mode) => {
           setDialogOpen(false)
           setSelectedMember(null)
-          setFeedback(mode)
+          publishToast({
+            kind: 'success',
+            title: mode === 'created' ? 'Membro cadastrado' : 'Membro atualizado',
+            description: mode === 'created'
+              ? 'O membro foi vinculado ao grupo.'
+              : 'Os dados e o vínculo do membro foram atualizados.',
+          })
         }}
       />
       <MemberDetailsDialog
@@ -499,7 +491,11 @@ export function MembersPage() {
         }}
         onRemoved={() => {
           setMemberToRemove(null)
-          setFeedback('removed')
+          publishToast({
+            kind: 'success',
+            title: 'Membro removido',
+            description: 'O vínculo foi encerrado e o cadastro pessoal foi mantido.',
+          })
         }}
       />
     </section>

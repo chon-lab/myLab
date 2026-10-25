@@ -13,7 +13,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { ApiError } from '@/lib/api-client'
-import { publishApiErrorToast } from '@/lib/api-error-toasts'
 import {
   laboratoriesKeys,
   useDeleteLaboratoryMutation,
@@ -33,6 +32,10 @@ function getDeleteErrorMessage(error: unknown) {
     return 'O servidor recusou a solicitação de exclusão.'
   }
 
+  if (error.status === 409) {
+    return 'Este laboratório ainda possui itens em estoque. Transfira os itens ou registre uma saída antes de excluí-lo.'
+  }
+
   return 'Não foi possível excluir o laboratório. Tente novamente.'
 }
 
@@ -44,7 +47,7 @@ function DeleteLaboratoryDialogBody({
   onDeleted: () => void
 }) {
   const queryClient = useQueryClient()
-  const deleteLaboratory = useDeleteLaboratoryMutation()
+  const deleteLaboratory = useDeleteLaboratoryMutation(laboratory.researchGroupId)
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
   function confirmDelete() {
@@ -56,7 +59,6 @@ function DeleteLaboratoryDialogBody({
           void queryClient.invalidateQueries({ queryKey: laboratoriesKeys.all })
         }
         setDeleteError(getDeleteErrorMessage(error))
-        publishApiErrorToast(error)
       },
     })
   }
@@ -70,7 +72,7 @@ function DeleteLaboratoryDialogBody({
         </p>
         <p className="text-xs leading-relaxed text-muted-foreground">
           O laboratório deixa de aparecer nas listas do grupo. O histórico de movimentações e
-          projetos ligados a ele é preservado.
+          projetos ligados a ele é preservado. Para excluir, o saldo do laboratório deve estar zerado.
         </p>
         {deleteError && (
           <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/10 px-3.5 py-2.5 text-sm text-destructive">

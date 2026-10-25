@@ -9,5 +9,6 @@ import com.mylab.backend.laboratory.domain.model.Laboratory;
 public interface LaboratoryRepositoryPort {
     void save(Laboratory laboratory);
     Optional<Laboratory> findById(UUID id);
+    Optional<Laboratory> findByIdForUpdate(UUID id);
     List<Laboratory> findAllByResearchGroupId(UUID researchGroupId);
 }

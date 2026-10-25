@@ -140,15 +140,23 @@ export function useUpdateLaboratoryMutation() {
   })
 }
 
-export function useDeleteLaboratoryMutation() {
+export function useDeleteLaboratoryMutation(researchGroupId: string) {
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: (id: string) => laboratoriesService.remove(id),
+    meta: { suppressGlobalErrorToast: true },
     onSuccess: (_data, id) => {
       queryClient.removeQueries({ queryKey: laboratoriesKeys.detail(id) })
       queryClient.removeQueries({ queryKey: laboratoriesKeys.projectsByLaboratory(id) })
-      return invalidateLaboratoryLists(queryClient)
+      queryClient.removeQueries({ queryKey: inventoryKeys.stock(researchGroupId, id) })
+      return Promise.all([
+        invalidateLaboratoryLists(queryClient),
+        queryClient.invalidateQueries({
+          queryKey: inventoryKeys.stock(researchGroupId),
+          exact: true,
+        }),
+      ])
     },
   })
 }

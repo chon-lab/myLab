@@ -102,6 +102,14 @@ export type InventoryExitHistoryRecord = {
   items: InventoryExitHistoryItem[]
 }
 
+export type InventoryExitFilters = {
+  laboratoryId?: string | null
+  type?: InventoryExitType | null
+  inventoryItemId?: string | null
+  dateFrom?: string | null
+  dateTo?: string | null
+}
+
 export type LaboratoryStatus = 'ACTIVE' | 'INACTIVE' | 'MAINTENANCE'
 
 export type InventoryLaboratory = {

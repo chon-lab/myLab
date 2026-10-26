@@ -3,6 +3,7 @@ import { Download, FileText, LoaderCircle, Trash2, Upload, X } from 'lucide-reac
 
 import { Button } from '@/components/ui/button'
 import { publishApiErrorToast, publishToast } from '@/lib/api-error-toasts'
+import { formatFileSize, formatUploadDate } from '@/lib/file-format'
 import {
   useDeleteInventoryEntryDocumentMutation,
   useDownloadInventoryEntryDocumentMutation,
@@ -12,21 +13,6 @@ import {
 import type { InventoryEntryDocumentSummary } from '@/types/inventory/inventory.types'
 
 const MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024
-
-function formatFileSize(sizeBytes: number | null) {
-  if (sizeBytes === null) return 'Tamanho indisponível'
-  if (sizeBytes < 1024) return `${sizeBytes} B`
-  if (sizeBytes < 1024 * 1024) return `${(sizeBytes / 1024).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} KB`
-  return `${(sizeBytes / (1024 * 1024)).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} MB`
-}
-
-function formatUploadDate(uploadedAt: string | null) {
-  if (!uploadedAt) return 'Data não informada'
-  const date = new Date(uploadedAt)
-  return Number.isNaN(date.getTime())
-    ? 'Data não informada'
-    : `Enviado em ${new Intl.DateTimeFormat('pt-BR').format(date)}`
-}
 
 function getFileKind(document: InventoryEntryDocumentSummary) {
   const extension = document.fileName?.split('.').pop()?.toLocaleUpperCase('pt-BR')

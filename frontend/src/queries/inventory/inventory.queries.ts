@@ -14,6 +14,7 @@ import type {
   CreateInventoryTransferRequest,
   InventoryEntryDocumentUploadRequest,
   InventoryEntryFilters,
+  InventoryExitFilters,
   InventoryItem,
   InventoryLaboratory,
   InventoryLaboratoryStockBreakdown,
@@ -77,6 +78,19 @@ export const inventoryKeys = {
   exits: () => [...inventoryKeys.all, 'exits'] as const,
   exitsByGroup: (researchGroupId: string) =>
     [...inventoryKeys.exits(), researchGroupId] as const,
+  exitsByGroupWithFilters: (researchGroupId: string, filters: InventoryExitFilters = {}) =>
+    [
+      ...inventoryKeys.exitsByGroup(researchGroupId),
+      {
+        laboratoryId: filters.laboratoryId ?? null,
+        type: filters.type ?? null,
+        inventoryItemId: filters.inventoryItemId ?? null,
+        dateFrom: filters.dateFrom ?? null,
+        dateTo: filters.dateTo ?? null,
+      },
+    ] as const,
+  exitDetail: (exitId: string | null) =>
+    [...inventoryKeys.exits(), 'detail', exitId] as const,
   transfers: () => [...inventoryKeys.all, 'transfers'] as const,
   transfersByGroup: (researchGroupId: string) =>
     [...inventoryKeys.transfers(), researchGroupId] as const,
@@ -121,14 +135,32 @@ export const inventoryEntriesQueryOptions = (
     queryFn: () => inventoryService.listEntries(researchGroupId, filters),
   })
 
-export const inventoryExitsQueryOptions = (researchGroupId: string) =>
+export const inventoryExitsQueryOptions = (
+  researchGroupId: string,
+  filters: InventoryExitFilters = {},
+) =>
   queryOptions({
-    queryKey: inventoryKeys.exitsByGroup(researchGroupId),
-    queryFn: () => inventoryService.listExits(researchGroupId),
+    queryKey: inventoryKeys.exitsByGroupWithFilters(researchGroupId, filters),
+    queryFn: () => inventoryService.listExits(researchGroupId, filters),
   })
 
-export function useInventoryExitsQuery(researchGroupId: string) {
-  return useQuery(inventoryExitsQueryOptions(researchGroupId))
+export function useInventoryExitsQuery(
+  researchGroupId: string,
+  filters: InventoryExitFilters = {},
+  enabled = true,
+) {
+  return useQuery({
+    ...inventoryExitsQueryOptions(researchGroupId, filters),
+    enabled,
+  })
+}
+
+export function useInventoryExitQuery(exitId: string | null) {
+  return useQuery({
+    queryKey: inventoryKeys.exitDetail(exitId),
+    queryFn: () => inventoryService.getExit(exitId!),
+    enabled: exitId !== null,
+  })
 }
 
 export function useInventoryStockQuery(
@@ -372,7 +404,12 @@ export function useReverseInventoryExitMutation(researchGroupId: string) {
       exitId: string
       body: ReverseInventoryMovementRequest
     }) => inventoryService.reverseExit(exitId, body),
-    onSuccess: () => invalidateInventoryGroupBalance(queryClient, researchGroupId),
+    onSuccess: async (_result, { exitId }) => {
+      await Promise.all([
+        invalidateInventoryGroupBalance(queryClient, researchGroupId),
+        queryClient.invalidateQueries({ queryKey: inventoryKeys.exitDetail(exitId) }),
+      ])
+    },
   })
 }
 

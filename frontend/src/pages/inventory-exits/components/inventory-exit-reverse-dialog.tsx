@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Undo2, X } from 'lucide-react'
 
@@ -15,7 +15,8 @@ import {
 } from '@/components/ui/dialog'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Textarea } from '@/components/ui/textarea'
-import { publishApiErrorToast, publishToast } from '@/lib/api-error-toasts'
+import { ApiError } from '@/lib/api-client'
+import { publishToast } from '@/lib/api-error-toasts'
 import { useReverseInventoryExitMutation } from '@/queries/inventory/inventory.queries'
 import {
   formatMovementDate,
@@ -26,6 +27,22 @@ import {
   type InventoryEntryReverseFormValues,
 } from '@/types/inventory/inventory-entry-reverse.schema'
 import type { InventoryExitHistoryRecord } from '@/types/inventory/inventory.types'
+
+function getReverseErrorMessage(error: unknown) {
+  if (error instanceof ApiError) {
+    if (error.status === 404) {
+      return 'Esta saída não foi encontrada. Ela pode ter sido removida; atualize o histórico.'
+    }
+    if (error.status === 400 && /already reversed/i.test(error.message)) {
+      return 'Esta saída já foi estornada. O histórico foi atualizado.'
+    }
+    if (error.status === 400) {
+      return 'A API recusou o estorno. Revise o motivo e tente novamente.'
+    }
+  }
+
+  return 'Não foi possível estornar a saída. Tente novamente.'
+}
 
 export function InventoryExitReverseDialog({
   researchGroupId,
@@ -44,13 +61,20 @@ export function InventoryExitReverseDialog({
     defaultValues: { reason: '' },
   })
   const { reset } = form
+  const [formError, setFormError] = useState<string | null>(null)
 
   useEffect(() => {
     if (exit) reset({ reason: '' })
   }, [exit, reset])
 
+  function handleOpenChange(open: boolean) {
+    if (!open) setFormError(null)
+    onOpenChange(open)
+  }
+
   async function submit(values: InventoryEntryReverseFormValues) {
     if (!exit) return
+    setFormError(null)
 
     try {
       await reverseExit.mutateAsync({
@@ -65,12 +89,12 @@ export function InventoryExitReverseDialog({
       form.reset()
       onReversed()
     } catch (error) {
-      publishApiErrorToast(error)
+      setFormError(getReverseErrorMessage(error))
     }
   }
 
   return (
-    <Dialog open={Boolean(exit)} onOpenChange={onOpenChange}>
+    <Dialog open={Boolean(exit)} onOpenChange={handleOpenChange}>
       <DialogContent
         showCloseButton={false}
         className="flex max-h-dvh flex-col gap-0 overflow-hidden rounded-none p-0 sm:max-h-[90svh] sm:max-w-lg sm:rounded-xl"
@@ -122,7 +146,8 @@ export function InventoryExitReverseDialog({
               </Field>
             </div>
 
-            <DialogFooter className="mx-0 mb-0 gap-3 border-t px-5 py-4 sm:px-6">
+            <DialogFooter className="mx-0 mb-0 flex-row flex-wrap items-center justify-end gap-3 border-t px-5 py-4 sm:px-6">
+              {formError && <p role="alert" className="w-full min-w-0 text-sm text-destructive">{formError}</p>}
               <DialogClose asChild>
                 <Button
                   type="button"

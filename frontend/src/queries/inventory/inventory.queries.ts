@@ -404,11 +404,16 @@ export function useReverseInventoryExitMutation(researchGroupId: string) {
       exitId: string
       body: ReverseInventoryMovementRequest
     }) => inventoryService.reverseExit(exitId, body),
+    meta: { suppressGlobalErrorToast: true },
     onSuccess: async (_result, { exitId }) => {
       await Promise.all([
         invalidateInventoryGroupBalance(queryClient, researchGroupId),
         queryClient.invalidateQueries({ queryKey: inventoryKeys.exitDetail(exitId) }),
       ])
+    },
+    onError: (_error, { exitId }) => {
+      void queryClient.invalidateQueries({ queryKey: inventoryKeys.exitsByGroup(researchGroupId) })
+      void queryClient.invalidateQueries({ queryKey: inventoryKeys.exitDetail(exitId) })
     },
   })
 }

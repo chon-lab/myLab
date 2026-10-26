@@ -251,6 +251,43 @@ export type CreateInventoryTransferRequest = {
   items: CreateInventoryTransferItemRequest[]
 }
 
+export type InventoryTransferStatus = 'CONFIRMED' | 'REVERSED'
+
+export type InventoryTransferHistoryItem = {
+  id: string
+  inventoryItemId: string
+  itemName: string
+  itemType: InventoryItemType
+  unitOfMeasure: InventoryUnitOfMeasure
+  quantity: number
+  unitCost: number
+  totalCost: number
+}
+
+export type InventoryTransferHistoryRecord = {
+  id: string
+  researchGroupId: string
+  sourceLaboratoryId: string
+  sourceLaboratoryName: string
+  destinationLaboratoryId: string
+  destinationLaboratoryName: string
+  transferredAt: string
+  notes: string | null
+  status: InventoryTransferStatus
+  reversedAt: string | null
+  reversalReason: string | null
+  createdAt: string
+  items: InventoryTransferHistoryItem[]
+}
+
+export type InventoryTransferFilters = {
+  sourceLaboratoryId?: string | null
+  destinationLaboratoryId?: string | null
+  inventoryItemId?: string | null
+  dateFrom?: string | null
+  dateTo?: string | null
+}
+
 export type ReverseInventoryMovementRequest = {
   reason: string
 }

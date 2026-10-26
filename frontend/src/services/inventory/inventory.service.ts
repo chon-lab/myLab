@@ -14,6 +14,8 @@ import type {
   InventoryMovementFilters,
   InventoryMovementHistoryRecord,
   InventoryStockResponse,
+  InventoryTransferFilters,
+  InventoryTransferHistoryRecord,
   ReverseInventoryMovementRequest,
   UpdateInventoryItemRequest,
 } from '@/types/inventory/inventory.types'
@@ -134,5 +136,19 @@ export const inventoryService = {
 
   reverseTransfer: (transferId: string, body: ReverseInventoryMovementRequest) =>
     api.post<void>(`/api/v1/inventory/transfers/${transferId}/reverse`, body),
+
+  listTransfers: (researchGroupId: string, filters: InventoryTransferFilters = {}) =>
+    api.get<InventoryTransferHistoryRecord[]>(
+      `/api/v1/research-groups/${researchGroupId}/inventory/transfers${buildQueryString({
+        sourceLaboratoryId: filters.sourceLaboratoryId,
+        destinationLaboratoryId: filters.destinationLaboratoryId,
+        inventoryItemId: filters.inventoryItemId,
+        dateFrom: filters.dateFrom,
+        dateTo: filters.dateTo,
+      })}`,
+    ),
+
+  getTransfer: (transferId: string) =>
+    api.get<InventoryTransferHistoryRecord>(`/api/v1/inventory/transfers/${transferId}`),
 }
 

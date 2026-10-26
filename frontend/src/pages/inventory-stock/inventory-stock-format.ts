@@ -133,6 +133,10 @@ export function buildInventoryShortcutPath(
     searchParams.set('openExit', 'true')
   }
 
+  if (destination === 'transferencias') {
+    searchParams.set('openTransfer', 'true')
+  }
+
   const query = searchParams.toString()
   const basePath = `/grupos/${researchGroupId}/estoque/${destination}`
   return query ? `${basePath}?${query}` : basePath

@@ -1,5 +1,6 @@
 package com.mylab.backend.person.infrastructure.adapters.out.persistence.repository;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,4 +10,6 @@ import com.mylab.backend.person.infrastructure.adapters.out.persistence.entity.P
 
 @Repository
 public interface PersonJpaRepository extends JpaRepository<PersonEntity, UUID> {
+
+    Optional<PersonEntity> findByEmailIgnoreCaseAndDeletedAtIsNull(String email);
 }

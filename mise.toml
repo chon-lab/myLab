@@ -2,7 +2,7 @@
 java = "25"
 node = "24"
 
-[tasks.start]
+[tasks.back]
 description = "Inicia o backend Spring Boot"
 dir = "backend"
 run = "./mvnw spring-boot:run"

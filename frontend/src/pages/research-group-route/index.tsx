@@ -3,6 +3,7 @@ import { Navigate, useParams } from 'react-router'
 import { AppShell } from '@/components/layout/app-shell'
 import { ResearchGroupProvider } from '@/components/layout/research-group-provider'
 import { Button } from '@/components/ui/button'
+import { useLogoutMutation } from '@/queries/auth/auth.queries'
 import { useResearchGroupsQuery } from '@/queries/research-groups/research-groups.queries'
 
 const selectedGroupStorageKey = 'mylab:selected-research-group'
@@ -16,18 +17,27 @@ function LoadingState() {
 }
 
 function ErrorState({ onRetry }: { onRetry: () => void }) {
+  const logout = useLogoutMutation()
+
   return (
     <main className="grid min-h-svh place-items-center bg-slate-50 px-6">
       <section className="max-w-md text-center">
         <h1 className="text-2xl font-bold tracking-tight">Não foi possível carregar os grupos</h1>
         <p className="mt-2 text-sm text-muted-foreground">Confira sua conexão e tente novamente.</p>
-        <Button className="mt-6" onClick={onRetry}>Tentar novamente</Button>
+        <div className="mt-6 flex items-center justify-center gap-3">
+          <Button onClick={onRetry}>Tentar novamente</Button>
+          <Button variant="outline" onClick={() => logout.mutate()} disabled={logout.isPending}>
+            Sair
+          </Button>
+        </div>
       </section>
     </main>
   )
 }
 
 function EmptyState() {
+  const logout = useLogoutMutation()
+
   return (
     <main className="grid min-h-svh place-items-center bg-slate-50 px-6">
       <section className="max-w-md text-center">
@@ -35,6 +45,14 @@ function EmptyState() {
         <p className="mt-2 text-sm text-muted-foreground">
           Peça a um administrador para adicionar você a um grupo de pesquisa.
         </p>
+        <Button
+          className="mt-6"
+          variant="outline"
+          onClick={() => logout.mutate()}
+          disabled={logout.isPending}
+        >
+          Sair
+        </Button>
       </section>
     </main>
   )

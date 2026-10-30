@@ -1,5 +1,8 @@
 package com.mylab.backend.inventory.infrastructure.adapters.in.rest;
 
+import com.mylab.backend.auth.infrastructure.web.RequiredPermission;
+import com.mylab.backend.role.domain.model.PermissionResource;
+
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
@@ -28,6 +31,7 @@ import com.mylab.backend.inventory.infrastructure.adapters.in.rest.dto.ReverseIn
 import com.mylab.backend.inventory.infrastructure.adapters.in.rest.mapper.InventoryEntryRestMapper;
 
 @RestController
+@RequiredPermission(resource = PermissionResource.INVENTORY_ENTRY)
 @RequiredArgsConstructor
 public class InventoryEntryController {
     private final CreateInventoryEntryPort createInventoryEntryPort;
@@ -44,8 +48,7 @@ public class InventoryEntryController {
     @PostMapping("/api/v1/inventory/entries/{entryId}/reverse")
     public ResponseEntity<Void> reverse(
             @PathVariable UUID entryId,
-            @Valid @RequestBody ReverseInventoryEntryRequest request
-    ) {
+            @Valid @RequestBody ReverseInventoryEntryRequest request) {
         reverseInventoryEntryPort.reverse(entryId, mapper.toInput(request));
         return ResponseEntity.noContent().build();
     }
@@ -57,23 +60,20 @@ public class InventoryEntryController {
             @RequestParam(required = false) InventoryEntrySource source,
             @RequestParam(required = false) UUID inventoryItemId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo
-    ) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo) {
         InventoryEntrySearchCriteria criteria = new InventoryEntrySearchCriteria(
                 laboratoryId,
                 source,
                 inventoryItemId,
                 dateFrom,
-                dateTo
-        );
+                dateTo);
         return getInventoryEntryHistoryPort.getHistory(groupId, criteria);
     }
 
     @PostMapping("/api/v1/research-groups/{groupId}/inventory/entries")
     public ResponseEntity<Void> create(
             @PathVariable UUID groupId,
-            @Valid @RequestBody CreateInventoryEntryRequest request
-    ) {
+            @Valid @RequestBody CreateInventoryEntryRequest request) {
         UUID entryId = createInventoryEntryPort.create(groupId, mapper.toInput(request));
         return ResponseEntity.created(URI.create("/api/v1/inventory/entries/" + entryId)).build();
     }

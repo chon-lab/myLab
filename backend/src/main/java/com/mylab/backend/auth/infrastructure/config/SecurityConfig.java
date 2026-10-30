@@ -1,4 +1,4 @@
-package com.mylab.backend.common.infrastructure.config;
+package com.mylab.backend.auth.infrastructure.config;
 
 import java.util.List;
 

@@ -18,5 +18,7 @@ public class UpdateGroupMemberRequest {
 
     private GroupMemberRole role;
 
+    private UUID roleId;
+
     private List<UUID> researchLineIds;
 }

@@ -8,5 +8,6 @@ import com.mylab.backend.groupmember.domain.model.GroupMemberRole;
 public record UpdateGroupMemberInput(
         Boolean active,
         GroupMemberRole role,
+        UUID roleId,
         List<UUID> researchLineIds
 ) {}

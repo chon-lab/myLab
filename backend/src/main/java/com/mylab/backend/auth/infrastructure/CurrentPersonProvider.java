@@ -1,4 +1,4 @@
-package com.mylab.backend.common.infrastructure.auth;
+package com.mylab.backend.auth.infrastructure;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

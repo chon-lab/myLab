@@ -17,6 +17,7 @@ public class GroupMember {
     private final UUID researchGroupId;
     private boolean active;
     private GroupMemberRole role;
+    private UUID roleId;
     private Set<UUID> researchLineIds;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -28,6 +29,7 @@ public class GroupMember {
             UUID researchGroupId,
             boolean active,
             GroupMemberRole role,
+            UUID roleId,
             Set<UUID> researchLineIds,
             LocalDateTime createdAt,
             LocalDateTime updatedAt) {
@@ -36,9 +38,19 @@ public class GroupMember {
         this.researchGroupId = requireNonNull(researchGroupId, "researchGroupId");
         this.active = active;
         this.role = role;
+        this.roleId = roleId;
         this.researchLineIds = defaultIfNull(researchLineIds);
         this.createdAt = requireNonNull(createdAt, "createdAt");
         this.updatedAt = requireValidUpdatedAt(updatedAt, createdAt);
+    }
+
+    public void assignRole(UUID roleId, LocalDateTime occurredAt) {
+        LocalDateTime validUpdatedAt = requireValidUpdatedAt(occurredAt, this.createdAt);
+        if (validUpdatedAt.isBefore(this.updatedAt)) {
+            throw new InvalidGroupMemberException("updatedAt must not move backwards");
+        }
+        this.roleId = requireNonNull(roleId, "roleId");
+        this.updatedAt = validUpdatedAt;
     }
 
     private static <T> T requireNonNull(T value, String fieldName) {

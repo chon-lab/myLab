@@ -1,5 +1,8 @@
 package com.mylab.backend.inventory.infrastructure.adapters.in.rest;
 
+import com.mylab.backend.auth.infrastructure.web.RequiredPermission;
+import com.mylab.backend.role.domain.model.PermissionResource;
+
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
@@ -27,6 +30,7 @@ import com.mylab.backend.inventory.infrastructure.adapters.in.rest.dto.ReverseIn
 import com.mylab.backend.inventory.infrastructure.adapters.in.rest.mapper.InventoryTransferRestMapper;
 
 @RestController
+@RequiredPermission(resource = PermissionResource.INVENTORY_TRANSFER)
 @RequiredArgsConstructor
 public class InventoryTransferController {
     private final CreateInventoryTransferPort createInventoryTransferPort;
@@ -43,8 +47,7 @@ public class InventoryTransferController {
     @PostMapping("/api/v1/inventory/transfers/{transferId}/reverse")
     public ResponseEntity<Void> reverse(
             @PathVariable UUID transferId,
-            @Valid @RequestBody ReverseInventoryTransferRequest request
-    ) {
+            @Valid @RequestBody ReverseInventoryTransferRequest request) {
         reverseInventoryTransferPort.reverse(transferId, mapper.toInput(request));
         return ResponseEntity.noContent().build();
     }
@@ -56,25 +59,21 @@ public class InventoryTransferController {
             @RequestParam(required = false) UUID destinationLaboratoryId,
             @RequestParam(required = false) UUID inventoryItemId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo
-    ) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo) {
         InventoryTransferSearchCriteria criteria = new InventoryTransferSearchCriteria(
                 sourceLaboratoryId,
                 destinationLaboratoryId,
                 inventoryItemId,
                 dateFrom,
-                dateTo
-        );
+                dateTo);
         return getInventoryTransferHistoryPort.getHistory(groupId, criteria);
     }
 
     @PostMapping("/api/v1/research-groups/{groupId}/inventory/transfers")
     public ResponseEntity<Void> create(
             @PathVariable UUID groupId,
-            @Valid @RequestBody CreateInventoryTransferRequest request
-    ) {
+            @Valid @RequestBody CreateInventoryTransferRequest request) {
         UUID transferId = createInventoryTransferPort.create(groupId, mapper.toInput(request));
         return ResponseEntity.created(URI.create("/api/v1/inventory/transfers/" + transferId)).build();
     }
 }
-

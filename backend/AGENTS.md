@@ -9,6 +9,19 @@ API Spring Boot 4 / Java 25, com arquitetura hexagonal (`domain`, `application`,
 - Erros tratados usam `ApiErrorResponse`: `timestamp`, `status`, `error`, `message`, `path`, `fieldErrors`. Validação e dados inválidos retornam 400; recurso inexistente, 404; conflitos de dados podem retornar 409. Consulte os exception handlers para casos específicos.
 - Em rotas aninhadas, o ID do recurso pai define o escopo. Use os nomes exatos dos parâmetros de consulta indicados abaixo. Os DTOs em `infrastructure/adapters/in/rest/dto` e records em `application/dto` são a referência para campos e validação.
 
+## Autenticação e autorização
+
+Autenticação é via **Keycloak** (resource server OAuth2/JWT). Todo `/api/v1/**` exige um token válido — sem token, `401`; autenticado mas sem permissão, `403`. O módulo `auth` concentra isso.
+
+A autorização dos endpoints **escopados por grupo** é aplicada pelo `PermissionInterceptor` (`auth/infrastructure/web`), dirigido por anotação — **não** por inferência de URL:
+
+- **Regra obrigatória:** todo controller que expõe endpoints escopados a um grupo **precisa** declarar `@RequiredPermission(resource = PermissionResource.X)` (um recurso por controller, no nível da classe; um método pode sobrescrever). **Sem a anotação, a rota não é protegida** (fail-open) — ao criar um controller novo escopado por grupo, lembre-se de anotá-lo.
+- A **ação** é derivada do método HTTP: `GET`/`HEAD` → `READ`, `POST`/`PUT`/`PATCH` → `WRITE`, `DELETE` → `DELETE`.
+- O **grupo** é resolvido: pelo path nas rotas aninhadas (`/research-groups/{groupId}/...`); via `GroupResolver` (carrega a entidade pra achar o grupo) nas rotas por-id (`/laboratories/{id}`, `/projects/{id}`, `/inventory/entries/{id}/...` etc.). Se o grupo não puder ser resolvido, a rota não é checada.
+- O cargo **Admin** do grupo tem `full_access` (passa em tudo). Cargos custom precisam da permissão `(resource, action)` correspondente; o catálogo de recursos/ações é o enum `PermissionResource`/`PermissionAction` (módulo `role`), exposto em `GET /api/v1/permissions/catalog`.
+- Endpoints **não** escopados por grupo **não** levam a anotação: `GET /api/v1/me`, `GET /api/v1/permissions/catalog`, `GET /api/v1/me/research-groups/{id}/permissions`, e as coleções `GET`/`POST /api/v1/research-groups` (a listagem é filtrada pelos vínculos ativos do usuário; a criação faz o bootstrap do grupo + cargo Admin para o criador).
+- Cargos são gerenciados em `/api/v1/research-groups/{id}/roles` (CRUD); o cargo do membro é definido pelo `roleId` no `PATCH` de membro. O `Person` do usuário logado é resolvido pelo e-mail do JWT (criado no 1º acesso — provisionamento JIT).
+
 ## Grupos de pesquisa
 
 | Método e rota | Função |
@@ -116,4 +129,4 @@ Saída: `laboratoryId`, `type` (`CONSUMPTION`, `DISPOSAL`, `LOSS`), `occurredAt`
 
 ## Limites atuais
 
-Não há endpoints de login, permissões, empréstimos, devoluções, edição direta de saldo ou vínculo de saídas a projetos. Documentos de estoque só podem ser associados a entradas (`movement_type = ENTRY`). Não deduza implementação apenas porque uma funcionalidade aparece nos planos em `../docs/`.
+Autenticação e autorização por cargos já existem (ver seção acima). Ainda não há endpoints de empréstimos, devoluções, edição direta de saldo ou vínculo de saídas a projetos. Documentos de estoque só podem ser associados a entradas (`movement_type = ENTRY`). Não deduza implementação apenas porque uma funcionalidade aparece nos planos em `../docs/`.

@@ -1,4 +1,4 @@
-package com.mylab.backend.common.infrastructure.auth;
+package com.mylab.backend.auth.infrastructure;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

@@ -3,7 +3,7 @@ package com.mylab.backend.person.infrastructure.adapters.in.rest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.mylab.backend.common.infrastructure.auth.CurrentPersonProvider;
+import com.mylab.backend.auth.infrastructure.CurrentPersonProvider;
 import com.mylab.backend.person.infrastructure.adapters.in.rest.dto.PersonResponse;
 import com.mylab.backend.person.infrastructure.adapters.in.rest.mapper.PersonRestMapper;
 

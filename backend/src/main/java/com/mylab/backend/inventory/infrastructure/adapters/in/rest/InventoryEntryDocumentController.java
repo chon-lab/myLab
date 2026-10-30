@@ -1,5 +1,8 @@
 package com.mylab.backend.inventory.infrastructure.adapters.in.rest;
 
+import com.mylab.backend.auth.infrastructure.web.RequiredPermission;
+import com.mylab.backend.role.domain.model.PermissionResource;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
@@ -33,6 +36,7 @@ import com.mylab.backend.inventory.infrastructure.adapters.in.rest.dto.CreateInv
 import com.mylab.backend.inventory.infrastructure.adapters.in.rest.dto.InventoryEntryDocumentResponse;
 
 @RestController
+@RequiredPermission(resource = PermissionResource.INVENTORY_ENTRY)
 @RequiredArgsConstructor
 public class InventoryEntryDocumentController {
     private final InventoryEntryDocumentUsecase usecase;
@@ -45,10 +49,10 @@ public class InventoryEntryDocumentController {
     @PostMapping("/api/v1/inventory/entries/{entryId}/documents")
     public ResponseEntity<InventoryEntryDocumentResponse> createMetadata(
             @PathVariable UUID entryId,
-            @Valid @RequestBody CreateInventoryEntryDocumentRequest request
-    ) {
+            @Valid @RequestBody CreateInventoryEntryDocumentRequest request) {
         InventoryEntryDocument document = usecase.createMetadata(entryId,
-                new CreateInventoryEntryDocumentInput(request.documentNumber(), request.issuer(), request.documentDate()));
+                new CreateInventoryEntryDocumentInput(request.documentNumber(), request.issuer(),
+                        request.documentDate()));
         return documentLocation(entryId, document.id()).body(toResponse(document));
     }
 
@@ -58,17 +62,16 @@ public class InventoryEntryDocumentController {
             @RequestParam("file") MultipartFile file,
             @RequestParam(required = false) String documentNumber,
             @RequestParam(required = false) String issuer,
-            @RequestParam(required = false) java.time.LocalDate documentDate
-    ) {
-        InventoryEntryDocument document = usecase.createWithFile(entryId, toInput(file, documentNumber, issuer, documentDate));
+            @RequestParam(required = false) java.time.LocalDate documentDate) {
+        InventoryEntryDocument document = usecase.createWithFile(entryId,
+                toInput(file, documentNumber, issuer, documentDate));
         return documentLocation(entryId, document.id()).body(toResponse(document));
     }
 
     @GetMapping("/api/v1/inventory/entries/{entryId}/documents/{documentId}")
     public InventoryEntryDocumentResponse get(
             @PathVariable UUID entryId,
-            @PathVariable UUID documentId
-    ) {
+            @PathVariable UUID documentId) {
         return toResponse(usecase.get(entryId, documentId));
     }
 
@@ -76,8 +79,7 @@ public class InventoryEntryDocumentController {
     public InventoryEntryDocumentResponse attachFile(
             @PathVariable UUID entryId,
             @PathVariable UUID documentId,
-            @RequestParam("file") MultipartFile file
-    ) {
+            @RequestParam("file") MultipartFile file) {
         InventoryEntryDocument current = usecase.get(entryId, documentId);
         return toResponse(usecase.attachFile(entryId, documentId,
                 toInput(file, current.documentNumber(), current.issuer(), current.documentDate())));
@@ -86,8 +88,7 @@ public class InventoryEntryDocumentController {
     @GetMapping("/api/v1/inventory/entries/{entryId}/documents/{documentId}/file")
     public ResponseEntity<Resource> download(
             @PathVariable UUID entryId,
-            @PathVariable UUID documentId
-    ) {
+            @PathVariable UUID documentId) {
         InventoryEntryDocumentContent content = usecase.download(entryId, documentId);
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(content.contentType()))
@@ -100,8 +101,7 @@ public class InventoryEntryDocumentController {
     @DeleteMapping("/api/v1/inventory/entries/{entryId}/documents/{documentId}")
     public ResponseEntity<Void> delete(
             @PathVariable UUID entryId,
-            @PathVariable UUID documentId
-    ) {
+            @PathVariable UUID documentId) {
         usecase.delete(entryId, documentId);
         return ResponseEntity.noContent().build();
     }
@@ -110,14 +110,14 @@ public class InventoryEntryDocumentController {
             MultipartFile file,
             String documentNumber,
             String issuer,
-            java.time.LocalDate documentDate
-    ) {
+            java.time.LocalDate documentDate) {
         if (file.isEmpty() || file.getOriginalFilename() == null) {
             throw new com.mylab.backend.inventory.domain.exception.InvalidInventoryException("file must not be empty");
         }
         try {
             return new UploadInventoryEntryDocumentInput(documentNumber, issuer, documentDate,
-                    file.getOriginalFilename(), file.getContentType() == null ? "application/octet-stream" : file.getContentType(),
+                    file.getOriginalFilename(),
+                    file.getContentType() == null ? "application/octet-stream" : file.getContentType(),
                     file.getBytes());
         } catch (IOException exception) {
             throw new UncheckedIOException("Failed to read uploaded file", exception);

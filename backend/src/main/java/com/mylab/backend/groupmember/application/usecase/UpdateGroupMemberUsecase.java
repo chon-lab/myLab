@@ -22,6 +22,9 @@ import com.mylab.backend.groupmember.application.port.out.ResearchLineLookupPort
 import com.mylab.backend.groupmember.domain.model.GroupMember;
 import com.mylab.backend.groupmember.domain.model.GroupMemberRole;
 import com.mylab.backend.groupmember.domain.exception.InvalidGroupMemberException;
+import com.mylab.backend.role.application.exception.RoleNotFoundException;
+import com.mylab.backend.role.application.port.out.RoleRepositoryPort;
+import com.mylab.backend.role.domain.model.Role;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +38,7 @@ public class UpdateGroupMemberUsecase implements UpdateGroupMemberPort {
     private final ResearchGroupLookupPort researchGroupLookupPort;
     private final ResearchLineLookupPort researchLineLookupPort;
     private final PersonLookupPort personLookupPort;
+    private final RoleRepositoryPort roleRepositoryPort;
 
     @Override
     @Transactional
@@ -63,6 +67,14 @@ public class UpdateGroupMemberUsecase implements UpdateGroupMemberPort {
                 : member.getResearchLineIds();
 
         member.update(active, role, researchLineIds, now);
+
+        if (input.roleId() != null) {
+            Role dynamicRole = roleRepositoryPort.findById(input.roleId())
+                    .filter(candidate -> candidate.getResearchGroupId().equals(researchGroupId))
+                    .orElseThrow(() -> new RoleNotFoundException(input.roleId()));
+            member.assignRole(dynamicRole.getId(), now);
+        }
+
         repositoryPort.save(member);
         log.info("Group member updated successfully with ID: {}", member.getId());
     }

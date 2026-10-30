@@ -12,4 +12,5 @@ public interface GroupMemberRepositoryPort {
     Optional<GroupMember> findByPersonIdAndResearchGroupId(UUID personId, UUID researchGroupId);
     List<GroupMember> findAllByResearchGroupIdAndActive(UUID researchGroupId, boolean active);
     List<GroupMember> findAllByPersonId(UUID personId);
+    long countByRoleId(UUID roleId);
 }

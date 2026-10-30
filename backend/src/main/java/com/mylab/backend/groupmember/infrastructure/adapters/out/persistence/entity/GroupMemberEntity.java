@@ -58,6 +58,9 @@ public class GroupMemberEntity {
     @Column(length = 32)
     private GroupMemberRole role;
 
+    @Column(name = "role_id")
+    private UUID roleId;
+
     @ElementCollection
     @CollectionTable(
             name = "group_member_research_line",

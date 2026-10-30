@@ -20,6 +20,7 @@ public class GroupMemberResponse {
     private UUID researchGroupId;
     private boolean active;
     private GroupMemberRole role;
+    private UUID roleId;
     private Set<UUID> researchLineIds;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

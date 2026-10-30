@@ -17,4 +17,6 @@ public interface GroupMemberJpaRepository extends JpaRepository<GroupMemberEntit
     List<GroupMemberEntity> findAllByResearchGroupIdAndActive(UUID researchGroupId, boolean active);
 
     List<GroupMemberEntity> findAllByPersonId(UUID personId);
+
+    long countByRoleId(UUID roleId);
 }

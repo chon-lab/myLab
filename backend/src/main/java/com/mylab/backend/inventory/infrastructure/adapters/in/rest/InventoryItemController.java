@@ -1,5 +1,8 @@
 package com.mylab.backend.inventory.infrastructure.adapters.in.rest;
 
+import com.mylab.backend.auth.infrastructure.web.RequiredPermission;
+import com.mylab.backend.role.domain.model.PermissionResource;
+
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -18,6 +21,7 @@ import com.mylab.backend.inventory.infrastructure.adapters.in.rest.dto.*;
 import com.mylab.backend.inventory.infrastructure.adapters.in.rest.mapper.InventoryRestMapper;
 
 @RestController
+@RequiredPermission(resource = PermissionResource.INVENTORY_ITEM)
 @RequiredArgsConstructor
 public class InventoryItemController {
     private final CreateInventoryItemPort createInventoryItemPort;
@@ -35,8 +39,7 @@ public class InventoryItemController {
     @PostMapping("/api/v1/research-groups/{groupId}/inventory/items")
     public ResponseEntity<Void> create(
             @PathVariable UUID groupId,
-            @Valid @RequestBody CreateInventoryItemRequest request
-    ) {
+            @Valid @RequestBody CreateInventoryItemRequest request) {
         UUID id = createInventoryItemPort.create(groupId, mapper.toInput(request));
         return ResponseEntity.created(URI.create("/api/v1/inventory/items/" + id)).build();
     }
@@ -49,8 +52,7 @@ public class InventoryItemController {
     @PutMapping("/api/v1/inventory/items/{id}")
     public ResponseEntity<Void> update(
             @PathVariable UUID id,
-            @Valid @RequestBody UpdateInventoryItemRequest request
-    ) {
+            @Valid @RequestBody UpdateInventoryItemRequest request) {
         updateInventoryItemPort.update(id, mapper.toInput(request));
         return ResponseEntity.noContent().build();
     }

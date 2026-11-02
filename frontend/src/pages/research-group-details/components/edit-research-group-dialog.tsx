@@ -251,12 +251,12 @@ function EditResearchGroupForm({
                       <Button
                         type="button"
                         variant="ghost"
-                        size="icon"
+                        size="icon-sm"
                         aria-label={`Remover contato ${index + 1}`}
                         onClick={() => contacts.remove(index)}
-                        className="text-muted-foreground hover:text-destructive"
+                        className="size-10 text-muted-foreground hover:text-destructive sm:size-8"
                       >
-                        <Trash2 aria-hidden="true" />
+                        <Trash2 aria-hidden="true" className="size-5 sm:size-4" />
                       </Button>
                     </div>
                     <FieldGroup className="grid gap-4 sm:grid-cols-2">

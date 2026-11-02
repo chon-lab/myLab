@@ -462,7 +462,7 @@ export function InventoryTransferFormDialog({
                                   variant="ghost"
                                   size="icon-sm"
                                   aria-label={`Remover item ${index + 1}`}
-                                  className="size-10 sm:size-7"
+                                  className="size-10 text-muted-foreground hover:text-destructive sm:size-8"
                                   disabled={fields.length === 1}
                                   onClick={() => remove(index)}
                                 >

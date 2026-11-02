@@ -16,6 +16,7 @@ import { ApiError } from '@/lib/api-client'
 import { publishApiErrorToast, publishToast } from '@/lib/api-error-toasts'
 import { DeleteProjectDialog } from '@/pages/projects/components/delete-project-dialog'
 import { ProjectCard } from '@/pages/projects/components/project-card'
+import { ProjectDetailsDialog } from '@/pages/projects/components/project-details-dialog'
 import { ProjectFormDialog, type ProjectDialogState } from '@/pages/projects/components/project-form-dialog'
 import { ProjectsTable } from '@/pages/projects/components/projects-table'
 import { projectStatusLabels } from '@/pages/projects/project-format'
@@ -99,6 +100,7 @@ export function ProjectsPage() {
   const [researchLineFilter, setResearchLineFilter] = useState(ALL)
   const [formDialog, setFormDialog] = useState<ProjectDialogState>({ open: false })
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null)
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
 
   const error = laboratoriesQuery.error ?? researchLinesQuery.error ?? projectsQuery.error
 
@@ -155,10 +157,7 @@ export function ProjectsPage() {
       (statusFilter === ALL || project.status === statusFilter) &&
       (effectiveLaboratoryFilter === ALL || project.laboratoryId === effectiveLaboratoryFilter) &&
       (effectiveResearchLineFilter === ALL || project.researchLineId === effectiveResearchLineFilter) &&
-      (!query ||
-        [project.name, project.objective, project.description ?? ''].some((field) =>
-          normalizeSearchText(field).includes(query),
-        )),
+      (!query || normalizeSearchText(project.name).includes(query)),
   )
 
   function openCreateDialog() {
@@ -175,6 +174,7 @@ export function ProjectsPage() {
   const listProps = {
     laboratoryNames,
     researchLineNames,
+    onDetails: setSelectedProject,
     onEdit: (project: Project) => setFormDialog({ open: true, mode: 'edit', project }),
     onDelete: setProjectToDelete,
   }
@@ -184,10 +184,10 @@ export function ProjectsPage() {
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 id="projects-title" className="text-3xl font-bold tracking-tight text-brand-navy">
-            <span className="inline-block -rotate-1 bg-brand-yellow px-3 py-1">Projetos</span>
+            <span className="inline-block bg-brand-yellow px-3 py-1">Projetos</span>
           </h1>
           <p className="mt-3 text-sm text-muted-foreground">
-            Projetos desenvolvidos nos laboratórios do grupo.
+            Tudo o que o grupo desenvolve, organizado por linha de pesquisa e laboratório.
           </p>
         </div>
 
@@ -230,7 +230,7 @@ export function ProjectsPage() {
               type="search"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder="Nome ou objetivo"
+              placeholder="Nome do projeto"
               className="h-full text-sm"
             />
           </InputGroup>
@@ -309,10 +309,10 @@ export function ProjectsPage() {
         </section>
       ) : (
         <div className="mt-5">
-          <div className="hidden md:block">
+          <div className="hidden min-[1200px]:block">
             <ProjectsTable projects={filteredProjects} {...listProps} />
           </div>
-          <ul aria-label="Projetos do grupo" className="space-y-3 md:hidden">
+          <ul aria-label="Projetos do grupo" className="space-y-3 min-[1200px]:hidden">
             {filteredProjects.map((project) => (
               <li key={project.id}>
                 <ProjectCard project={project} {...listProps} />
@@ -353,6 +353,22 @@ export function ProjectsPage() {
           publishToast({ kind: 'success', title: 'Projeto excluído', description: 'O projeto foi removido.' })
         }}
       />
+
+      {selectedProject && (
+        <ProjectDetailsDialog
+          key={selectedProject.id}
+          project={selectedProject}
+          laboratoryNames={laboratoryNames}
+          researchLineNames={researchLineNames}
+          onOpenChange={(open) => {
+            if (!open) setSelectedProject(null)
+          }}
+          onEdit={(project) => {
+            setSelectedProject(null)
+            setFormDialog({ open: true, mode: 'edit', project })
+          }}
+        />
+      )}
     </section>
   )
 }

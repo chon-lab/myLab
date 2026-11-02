@@ -7,7 +7,7 @@ export function ProjectStatusBadge({ status }: { status: ProjectStatus }) {
   return (
     <Badge
       className={cn(
-        'h-6 rounded-full px-2.5 text-xs font-semibold',
+        'h-5 rounded-full px-2 text-[0.65rem] font-semibold',
         projectStatusBadgeClasses[status],
       )}
     >

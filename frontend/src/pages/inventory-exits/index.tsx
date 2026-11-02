@@ -94,7 +94,7 @@ function ExitDetailsButton({
       size="icon-sm"
       aria-label={`Ver detalhes da saída por ${getExitDescription(exit)}`}
       title="Ver detalhes"
-      className="size-10 rounded-lg sm:size-7"
+      className="size-10 rounded-lg text-muted-foreground hover:text-primary sm:size-8"
       onClick={() => onSelect(exit)}
     >
       <FileText aria-hidden="true" className="size-5 sm:size-4" />
@@ -120,7 +120,7 @@ function ExitReverseButton({
         ? `Saída por ${getExitDescription(exit)} já estornada`
         : `Estornar saída por ${getExitDescription(exit)}`}
       title={isReversed ? 'Saída já estornada' : 'Estornar saída'}
-      className="size-10 rounded-lg text-muted-foreground hover:text-destructive sm:size-7"
+      className="size-10 rounded-lg text-muted-foreground hover:text-destructive sm:size-8"
       disabled={isReversed}
       onClick={() => onSelect(exit)}
     >
@@ -197,10 +197,10 @@ export function InventoryExitsPage() {
     <section aria-labelledby="inventory-exits-title" className="w-full">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 id="inventory-exits-title" className="text-2xl font-bold tracking-tight text-brand-navy">
+          <h1 id="inventory-exits-title" className="text-3xl font-bold tracking-tight text-brand-navy">
             <span className="inline-block -rotate-1 bg-brand-yellow px-3 py-1">Saídas</span>
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-3 text-sm text-muted-foreground">
             Consumo, descarte e perdas de itens do estoque.
           </p>
         </div>
@@ -348,7 +348,7 @@ export function InventoryExitsPage() {
                     <p className="break-words text-sm font-semibold text-brand-navy">{exit.laboratoryName}</p>
                     <p className="mt-1 text-xs text-muted-foreground">{formatMovementDate(exit.occurredAt)}</p>
                   </div>
-                  <div className="flex shrink-0 items-center gap-2">
+                  <div className="flex shrink-0 items-center gap-1">
                     <ExitDetailsButton exit={exit} onSelect={setSelectedExit} />
                     <ExitReverseButton exit={exit} onSelect={setExitToReverse} />
                   </div>

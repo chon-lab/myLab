@@ -101,11 +101,12 @@ export function ResearchLineCard({
           </dl>
         )}
 
-        <div className="ml-auto flex items-center gap-2 sm:ml-0">
+        <div className="ml-auto flex items-center gap-1 sm:ml-0">
           <Button
             variant="ghost"
             size="icon-sm"
             aria-label={`Editar ${line.name}`}
+            className="size-10 text-muted-foreground hover:text-primary sm:size-8"
             onClick={() => onEdit(line)}
           >
             <Pencil
@@ -117,7 +118,7 @@ export function ResearchLineCard({
             variant="ghost"
             size="icon-sm"
             aria-label={`Excluir ${line.name}`}
-            className="text-destructive hover:text-destructive"
+            className="size-10 text-muted-foreground hover:text-destructive sm:size-8"
             onClick={() => onDelete(line)}
           >
             <Trash2

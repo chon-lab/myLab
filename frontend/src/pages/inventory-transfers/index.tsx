@@ -81,7 +81,7 @@ function TransferDetailsButton({
       size="icon-sm"
       aria-label={`Ver detalhes da transferência ${getTransferDescription(transfer)}`}
       title="Ver detalhes"
-      className="size-10 rounded-lg sm:size-7"
+      className="size-10 rounded-lg text-muted-foreground hover:text-primary sm:size-8"
       onClick={() => onSelect(transfer)}
     >
       <FileText aria-hidden="true" className="size-5 sm:size-4" />
@@ -107,7 +107,7 @@ function TransferReverseButton({
         ? `Transferência ${getTransferDescription(transfer)} já estornada`
         : `Estornar transferência ${getTransferDescription(transfer)}`}
       title={isReversed ? 'Transferência já estornada' : 'Estornar transferência'}
-      className="size-10 rounded-lg text-muted-foreground hover:text-destructive sm:size-7"
+      className="size-10 rounded-lg text-muted-foreground hover:text-destructive sm:size-8"
       disabled={isReversed}
       onClick={() => onSelect(transfer)}
     >
@@ -183,10 +183,10 @@ export function InventoryTransfersPage() {
     <section aria-labelledby="inventory-transfers-title" className="w-full">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 id="inventory-transfers-title" className="text-2xl font-bold tracking-tight text-brand-navy">
+          <h1 id="inventory-transfers-title" className="text-3xl font-bold tracking-tight text-brand-navy">
             <span className="inline-block -rotate-1 bg-brand-yellow px-3 py-1">Transferências</span>
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-3 text-sm text-muted-foreground">
             Itens movidos entre os laboratórios do grupo.
           </p>
         </div>
@@ -332,7 +332,7 @@ export function InventoryTransfersPage() {
                     <TransferRoute transfer={transfer} />
                     <p className="mt-1 text-xs font-normal text-muted-foreground">{formatMovementDate(transfer.transferredAt)}</p>
                   </div>
-                  <div className="flex shrink-0 items-center gap-2">
+                  <div className="flex shrink-0 items-center gap-1">
                     <TransferDetailsButton transfer={transfer} onSelect={setSelectedTransfer} />
                     <TransferReverseButton transfer={transfer} onSelect={setTransferToReverse} />
                   </div>

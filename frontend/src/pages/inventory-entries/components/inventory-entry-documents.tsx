@@ -214,32 +214,34 @@ export function InventoryEntryDocuments({ entryId }: { entryId: string }) {
                   {document.fileName ? `${formatFileSize(document.sizeBytes)} · ` : ''}{formatUploadDate(document.uploadedAt)}
                 </p>
               </div>
-              {document.fileAvailable && (
+              <div className="flex shrink-0 items-center gap-1">
+                {document.fileAvailable && (
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon-sm"
                   aria-label={`Baixar ${document.fileName ?? 'documento'}`}
                   title="Baixar documento"
-                  className="size-10 shrink-0 sm:size-8"
+                  className="size-10 text-muted-foreground hover:text-primary sm:size-8"
                   disabled={downloadDocument.isPending}
                   onClick={() => download(document)}
                 >
                   {downloadDocument.isPending ? <LoaderCircle aria-hidden="true" className="size-5 animate-spin sm:size-4" /> : <Download aria-hidden="true" className="size-5 sm:size-4" />}
                 </Button>
-              )}
-              <Button
+                )}
+                <Button
                 type="button"
                 variant="ghost"
                 size="icon-sm"
                 aria-label={`Excluir ${document.fileName ?? 'documento'}`}
                 title="Excluir documento"
-                className="size-10 shrink-0 text-destructive hover:text-destructive sm:size-8"
+                className="size-10 text-muted-foreground hover:text-destructive sm:size-8"
                 disabled={deleteDocument.isPending}
                 onClick={() => remove(document)}
               >
                 {deleteDocument.isPending ? <LoaderCircle aria-hidden="true" className="size-5 animate-spin sm:size-4" /> : <Trash2 aria-hidden="true" className="size-5 sm:size-4" />}
-              </Button>
+                </Button>
+              </div>
             </li>
           ))}
         </ul>

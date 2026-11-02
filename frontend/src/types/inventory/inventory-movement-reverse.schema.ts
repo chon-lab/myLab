@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const inventoryEntryReverseSchema = z.object({
+export const inventoryMovementReverseSchema = z.object({
   reason: z
     .string()
     .trim()
@@ -8,4 +8,4 @@ export const inventoryEntryReverseSchema = z.object({
     .max(2000, 'Use no máximo 2.000 caracteres.'),
 })
 
-export type InventoryEntryReverseFormValues = z.infer<typeof inventoryEntryReverseSchema>
+export type InventoryMovementReverseFormValues = z.infer<typeof inventoryMovementReverseSchema>

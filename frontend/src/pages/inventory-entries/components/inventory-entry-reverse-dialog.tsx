@@ -19,9 +19,9 @@ import { publishApiErrorToast, publishToast } from '@/lib/api-error-toasts'
 import { useReverseInventoryEntryMutation } from '@/queries/inventory/inventory.queries'
 import { formatMovementDate } from '@/pages/inventory-stock/inventory-stock-format'
 import {
-  inventoryEntryReverseSchema,
-  type InventoryEntryReverseFormValues,
-} from '@/types/inventory/inventory-entry-reverse.schema'
+  inventoryMovementReverseSchema,
+  type InventoryMovementReverseFormValues,
+} from '@/types/inventory/inventory-movement-reverse.schema'
 import type { InventoryEntryHistoryRecord } from '@/types/inventory/inventory.types'
 
 export function InventoryEntryReverseDialog({
@@ -36,8 +36,8 @@ export function InventoryEntryReverseDialog({
   onReversed: () => void
 }) {
   const reverseEntry = useReverseInventoryEntryMutation(researchGroupId)
-  const form = useForm<InventoryEntryReverseFormValues>({
-    resolver: zodResolver(inventoryEntryReverseSchema),
+  const form = useForm<InventoryMovementReverseFormValues>({
+    resolver: zodResolver(inventoryMovementReverseSchema),
     defaultValues: { reason: '' },
   })
   const { reset } = form
@@ -46,7 +46,7 @@ export function InventoryEntryReverseDialog({
     if (entry) reset({ reason: '' })
   }, [entry, reset])
 
-  async function submit(values: InventoryEntryReverseFormValues) {
+  async function submit(values: InventoryMovementReverseFormValues) {
     if (!entry) return
 
     try {

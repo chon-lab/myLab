@@ -9,8 +9,8 @@ export const projectStatusLabels: Record<ProjectStatus, string> = {
 }
 
 export const projectStatusBadgeClasses: Record<ProjectStatus, string> = {
-  EM_ANDAMENTO: 'bg-emerald-50 text-emerald-800',
-  CONCLUIDO: 'bg-primary/10 text-primary',
+  EM_ANDAMENTO: 'bg-primary/10 text-primary',
+  CONCLUIDO: 'bg-emerald-50 text-emerald-800',
   CANCELADO: 'bg-destructive/10 text-destructive',
   SUSPENSO: 'bg-amber-50 text-amber-800',
 }

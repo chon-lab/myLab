@@ -157,32 +157,34 @@ export function ProjectDocuments({ projectId, documents }: { projectId: string; 
                     {formatFileSize(document.sizeBytes)} · {formatUploadDate(document.uploadedAt)}
                   </p>
                 </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label={`Baixar ${document.fileName}`}
-                  className="size-10 shrink-0 sm:size-8"
-                  disabled={isBusy}
-                  onClick={() => download(document)}
-                >
-                  <Download aria-hidden="true" className="size-5 sm:size-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label={`Excluir ${document.fileName}`}
-                  className="size-10 shrink-0 text-destructive hover:text-destructive sm:size-8"
-                  disabled={isBusy}
-                  onClick={() => remove(document)}
-                >
-                  {isBusy ? (
-                    <LoaderCircle aria-hidden="true" className="size-5 animate-spin sm:size-4" />
-                  ) : (
-                    <Trash2 aria-hidden="true" className="size-5 sm:size-4" />
-                  )}
-                </Button>
+                <div className="flex shrink-0 items-center gap-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={`Baixar ${document.fileName}`}
+                    className="size-10 text-muted-foreground hover:text-primary sm:size-8"
+                    disabled={isBusy}
+                    onClick={() => download(document)}
+                  >
+                    <Download aria-hidden="true" className="size-5 sm:size-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={`Excluir ${document.fileName}`}
+                    className="size-10 text-muted-foreground hover:text-destructive sm:size-8"
+                    disabled={isBusy}
+                    onClick={() => remove(document)}
+                  >
+                    {isBusy ? (
+                      <LoaderCircle aria-hidden="true" className="size-5 animate-spin sm:size-4" />
+                    ) : (
+                      <Trash2 aria-hidden="true" className="size-5 sm:size-4" />
+                    )}
+                  </Button>
+                </div>
               </li>
             )
           })}

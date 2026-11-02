@@ -77,6 +77,8 @@ export const inventoryKeys = {
   exits: () => [...inventoryKeys.all, 'exits'] as const,
   exitsByGroup: (researchGroupId: string) =>
     [...inventoryKeys.exits(), researchGroupId] as const,
+  exitDetail: (exitId: string | null) =>
+    [...inventoryKeys.exits(), 'detail', exitId] as const,
   transfers: () => [...inventoryKeys.all, 'transfers'] as const,
   transfersByGroup: (researchGroupId: string) =>
     [...inventoryKeys.transfers(), researchGroupId] as const,
@@ -129,6 +131,14 @@ export const inventoryExitsQueryOptions = (researchGroupId: string) =>
 
 export function useInventoryExitsQuery(researchGroupId: string) {
   return useQuery(inventoryExitsQueryOptions(researchGroupId))
+}
+
+export function useInventoryExitQuery(exitId: string | null) {
+  return useQuery({
+    queryKey: inventoryKeys.exitDetail(exitId),
+    queryFn: () => inventoryService.getExit(exitId!),
+    enabled: exitId !== null,
+  })
 }
 
 export function useInventoryStockQuery(
@@ -372,7 +382,12 @@ export function useReverseInventoryExitMutation(researchGroupId: string) {
       exitId: string
       body: ReverseInventoryMovementRequest
     }) => inventoryService.reverseExit(exitId, body),
-    onSuccess: () => invalidateInventoryGroupBalance(queryClient, researchGroupId),
+    onSuccess: async (_result, { exitId }) => {
+      await Promise.all([
+        invalidateInventoryGroupBalance(queryClient, researchGroupId),
+        queryClient.invalidateQueries({ queryKey: inventoryKeys.exitDetail(exitId) }),
+      ])
+    },
   })
 }
 

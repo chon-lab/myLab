@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ArrowUpFromLine } from 'lucide-react'
+import { ArrowUpFromLine, FileText, Undo2 } from 'lucide-react'
 import { useSearchParams } from 'react-router'
 
 import { Badge } from '@/components/ui/badge'
@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button'
 import { useResearchGroup } from '@/components/layout/research-group-context'
 import { publishApiErrorToast, publishToast } from '@/lib/api-error-toasts'
 import { InventoryExitFormDialog } from '@/pages/inventory-exits/components/inventory-exit-form-dialog'
+import { InventoryExitDetailsDialog } from '@/pages/inventory-exits/components/inventory-exit-details-dialog'
+import { InventoryExitReverseDialog } from '@/pages/inventory-exits/components/inventory-exit-reverse-dialog'
 import {
   formatCurrencyBRL,
   formatMovementDate,
@@ -53,10 +55,59 @@ function ExitStatusBadge({ status }: { status: InventoryExitHistoryRecord['statu
   )
 }
 
+function ExitDetailsButton({
+  exit,
+  onSelect,
+}: {
+  exit: InventoryExitHistoryRecord
+  onSelect: (exit: InventoryExitHistoryRecord) => void
+}) {
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon-sm"
+      aria-label={`Ver detalhes da saída de ${exit.laboratoryName}`}
+      title="Ver detalhes"
+      className="size-10 text-muted-foreground hover:text-primary sm:size-8"
+      onClick={() => onSelect(exit)}
+    >
+      <FileText aria-hidden="true" className="size-5 sm:size-4" />
+    </Button>
+  )
+}
+
+function ExitReverseButton({
+  exit,
+  onSelect,
+}: {
+  exit: InventoryExitHistoryRecord
+  onSelect: (exit: InventoryExitHistoryRecord) => void
+}) {
+  const isReversed = exit.status === 'REVERSED'
+
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon-sm"
+      aria-label={isReversed ? `Saída de ${exit.laboratoryName} já estornada` : `Estornar saída de ${exit.laboratoryName}`}
+      title={isReversed ? 'Saída já estornada' : 'Estornar saída'}
+      className="size-10 text-muted-foreground hover:text-destructive sm:size-8"
+      disabled={isReversed}
+      onClick={() => onSelect(exit)}
+    >
+      <Undo2 aria-hidden="true" className="size-5 sm:size-4" />
+    </Button>
+  )
+}
+
 export function InventoryExitsPage() {
   const researchGroup = useResearchGroup()
   const [searchParams, setSearchParams] = useSearchParams()
   const [formOpen, setFormOpen] = useState(() => searchParams.get('openExit') === 'true')
+  const [selectedExit, setSelectedExit] = useState<InventoryExitHistoryRecord | null>(null)
+  const [exitToReverse, setExitToReverse] = useState<InventoryExitHistoryRecord | null>(null)
   const exitsQuery = useInventoryExitsQuery(researchGroup.id)
   const exits = exitsQuery.data ?? []
 
@@ -76,10 +127,10 @@ export function InventoryExitsPage() {
     <section aria-labelledby="inventory-exits-title" className="w-full">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 id="inventory-exits-title" className="text-2xl font-bold tracking-tight text-brand-navy">
+          <h1 id="inventory-exits-title" className="text-3xl font-bold tracking-tight text-brand-navy">
             <span className="inline-block -rotate-1 bg-brand-yellow px-3 py-1">Saídas</span>
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-3 text-sm text-muted-foreground">
             Consumo, descarte e perdas de itens do estoque.
           </p>
         </div>
@@ -112,7 +163,7 @@ export function InventoryExitsPage() {
         </div>
       ) : (
         <>
-          <div className="mt-5 hidden overflow-hidden rounded-xl border border-slate-200 bg-card md:block">
+          <div className="mt-5 hidden overflow-hidden rounded-xl border border-slate-200 bg-card min-[1200px]:block">
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-50 text-muted-foreground">
                 <tr>
@@ -122,6 +173,7 @@ export function InventoryExitsPage() {
                   <th scope="col" className="px-3 py-3 font-semibold">Itens</th>
                   <th scope="col" className="px-3 py-3 text-right font-semibold">Custo</th>
                   <th scope="col" className="px-3 py-3 font-semibold">Situação</th>
+                  <th scope="col" className="px-3 py-3 text-right font-semibold">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 text-brand-navy">
@@ -135,17 +187,31 @@ export function InventoryExitsPage() {
                     </td>
                     <td className="whitespace-nowrap px-3 py-3.5 text-right font-semibold">{formatCurrencyBRL(getExitTotal(exit))}</td>
                     <td className="whitespace-nowrap px-3 py-3.5"><ExitStatusBadge status={exit.status} /></td>
+                    <td className="px-3 py-2 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <ExitDetailsButton exit={exit} onSelect={setSelectedExit} />
+                        <ExitReverseButton exit={exit} onSelect={setExitToReverse} />
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
 
-          <ul aria-label="Saídas registradas" className="mt-5 space-y-3 md:hidden">
+          <ul aria-label="Saídas registradas" className="mt-5 space-y-3 min-[1200px]:hidden">
             {exits.map((exit) => (
               <li key={exit.id} className={`rounded-xl border border-slate-200 bg-card p-4 ${exit.status === 'REVERSED' ? 'opacity-70' : ''}`}>
-                <p className="break-words text-sm font-semibold text-brand-navy">{exit.laboratoryName}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{formatMovementDate(exit.occurredAt)}</p>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="break-words text-sm font-semibold text-brand-navy">{exit.laboratoryName}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{formatMovementDate(exit.occurredAt)}</p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <ExitDetailsButton exit={exit} onSelect={setSelectedExit} />
+                    <ExitReverseButton exit={exit} onSelect={setExitToReverse} />
+                  </div>
+                </div>
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <ExitTypeBadge type={exit.type} />
                   <ExitStatusBadge status={exit.status} />
@@ -179,6 +245,20 @@ export function InventoryExitsPage() {
             title: 'Saída registrada',
             description: 'O saldo e o histórico foram atualizados.',
           })
+        }}
+      />
+      <InventoryExitReverseDialog
+        researchGroupId={researchGroup.id}
+        exit={exitToReverse}
+        onOpenChange={(open) => {
+          if (!open) setExitToReverse(null)
+        }}
+        onReversed={() => setExitToReverse(null)}
+      />
+      <InventoryExitDetailsDialog
+        exit={selectedExit}
+        onOpenChange={(open) => {
+          if (!open) setSelectedExit(null)
         }}
       />
     </section>

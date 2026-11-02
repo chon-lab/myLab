@@ -117,6 +117,9 @@ export const inventoryService = {
       `/api/v1/research-groups/${researchGroupId}/inventory/exits`,
     ),
 
+  getExit: (exitId: string) =>
+    api.get<InventoryExitHistoryRecord>(`/api/v1/inventory/exits/${exitId}`),
+
   createExit: (researchGroupId: string, body: CreateInventoryExitRequest) =>
     api.post<string | undefined>(
       `/api/v1/research-groups/${researchGroupId}/inventory/exits`,

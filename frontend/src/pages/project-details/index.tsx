@@ -6,7 +6,7 @@ import { useResearchGroup } from '@/components/layout/research-group-context'
 import { Button } from '@/components/ui/button'
 import { ApiError } from '@/lib/api-client'
 import { publishApiErrorToast, publishToast } from '@/lib/api-error-toasts'
-import { ProjectDocuments } from '@/pages/project-details/components/project-documents'
+import { ProjectDocuments } from '@/components/projects/project-documents'
 import { ProjectFormDialog, type ProjectDialogState } from '@/pages/projects/components/project-form-dialog'
 import { ProjectStatusBadge } from '@/pages/projects/components/project-status-badge'
 import { formatProjectPeriod } from '@/pages/projects/project-format'
@@ -126,7 +126,6 @@ export function ProjectDetailsPage() {
         </div>
 
         <Button
-          variant="outline"
           className="h-10 w-full shrink-0 font-semibold sm:w-auto"
           onClick={() => setFormDialog({ open: true, mode: 'edit', project })}
         >

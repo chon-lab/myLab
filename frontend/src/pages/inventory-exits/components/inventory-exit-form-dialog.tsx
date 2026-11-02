@@ -33,15 +33,11 @@ import {
 } from '@/pages/inventory-stock/inventory-stock-format'
 import {
   useCreateInventoryExitMutation,
-  useInventoryItemsQuery,
   useInventoryLaboratoriesQuery,
   useInventoryStockQuery,
 } from '@/queries/inventory/inventory.queries'
 import type { InventoryExitType, InventoryStockItem } from '@/types/inventory/inventory.types'
-import {
-  getActiveInventoryItems,
-  parseInventoryDecimal,
-} from '@/types/inventory/inventory-entry.schema'
+import { parseInventoryDecimal } from '@/types/inventory/inventory-entry.schema'
 import {
   inventoryExitFormSchema,
   toCreateInventoryExitRequest,
@@ -121,7 +117,6 @@ export function InventoryExitFormDialog({
   onOpenChange: (open: boolean) => void
   onCreated: () => void
 }) {
-  const itemsQuery = useInventoryItemsQuery(researchGroupId)
   const laboratoriesQuery = useInventoryLaboratoriesQuery(researchGroupId)
   const createExit = useCreateInventoryExitMutation(researchGroupId)
   const [formError, setFormError] = useState<string | null>(null)
@@ -142,15 +137,9 @@ export function InventoryExitFormDialog({
   const stockQuery = useInventoryStockQuery(researchGroupId, laboratoryId, Boolean(laboratoryId))
 
   const laboratories = useMemo(() => laboratoriesQuery.data ?? [], [laboratoriesQuery.data])
-  const activeItemIds = useMemo(
-    () => new Set(getActiveInventoryItems(itemsQuery.data).map((item) => item.id)),
-    [itemsQuery.data],
-  )
   const availableItems = useMemo(
-    () => (stockQuery.data?.items ?? []).filter(
-      (stockItem) => stockItem.quantity > 0 && activeItemIds.has(stockItem.inventoryItemId),
-    ),
-    [activeItemIds, stockQuery.data],
+    () => (stockQuery.data?.items ?? []).filter((stockItem) => stockItem.quantity > 0),
+    [stockQuery.data],
   )
   const stockByItemId = useMemo(
     () => new Map(availableItems.map((stockItem) => [stockItem.inventoryItemId, stockItem])),
@@ -172,8 +161,8 @@ export function InventoryExitFormDialog({
     return sum + (stockItem.totalValue / stockItem.quantity) * quantity
   }, 0)
   const isSaving = formState.isSubmitting || createExit.isPending
-  const isLoadingOptions = itemsQuery.isPending || laboratoriesQuery.isPending
-  const optionsError = itemsQuery.isError || laboratoriesQuery.isError
+  const isLoadingOptions = laboratoriesQuery.isPending
+  const optionsError = laboratoriesQuery.isError
 
   useEffect(() => {
     if (!open) {
@@ -208,7 +197,6 @@ export function InventoryExitFormDialog({
       !open ||
       itemPreselectionApplied.current ||
       !laboratoryPreselectionApplied.current ||
-      !itemsQuery.isSuccess ||
       !stockQuery.isSuccess
     ) return
 
@@ -218,7 +206,7 @@ export function InventoryExitFormDialog({
       setValue('items.0.unitOfMeasure', matchingItem.unitOfMeasure)
     }
     itemPreselectionApplied.current = true
-  }, [itemsQuery.isSuccess, open, preselectedItemId, setValue, stockByItemId, stockQuery.isSuccess])
+  }, [open, preselectedItemId, setValue, stockByItemId, stockQuery.isSuccess])
 
   async function submit(values: InventoryExitFormValues) {
     setFormError(null)
@@ -318,18 +306,18 @@ export function InventoryExitFormDialog({
 
         {isLoadingOptions ? (
           <p role="status" className="px-5 py-8 text-sm text-muted-foreground sm:px-6">
-            Carregando itens e laboratórios do grupo…
+            Carregando laboratórios do grupo…
           </p>
         ) : optionsError ? (
           <section className="px-5 py-8 sm:px-6" aria-label="Erro ao carregar dados da saída">
             <p role="alert" className="text-sm text-destructive">
-              Não foi possível carregar os itens ou laboratórios deste grupo.
+              Não foi possível carregar os laboratórios deste grupo.
             </p>
             <Button
               type="button"
               variant="outline"
               className="mt-4"
-              onClick={() => void Promise.all([itemsQuery.refetch(), laboratoriesQuery.refetch()])}
+              onClick={() => void laboratoriesQuery.refetch()}
             >
               Tentar novamente
             </Button>
@@ -447,7 +435,7 @@ export function InventoryExitFormDialog({
                       </div>
                     ) : availableItems.length === 0 ? (
                       <p className="rounded-xl border border-slate-200 px-4 py-6 text-center text-sm text-muted-foreground">
-                        Este laboratório não tem itens ativos com saldo.
+                        Este laboratório não tem itens com saldo.
                       </p>
                     ) : (
                       <div className="space-y-4">

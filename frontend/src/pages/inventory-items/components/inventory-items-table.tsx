@@ -99,7 +99,7 @@ export function InventoryItemsTable({
                   type="button"
                   variant="ghost"
                   size="icon-sm"
-                  className="text-muted-foreground hover:text-brand-navy"
+                  className="size-8 text-muted-foreground hover:text-primary"
                   aria-label={`Editar ${item.name}`}
                   onClick={() => onEdit(item)}
                 >

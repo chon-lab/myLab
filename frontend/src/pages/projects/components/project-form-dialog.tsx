@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQueryClient } from '@tanstack/react-query'
-import { X } from 'lucide-react'
-import { Controller, useForm } from 'react-hook-form'
+import { Plus, X } from 'lucide-react'
+import { Controller, useForm, useWatch } from 'react-hook-form'
 
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -44,6 +45,7 @@ import {
   type ProjectFormValues,
 } from '@/types/projects/project.schema'
 import type { Project, ProjectStatus } from '@/types/projects/project.types'
+import { mergeUniqueItems, splitDelimitedItems } from '@/types/research-lines/research-line.schema'
 import type { ResearchLine } from '@/types/research-lines/research-line.types'
 
 export type ProjectDialogState =
@@ -93,13 +95,17 @@ function ProjectFormContent({
     control,
     handleSubmit,
     reset,
+    getValues,
+    setValue,
     setError,
+    clearErrors,
     setFocus,
     formState: { isDirty },
   } = useForm<ProjectFormValues>({
     resolver: zodResolver(projectFormSchema),
     defaultValues: toProjectFormValues(effectiveProject),
   })
+  const knowledgeAreas = useWatch({ control, name: 'knowledgeAreas' })
 
   const createProject = useCreateProjectMutation()
   const updateProject = useUpdateProjectMutation()
@@ -158,6 +164,30 @@ function ProjectFormContent({
       })
     }
     setFormError(getSaveErrorMessage(error, mode))
+  }
+
+  function addKnowledgeAreasFromDraft() {
+    const parsed = splitDelimitedItems(getValues('knowledgeAreaDraft'))
+    if (parsed.length === 0) return
+    if (parsed.some((area) => area.length > 500)) {
+      setError('knowledgeAreaDraft', {
+        type: 'manual',
+        message: 'Cada área do conhecimento deve ter no máximo 500 caracteres.',
+      })
+      return
+    }
+
+    clearErrors('knowledgeAreaDraft')
+    setValue('knowledgeAreas', mergeUniqueItems(getValues('knowledgeAreas'), parsed), { shouldDirty: true })
+    setValue('knowledgeAreaDraft', '', { shouldDirty: true })
+  }
+
+  function removeKnowledgeArea(areaToRemove: string) {
+    setValue(
+      'knowledgeAreas',
+      getValues('knowledgeAreas').filter((area) => area !== areaToRemove),
+      { shouldDirty: true },
+    )
   }
 
   function submit(values: ProjectFormValues) {
@@ -325,19 +355,56 @@ function ProjectFormContent({
           </div>
 
           <Controller
-            name="knowledgeAreas"
+            name="knowledgeAreaDraft"
             control={control}
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
                 <FieldLabel htmlFor="project-form-knowledge-areas">Áreas do conhecimento</FieldLabel>
-                <Textarea
-                  {...field}
-                  id="project-form-knowledge-areas"
-                  rows={3}
-                  aria-describedby="project-form-knowledge-areas-hint"
-                  aria-invalid={fieldState.invalid}
-                />
-                <FieldDescription id="project-form-knowledge-areas-hint">Informe uma área por linha.</FieldDescription>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Input
+                    {...field}
+                    id="project-form-knowledge-areas"
+                    placeholder="Ex.: Química Analítica; Ciências Ambientais"
+                    aria-describedby="project-form-knowledge-areas-hint"
+                    aria-invalid={fieldState.invalid}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault()
+                        addKnowledgeAreasFromDraft()
+                      }
+                    }}
+                    className="flex-1"
+                  />
+                  <Button type="button" variant="outline" onClick={addKnowledgeAreasFromDraft} className="shrink-0">
+                    <Plus aria-hidden="true" />
+                    Adicionar
+                  </Button>
+                </div>
+                <FieldDescription id="project-form-knowledge-areas-hint">
+                  Separe por ponto e vírgula, vírgula ou pressione Enter para adicionar.
+                </FieldDescription>
+                {knowledgeAreas.length > 0 && (
+                  <ul aria-label="Áreas do conhecimento adicionadas" className="mt-1 flex flex-wrap gap-1.5">
+                    {knowledgeAreas.map((area) => (
+                      <li key={area}>
+                        <Badge
+                          variant="outline"
+                          className="h-auto gap-1.5 rounded-full border-slate-200 bg-slate-50 py-1 pr-1.5 pl-2.5 text-xs font-medium whitespace-normal text-brand-navy"
+                        >
+                          <span>{area}</span>
+                          <button
+                            type="button"
+                            aria-label={`Remover área do conhecimento ${area}`}
+                            onClick={() => removeKnowledgeArea(area)}
+                            className="inline-grid size-4 place-items-center rounded-full text-muted-foreground hover:bg-slate-200 hover:text-brand-navy"
+                          >
+                            <X aria-hidden="true" className="size-3" />
+                          </button>
+                        </Badge>
+                      </li>
+                    ))}
+                  </ul>
+                )}
                 <FieldError errors={[fieldState.error]} />
               </Field>
             )}

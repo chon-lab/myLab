@@ -187,9 +187,9 @@ export function ContactsCard({
                                       setShowAllContacts(false)
                                       onEditContact(`contacts.${index}.${field}`)
                                     }}
-                                    className="size-8 shrink-0 text-muted-foreground"
+                                    className="size-10 shrink-0 text-muted-foreground hover:text-primary sm:size-8"
                                   >
-                                    <Pencil aria-hidden="true" />
+                                    <Pencil aria-hidden="true" className="size-5 sm:size-4" />
                                   </Button>
                                 </li>
                               )

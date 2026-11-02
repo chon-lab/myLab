@@ -419,7 +419,7 @@ export function InventoryEntryFormDialog({
                                 variant="ghost"
                                 size="icon-sm"
                                 aria-label={`Remover item ${index + 1}`}
-                                className="size-10 sm:size-7"
+                                className="size-10 text-muted-foreground hover:text-destructive sm:size-8"
                                 onClick={() => remove(index)}
                               >
                                 <Trash2 aria-hidden="true" className="size-5 sm:size-4" />

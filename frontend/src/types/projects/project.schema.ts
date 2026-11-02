@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import { mergeUniqueItems, splitDelimitedItems } from '@/types/research-lines/research-line.schema'
 import type {
   CreateProjectRequest,
   Project,
@@ -22,23 +23,20 @@ export const projectFormSchema = z
     status: z.enum(projectStatusValues, { message: 'Selecione a situação do projeto.' }),
     startDate: z.string().min(1, 'Informe a data de início.'),
     endDate: z.string(),
-    knowledgeAreas: z
-      .string()
-      .refine(
-        (value) => splitKnowledgeAreas(value).every((area) => area.length <= 500),
-        'Cada área deve ter no máximo 500 caracteres.',
-      ),
+    knowledgeAreas: z.array(z.string()),
+    knowledgeAreaDraft: z.string(),
   })
-  .refine((values) => !values.endDate || values.endDate >= values.startDate, {
-    path: ['endDate'],
-    message: 'A data de término não pode ser anterior à de início.',
+  .superRefine((values, ctx) => {
+    if (values.endDate && values.endDate < values.startDate) {
+      ctx.addIssue({ code: 'custom', path: ['endDate'], message: 'A data de término não pode ser anterior à de início.' })
+    }
+    const areas = mergeUniqueItems(values.knowledgeAreas, splitDelimitedItems(values.knowledgeAreaDraft))
+    if (areas.some((area) => area.length > 500)) {
+      ctx.addIssue({ code: 'custom', path: ['knowledgeAreaDraft'], message: 'Cada área deve ter no máximo 500 caracteres.' })
+    }
   })
 
 export type ProjectFormValues = z.infer<typeof projectFormSchema>
-
-function splitKnowledgeAreas(value: string) {
-  return [...new Set(value.split('\n').map((area) => area.trim()).filter(Boolean))]
-}
 
 export function toProjectFormValues(project?: Project | null): ProjectFormValues {
   return {
@@ -50,7 +48,8 @@ export function toProjectFormValues(project?: Project | null): ProjectFormValues
     status: project?.status ?? 'EM_ANDAMENTO',
     startDate: project?.startDate ?? '',
     endDate: project?.endDate ?? '',
-    knowledgeAreas: (project?.knowledgeAreas ?? []).join('\n'),
+    knowledgeAreas: [...(project?.knowledgeAreas ?? [])],
+    knowledgeAreaDraft: '',
   }
 }
 
@@ -62,7 +61,7 @@ export function toUpdateProjectPayload(values: ProjectFormValues): UpdateProject
     status: values.status,
     startDate: values.startDate,
     endDate: values.endDate || undefined,
-    knowledgeAreas: splitKnowledgeAreas(values.knowledgeAreas),
+    knowledgeAreas: mergeUniqueItems(values.knowledgeAreas, splitDelimitedItems(values.knowledgeAreaDraft)),
   }
 }
 
@@ -71,7 +70,7 @@ export function toCreateProjectPayload(values: ProjectFormValues): CreateProject
 }
 
 export function toProjectFormFieldPath(apiField: string): keyof ProjectFormValues {
-  if (apiField.startsWith('knowledgeAreas')) return 'knowledgeAreas'
+  if (apiField.startsWith('knowledgeAreas')) return 'knowledgeAreaDraft'
   const fields = Object.keys(toProjectFormValues()) as (keyof ProjectFormValues)[]
   return fields.find((field) => field === apiField) ?? 'name'
 }

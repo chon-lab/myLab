@@ -133,7 +133,7 @@ export function InventoryStockTable({
                       type="button"
                       variant="ghost"
                       size="icon-sm"
-                      className="text-muted-foreground hover:text-brand-navy"
+                      className="size-8 text-muted-foreground hover:text-primary"
                       aria-label={`Ver detalhes de ${item.itemName}`}
                       onClick={() => onInspect(item)}
                     >

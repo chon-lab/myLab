@@ -1,4 +1,5 @@
 import { Pencil, Trash2 } from 'lucide-react'
+import { Link } from 'react-router'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -50,7 +51,9 @@ export function ProjectsTable({
           {projects.map((project) => (
             <TableRow key={project.id} className="border-slate-100">
               <TableCell className="max-w-80 px-5 py-3.5 whitespace-normal">
-                <p className="text-sm font-bold break-words text-brand-navy">{project.name}</p>
+                <Link to={project.id} className="text-sm font-bold break-words text-brand-navy underline-offset-4 hover:underline">
+                  {project.name}
+                </Link>
                 <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
                   {project.objective}
                 </p>

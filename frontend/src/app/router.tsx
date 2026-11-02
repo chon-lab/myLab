@@ -8,6 +8,7 @@ import { InventoryItemsPage } from '@/pages/inventory-items'
 import { InventoryStockPage } from '@/pages/inventory-stock'
 import { LaboratoriesPage } from '@/pages/laboratories'
 import { LoginPage } from '@/pages/login'
+import { ProjectDetailsPage } from '@/pages/project-details'
 import { ProjectsPage } from '@/pages/projects'
 import { GroupPlaceholderRoute } from '@/pages/navigation-placeholder'
 import { ResearchGroupDetailsPage } from '@/pages/research-group-details'
@@ -32,6 +33,7 @@ export const router = createBrowserRouter([
           { path: 'membros', element: <MembersPage /> },
           { path: 'laboratorios', element: <LaboratoriesPage /> },
           { path: 'projetos', element: <ProjectsPage /> },
+          { path: 'projetos/:projectId', element: <ProjectDetailsPage /> },
           { path: 'estoque/saldo', element: <InventoryStockPage /> },
           { path: 'estoque/itens', element: <InventoryItemsPage /> },
           { path: 'estoque/entradas', element: <InventoryEntriesPage /> },

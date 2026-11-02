@@ -89,6 +89,38 @@ export function useUpdateProjectMutation() {
   })
 }
 
+type ProjectDocumentVariables = { projectId: string; documentId: string }
+
+export function useUploadProjectDocumentMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ projectId, file }: { projectId: string; file: File }) =>
+      projectsService.uploadDocument(projectId, file),
+    meta: { suppressGlobalErrorToast: true },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: projectsKeys.all }),
+  })
+}
+
+export function useDownloadProjectDocumentMutation() {
+  return useMutation({
+    mutationFn: ({ projectId, documentId }: ProjectDocumentVariables) =>
+      projectsService.downloadDocument(projectId, documentId),
+    meta: { suppressGlobalErrorToast: true },
+  })
+}
+
+export function useDeleteProjectDocumentMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ projectId, documentId }: ProjectDocumentVariables) =>
+      projectsService.deleteDocument(projectId, documentId),
+    meta: { suppressGlobalErrorToast: true },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: projectsKeys.all }),
+  })
+}
+
 export function useDeleteProjectMutation() {
   const queryClient = useQueryClient()
 

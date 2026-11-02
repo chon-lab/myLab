@@ -1,4 +1,5 @@
 import { Pencil, Trash2 } from 'lucide-react'
+import { Link } from 'react-router'
 
 import { Button } from '@/components/ui/button'
 import { ProjectStatusBadge } from '@/pages/projects/components/project-status-badge'
@@ -20,7 +21,7 @@ export function ProjectCard({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 id={titleId} className="text-sm font-bold break-words text-brand-navy">
-            {project.name}
+            <Link to={project.id} className="underline-offset-4 hover:underline">{project.name}</Link>
           </h3>
           <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{project.objective}</p>
         </div>

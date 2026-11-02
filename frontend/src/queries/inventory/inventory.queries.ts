@@ -18,6 +18,7 @@ import type {
   InventoryLaboratory,
   InventoryLaboratoryStockBreakdown,
   InventoryMovementFilters,
+  InventoryTransferFilters,
   ReverseInventoryMovementRequest,
   UpdateInventoryItemRequest,
 } from '@/types/inventory/inventory.types'
@@ -80,6 +81,19 @@ export const inventoryKeys = {
   transfers: () => [...inventoryKeys.all, 'transfers'] as const,
   transfersByGroup: (researchGroupId: string) =>
     [...inventoryKeys.transfers(), researchGroupId] as const,
+  transfersByGroupWithFilters: (researchGroupId: string, filters: InventoryTransferFilters = {}) =>
+    [
+      ...inventoryKeys.transfersByGroup(researchGroupId),
+      {
+        sourceLaboratoryId: filters.sourceLaboratoryId ?? null,
+        destinationLaboratoryId: filters.destinationLaboratoryId ?? null,
+        inventoryItemId: filters.inventoryItemId ?? null,
+        dateFrom: filters.dateFrom ?? null,
+        dateTo: filters.dateTo ?? null,
+      },
+    ] as const,
+  transferDetail: (transferId: string | null) =>
+    [...inventoryKeys.transfers(), 'detail', transferId] as const,
 }
 
 export const inventoryStockQueryOptions = (
@@ -382,6 +396,7 @@ export function useCreateInventoryTransferMutation(researchGroupId: string) {
   return useMutation({
     mutationFn: (body: CreateInventoryTransferRequest) =>
       inventoryService.createTransfer(researchGroupId, body),
+    meta: { suppressGlobalErrorToast: true },
     onSuccess: () => invalidateInventoryGroupBalance(queryClient, researchGroupId),
   })
 }
@@ -397,7 +412,45 @@ export function useReverseInventoryTransferMutation(researchGroupId: string) {
       transferId: string
       body: ReverseInventoryMovementRequest
     }) => inventoryService.reverseTransfer(transferId, body),
-    onSuccess: () => invalidateInventoryGroupBalance(queryClient, researchGroupId),
+    meta: { suppressGlobalErrorToast: true },
+    onSuccess: async (_result, { transferId }) => {
+      await Promise.all([
+        invalidateInventoryGroupBalance(queryClient, researchGroupId),
+        queryClient.invalidateQueries({ queryKey: inventoryKeys.transferDetail(transferId) }),
+      ])
+    },
+    onError: (_error, { transferId }) => {
+      void queryClient.invalidateQueries({ queryKey: inventoryKeys.transfersByGroup(researchGroupId) })
+      void queryClient.invalidateQueries({ queryKey: inventoryKeys.transferDetail(transferId) })
+    },
+  })
+}
+
+export const inventoryTransfersQueryOptions = (
+  researchGroupId: string,
+  filters: InventoryTransferFilters = {},
+) =>
+  queryOptions({
+    queryKey: inventoryKeys.transfersByGroupWithFilters(researchGroupId, filters),
+    queryFn: () => inventoryService.listTransfers(researchGroupId, filters),
+  })
+
+export function useInventoryTransfersQuery(
+  researchGroupId: string,
+  filters: InventoryTransferFilters = {},
+  enabled = true,
+) {
+  return useQuery({
+    ...inventoryTransfersQueryOptions(researchGroupId, filters),
+    enabled,
+  })
+}
+
+export function useInventoryTransferQuery(transferId: string | null) {
+  return useQuery({
+    queryKey: inventoryKeys.transferDetail(transferId),
+    queryFn: () => inventoryService.getTransfer(transferId!),
+    enabled: transferId !== null,
   })
 }
 

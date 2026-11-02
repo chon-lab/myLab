@@ -6,6 +6,7 @@ import { InventoryEntriesPage } from '@/pages/inventory-entries'
 import { InventoryExitsPage } from '@/pages/inventory-exits'
 import { InventoryItemsPage } from '@/pages/inventory-items'
 import { InventoryStockPage } from '@/pages/inventory-stock'
+import { InventoryTransfersPage } from '@/pages/inventory-transfers'
 import { LaboratoriesPage } from '@/pages/laboratories'
 import { LoginPage } from '@/pages/login'
 import { GroupPlaceholderRoute } from '@/pages/navigation-placeholder'
@@ -34,6 +35,7 @@ export const router = createBrowserRouter([
           { path: 'estoque/itens', element: <InventoryItemsPage /> },
           { path: 'estoque/entradas', element: <InventoryEntriesPage /> },
           { path: 'estoque/saidas', element: <InventoryExitsPage /> },
+          { path: 'estoque/transferencias', element: <InventoryTransfersPage /> },
           { path: '*', element: <GroupPlaceholderRoute /> },
         ],
       },

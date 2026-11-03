@@ -92,13 +92,13 @@ function MemberActions({ member, onView, onEdit, onRemove }: {
 }) {
   return (
     <div className="flex items-center justify-end gap-1">
-      <Button variant="ghost" size="icon-sm" aria-label={`Ver detalhes de ${member.person.name}`} onClick={() => onView(member)}>
+      <Button variant="ghost" size="icon-sm" className="size-10 text-muted-foreground hover:text-primary sm:size-8" aria-label={`Ver detalhes de ${member.person.name}`} onClick={() => onView(member)}>
         <FileText aria-hidden="true" className="size-5 sm:size-4" />
       </Button>
-      <Button variant="ghost" size="icon-sm" aria-label={`Editar ${member.person.name}`} onClick={() => onEdit(member)}>
+      <Button variant="ghost" size="icon-sm" className="size-10 text-muted-foreground hover:text-primary sm:size-8" aria-label={`Editar ${member.person.name}`} onClick={() => onEdit(member)}>
         <Pencil aria-hidden="true" className="size-5 sm:size-4" />
       </Button>
-      <Button variant="ghost" size="icon-sm" aria-label={`Remover ${member.person.name} do grupo`} className="text-destructive hover:text-destructive" onClick={() => onRemove(member)}>
+      <Button variant="ghost" size="icon-sm" aria-label={`Remover ${member.person.name} do grupo`} className="size-10 text-muted-foreground hover:text-destructive sm:size-8" onClick={() => onRemove(member)}>
         <Trash2 aria-hidden="true" className="size-5 sm:size-4" />
       </Button>
     </div>

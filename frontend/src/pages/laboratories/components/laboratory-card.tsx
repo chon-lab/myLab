@@ -74,7 +74,7 @@ export function LaboratoryCard({
       className="flex h-full flex-col rounded-xl border border-slate-200 bg-card shadow-xs"
     >
       <div className="flex flex-1 flex-col p-5">
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-wrap items-start gap-2">
           <span
             aria-hidden="true"
             className="grid size-11 shrink-0 place-items-center rounded-lg bg-brand-navy text-sm font-bold text-brand-yellow"
@@ -82,45 +82,47 @@ export function LaboratoryCard({
             {getLaboratoryInitials(laboratory.name)}
           </span>
 
-          <div className="flex items-center gap-1">
-            <Badge
-              className={cn(
-                'h-6 gap-1.5 rounded-full px-2.5 text-xs font-semibold',
-                laboratoryStatusBadgeClasses[laboratory.status],
-              )}
+          <Badge
+            className={cn(
+              'mt-2.5 h-6 gap-1.5 rounded-full px-2.5 text-xs font-semibold',
+              laboratoryStatusBadgeClasses[laboratory.status],
+            )}
+          >
+            <span
+              aria-hidden="true"
+              className={cn('size-1.5 rounded-full', laboratoryStatusDotClasses[laboratory.status])}
+            />
+            {laboratoryStatusLabels[laboratory.status]}
+          </Badge>
+
+          <div className="ml-auto flex items-center gap-1 sm:hidden">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="size-10 text-muted-foreground hover:text-primary"
+              aria-label={`Editar ${laboratory.name}`}
+              onClick={() => onEdit(laboratory)}
             >
-              <span
-                aria-hidden="true"
-                className={cn('size-1.5 rounded-full', laboratoryStatusDotClasses[laboratory.status])}
-              />
-              {laboratoryStatusLabels[laboratory.status]}
-            </Badge>
+              <Pencil aria-hidden="true" className="size-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="size-10 text-muted-foreground hover:text-destructive"
+              aria-label={`Excluir ${laboratory.name}`}
+              onClick={() => onDelete(laboratory)}
+            >
+              <Trash2 aria-hidden="true" className="size-5" />
+            </Button>
+          </div>
 
-            <div className="flex items-center gap-1 sm:hidden">
-              <Button
-                variant="ghost"
-                size="icon-lg"
-                aria-label={`Editar ${laboratory.name}`}
-                onClick={() => onEdit(laboratory)}
-              >
-                <Pencil aria-hidden="true" className="size-5" />
-              </Button>
-              <Button
-                variant="destructive"
-                size="icon-lg"
-                aria-label={`Excluir ${laboratory.name}`}
-                onClick={() => onDelete(laboratory)}
-              >
-                <Trash2 aria-hidden="true" className="size-5" />
-              </Button>
-            </div>
-
-            <div className="hidden sm:block">
+          <div className="ml-auto hidden sm:block">
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
                   size="icon-sm"
+                  className="size-8 text-muted-foreground hover:text-primary"
                   aria-label={`Ações de ${laboratory.name}`}
                 >
                   <MoreHorizontal aria-hidden="true" className="size-4" />
@@ -128,10 +130,10 @@ export function LaboratoryCard({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44">
                 <DropdownMenuItem
-                  className="min-h-10 gap-2.5"
+                  className="min-h-10 gap-2.5 focus:text-primary"
                   onSelect={() => onEdit(laboratory)}
                 >
-                  <Pencil aria-hidden="true" />
+                  <Pencil aria-hidden="true" className="size-4" />
                   Editar
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -139,12 +141,11 @@ export function LaboratoryCard({
                   className="min-h-10 gap-2.5"
                   onSelect={() => onDelete(laboratory)}
                 >
-                  <Trash2 aria-hidden="true" />
+                  <Trash2 aria-hidden="true" className="size-4" />
                   Excluir
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            </div>
           </div>
         </div>
 

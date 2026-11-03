@@ -14,10 +14,12 @@ import type {
   CreateInventoryTransferRequest,
   InventoryEntryDocumentUploadRequest,
   InventoryEntryFilters,
+  InventoryExitFilters,
   InventoryItem,
   InventoryLaboratory,
   InventoryLaboratoryStockBreakdown,
   InventoryMovementFilters,
+  InventoryTransferFilters,
   ReverseInventoryMovementRequest,
   UpdateInventoryItemRequest,
 } from '@/types/inventory/inventory.types'
@@ -77,9 +79,35 @@ export const inventoryKeys = {
   exits: () => [...inventoryKeys.all, 'exits'] as const,
   exitsByGroup: (researchGroupId: string) =>
     [...inventoryKeys.exits(), researchGroupId] as const,
+  exitsByGroupWithFilters: (researchGroupId: string, filters: InventoryExitFilters = {}) =>
+    [
+      ...inventoryKeys.exitsByGroup(researchGroupId),
+      {
+        laboratoryId: filters.laboratoryId ?? null,
+        type: filters.type ?? null,
+        inventoryItemId: filters.inventoryItemId ?? null,
+        dateFrom: filters.dateFrom ?? null,
+        dateTo: filters.dateTo ?? null,
+      },
+    ] as const,
+  exitDetail: (exitId: string | null) =>
+    [...inventoryKeys.exits(), 'detail', exitId] as const,
   transfers: () => [...inventoryKeys.all, 'transfers'] as const,
   transfersByGroup: (researchGroupId: string) =>
     [...inventoryKeys.transfers(), researchGroupId] as const,
+  transfersByGroupWithFilters: (researchGroupId: string, filters: InventoryTransferFilters = {}) =>
+    [
+      ...inventoryKeys.transfersByGroup(researchGroupId),
+      {
+        sourceLaboratoryId: filters.sourceLaboratoryId ?? null,
+        destinationLaboratoryId: filters.destinationLaboratoryId ?? null,
+        inventoryItemId: filters.inventoryItemId ?? null,
+        dateFrom: filters.dateFrom ?? null,
+        dateTo: filters.dateTo ?? null,
+      },
+    ] as const,
+  transferDetail: (transferId: string | null) =>
+    [...inventoryKeys.transfers(), 'detail', transferId] as const,
 }
 
 export const inventoryStockQueryOptions = (
@@ -121,14 +149,32 @@ export const inventoryEntriesQueryOptions = (
     queryFn: () => inventoryService.listEntries(researchGroupId, filters),
   })
 
-export const inventoryExitsQueryOptions = (researchGroupId: string) =>
+export const inventoryExitsQueryOptions = (
+  researchGroupId: string,
+  filters: InventoryExitFilters = {},
+) =>
   queryOptions({
-    queryKey: inventoryKeys.exitsByGroup(researchGroupId),
-    queryFn: () => inventoryService.listExits(researchGroupId),
+    queryKey: inventoryKeys.exitsByGroupWithFilters(researchGroupId, filters),
+    queryFn: () => inventoryService.listExits(researchGroupId, filters),
   })
 
-export function useInventoryExitsQuery(researchGroupId: string) {
-  return useQuery(inventoryExitsQueryOptions(researchGroupId))
+export function useInventoryExitsQuery(
+  researchGroupId: string,
+  filters: InventoryExitFilters = {},
+  enabled = true,
+) {
+  return useQuery({
+    ...inventoryExitsQueryOptions(researchGroupId, filters),
+    enabled,
+  })
+}
+
+export function useInventoryExitQuery(exitId: string | null) {
+  return useQuery({
+    queryKey: inventoryKeys.exitDetail(exitId),
+    queryFn: () => inventoryService.getExit(exitId!),
+    enabled: exitId !== null,
+  })
 }
 
 export function useInventoryStockQuery(
@@ -372,7 +418,17 @@ export function useReverseInventoryExitMutation(researchGroupId: string) {
       exitId: string
       body: ReverseInventoryMovementRequest
     }) => inventoryService.reverseExit(exitId, body),
-    onSuccess: () => invalidateInventoryGroupBalance(queryClient, researchGroupId),
+    meta: { suppressGlobalErrorToast: true },
+    onSuccess: async (_result, { exitId }) => {
+      await Promise.all([
+        invalidateInventoryGroupBalance(queryClient, researchGroupId),
+        queryClient.invalidateQueries({ queryKey: inventoryKeys.exitDetail(exitId) }),
+      ])
+    },
+    onError: (_error, { exitId }) => {
+      void queryClient.invalidateQueries({ queryKey: inventoryKeys.exitsByGroup(researchGroupId) })
+      void queryClient.invalidateQueries({ queryKey: inventoryKeys.exitDetail(exitId) })
+    },
   })
 }
 
@@ -382,6 +438,7 @@ export function useCreateInventoryTransferMutation(researchGroupId: string) {
   return useMutation({
     mutationFn: (body: CreateInventoryTransferRequest) =>
       inventoryService.createTransfer(researchGroupId, body),
+    meta: { suppressGlobalErrorToast: true },
     onSuccess: () => invalidateInventoryGroupBalance(queryClient, researchGroupId),
   })
 }
@@ -397,7 +454,45 @@ export function useReverseInventoryTransferMutation(researchGroupId: string) {
       transferId: string
       body: ReverseInventoryMovementRequest
     }) => inventoryService.reverseTransfer(transferId, body),
-    onSuccess: () => invalidateInventoryGroupBalance(queryClient, researchGroupId),
+    meta: { suppressGlobalErrorToast: true },
+    onSuccess: async (_result, { transferId }) => {
+      await Promise.all([
+        invalidateInventoryGroupBalance(queryClient, researchGroupId),
+        queryClient.invalidateQueries({ queryKey: inventoryKeys.transferDetail(transferId) }),
+      ])
+    },
+    onError: (_error, { transferId }) => {
+      void queryClient.invalidateQueries({ queryKey: inventoryKeys.transfersByGroup(researchGroupId) })
+      void queryClient.invalidateQueries({ queryKey: inventoryKeys.transferDetail(transferId) })
+    },
+  })
+}
+
+export const inventoryTransfersQueryOptions = (
+  researchGroupId: string,
+  filters: InventoryTransferFilters = {},
+) =>
+  queryOptions({
+    queryKey: inventoryKeys.transfersByGroupWithFilters(researchGroupId, filters),
+    queryFn: () => inventoryService.listTransfers(researchGroupId, filters),
+  })
+
+export function useInventoryTransfersQuery(
+  researchGroupId: string,
+  filters: InventoryTransferFilters = {},
+  enabled = true,
+) {
+  return useQuery({
+    ...inventoryTransfersQueryOptions(researchGroupId, filters),
+    enabled,
+  })
+}
+
+export function useInventoryTransferQuery(transferId: string | null) {
+  return useQuery({
+    queryKey: inventoryKeys.transferDetail(transferId),
+    queryFn: () => inventoryService.getTransfer(transferId!),
+    enabled: transferId !== null,
   })
 }
 

@@ -19,6 +19,8 @@ import {
 import { ResearchLinesPage } from "@/pages/research-lines";
 import { MembersPage } from "@/pages/members";
 import { RolesPage } from "@/pages/roles";
+import { ProjectsPage } from "@/pages/projects";
+import { InventoryTransfersPage } from "@/pages/inventory-transfers";
 
 export const router = createBrowserRouter([
   { path: "/entrar", element: <LoginPage /> },
@@ -74,6 +76,14 @@ export const router = createBrowserRouter([
             ),
           },
           {
+            path: "projetos",
+            element: (
+              <RequirePermission resource="PROJECT">
+                <ProjectsPage />
+              </RequirePermission>
+            ),
+          },
+          {
             path: "estoque/saldo",
             element: (
               <RequirePermission resource="INVENTORY_STOCK">
@@ -102,6 +112,14 @@ export const router = createBrowserRouter([
             element: (
               <RequirePermission resource="INVENTORY_EXIT">
                 <InventoryExitsPage />
+              </RequirePermission>
+            ),
+          },
+          {
+            path: "estoque/transferencias",
+            element: (
+              <RequirePermission resource="INVENTORY_TRANSFER">
+                <InventoryTransfersPage />
               </RequirePermission>
             ),
           },

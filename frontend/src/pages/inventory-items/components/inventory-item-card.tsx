@@ -36,7 +36,7 @@ export function InventoryItemCard({
           type="button"
           variant="ghost"
           size="icon-sm"
-          className="shrink-0 text-muted-foreground hover:text-brand-navy"
+          className="size-10 shrink-0 text-muted-foreground hover:text-primary sm:size-8"
           aria-label={`Editar ${item.name}`}
           onClick={() => onEdit(item)}
         >

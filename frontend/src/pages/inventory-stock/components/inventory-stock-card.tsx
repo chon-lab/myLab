@@ -103,7 +103,7 @@ export function InventoryStockCard({
           type="button"
           variant="ghost"
           size="icon-sm"
-          className="text-muted-foreground hover:text-brand-navy"
+          className="size-10 text-muted-foreground hover:text-primary sm:size-8"
           aria-label={`Ver detalhes de ${item.itemName}`}
           onClick={() => onInspect(item)}
         >

@@ -78,7 +78,7 @@ function EntryDetailsButton({
       size="icon-sm"
       aria-label={`Ver detalhes da entrada de ${entry.sourceName}`}
       title="Ver detalhes"
-      className="size-10 rounded-lg sm:size-7"
+      className="size-10 rounded-lg text-muted-foreground hover:text-primary sm:size-8"
       onClick={() => onSelect(entry)}
     >
       <FileText aria-hidden="true" className="size-5 sm:size-4" />
@@ -102,7 +102,7 @@ function EntryReverseButton({
       size="icon-sm"
       aria-label={isReversed ? `Entrada de ${entry.sourceName} já estornada` : `Estornar entrada de ${entry.sourceName}`}
       title={isReversed ? 'Entrada já estornada' : 'Estornar entrada'}
-      className="size-10 rounded-lg text-muted-foreground hover:text-destructive sm:size-7"
+      className="size-10 rounded-lg text-muted-foreground hover:text-destructive sm:size-8"
       disabled={isReversed}
       onClick={() => onSelect(entry)}
     >
@@ -180,10 +180,10 @@ export function InventoryEntriesPage() {
     <section aria-labelledby="inventory-entries-title" className="w-full">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 id="inventory-entries-title" className="text-2xl font-bold tracking-tight text-brand-navy">
+          <h1 id="inventory-entries-title" className="text-3xl font-bold tracking-tight text-brand-navy">
             <span className="inline-block -rotate-1 bg-brand-yellow px-3 py-1">Entradas</span>
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-3 text-sm text-muted-foreground">
             Tudo o que chegou ao estoque, com a origem de cada item.
           </p>
         </div>
@@ -331,12 +331,12 @@ export function InventoryEntriesPage() {
               <li key={entry.id} className={`rounded-xl border border-slate-200 bg-card p-4 ${entry.status === 'REVERSED' ? 'opacity-70' : ''}`}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="break-words text-sm font-semibold text-brand-navy">{entry.sourceName}</p>
+                    <p className="wrap-break-words text-sm font-semibold text-brand-navy">{entry.sourceName}</p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {formatMovementDate(entry.receivedAt)} · {entry.laboratoryName}
                     </p>
                   </div>
-                  <div className="flex shrink-0 items-center gap-2">
+                  <div className="flex shrink-0 items-center gap-1">
                     <EntryDetailsButton entry={entry} onSelect={setSelectedEntry} />
                     <EntryReverseButton entry={entry} onSelect={setEntryToReverse} />
                   </div>

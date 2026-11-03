@@ -24,7 +24,7 @@ export function LoginBrandPanel() {
       </section>
 
       <footer className="relative text-sm text-white/60">
-        <p>LabSens, Instituto de Química, Universidade Federal Modelo</p>
+        <p>Universidade Federal de Ciência e Inovação do Rio de Janeiro</p>
       </footer>
     </aside>
   )

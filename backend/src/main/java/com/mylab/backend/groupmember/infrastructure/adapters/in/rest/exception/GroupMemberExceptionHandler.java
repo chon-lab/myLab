@@ -8,8 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.mylab.backend.groupmember.application.exception.GroupMemberAlreadyActiveException;
+import com.mylab.backend.groupmember.application.exception.GroupMemberAlreadyLinkedException;
 import com.mylab.backend.groupmember.application.exception.GroupMemberNotFoundException;
+import com.mylab.backend.groupmember.application.exception.InvitationNotFoundException;
 import com.mylab.backend.groupmember.application.exception.PersonNotFoundException;
 import com.mylab.backend.groupmember.application.exception.ResearchGroupNotFoundException;
 import com.mylab.backend.groupmember.application.exception.ResearchLineNotFoundException;
@@ -36,6 +37,14 @@ public class GroupMemberExceptionHandler {
         return response(HttpStatus.NOT_FOUND, exception.getMessage(), request, Map.of());
     }
 
+    @ExceptionHandler(InvitationNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvitationNotFound(
+            InvitationNotFoundException exception,
+            HttpServletRequest request
+    ) {
+        return response(HttpStatus.NOT_FOUND, exception.getMessage(), request, Map.of());
+    }
+
     @ExceptionHandler(PersonNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handlePersonNotFound(
             PersonNotFoundException exception,
@@ -52,9 +61,9 @@ public class GroupMemberExceptionHandler {
         return response(HttpStatus.NOT_FOUND, exception.getMessage(), request, Map.of());
     }
 
-    @ExceptionHandler(GroupMemberAlreadyActiveException.class)
-    public ResponseEntity<ApiErrorResponse> handleAlreadyActive(
-            GroupMemberAlreadyActiveException exception,
+    @ExceptionHandler(GroupMemberAlreadyLinkedException.class)
+    public ResponseEntity<ApiErrorResponse> handleAlreadyLinked(
+            GroupMemberAlreadyLinkedException exception,
             HttpServletRequest request
     ) {
         return response(HttpStatus.CONFLICT, exception.getMessage(), request, Map.of());

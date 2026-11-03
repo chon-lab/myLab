@@ -1,5 +1,8 @@
 package com.mylab.backend.inventory.infrastructure.adapters.in.rest;
 
+import com.mylab.backend.auth.infrastructure.web.RequiredPermission;
+import com.mylab.backend.role.domain.model.PermissionResource;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -13,6 +16,7 @@ import com.mylab.backend.inventory.application.port.in.GetInventoryMovementHisto
 import com.mylab.backend.inventory.domain.model.*;
 
 @RestController
+@RequiredPermission(resource = PermissionResource.INVENTORY_STOCK)
 @RequiredArgsConstructor
 public class InventoryMovementController {
     private final GetInventoryMovementHistoryPort usecase;

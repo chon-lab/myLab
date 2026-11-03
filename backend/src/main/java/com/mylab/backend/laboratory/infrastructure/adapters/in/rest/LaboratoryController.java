@@ -1,5 +1,8 @@
 package com.mylab.backend.laboratory.infrastructure.adapters.in.rest;
 
+import com.mylab.backend.auth.infrastructure.web.RequiredPermission;
+import com.mylab.backend.role.domain.model.PermissionResource;
+
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -28,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
+@RequiredPermission(resource = PermissionResource.LABORATORY)
 @RequiredArgsConstructor
 @Slf4j
 public class LaboratoryController {

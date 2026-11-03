@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 import com.mylab.backend.person.application.port.out.PersonRepositoryPort;
@@ -55,6 +56,13 @@ public class PersonJpaAdapter implements PersonRepositoryPort {
             return List.of();
         }
         return mapper.toDomainList(jpaRepository.findAllById(ids));
+    }
+
+    @Override
+    public List<Person> searchAssignable(String query, int limit) {
+        String normalized = query == null ? "" : query.trim().toLowerCase();
+        log.debug("Searching assignable people by query length {}", normalized.length());
+        return mapper.toDomainList(jpaRepository.searchAssignable(normalized, PageRequest.of(0, limit)));
     }
 
     @Override

@@ -3,8 +3,6 @@ package com.mylab.backend.groupmember.infrastructure.adapters.in.rest.dto;
 import java.util.List;
 import java.util.UUID;
 
-import com.mylab.backend.groupmember.domain.model.GroupMemberRole;
-
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,7 +17,7 @@ public class CreateGroupMemberRequest {
     private UUID personId;
 
     @NotNull
-    private GroupMemberRole role;
+    private UUID roleId;
 
     private List<UUID> researchLineIds;
 }

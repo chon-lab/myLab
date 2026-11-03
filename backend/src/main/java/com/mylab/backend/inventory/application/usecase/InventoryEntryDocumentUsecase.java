@@ -21,7 +21,6 @@ import com.mylab.backend.inventory.application.port.out.InventoryEntryDocumentRe
 import com.mylab.backend.inventory.application.port.out.InventoryMovementRepositoryPort;
 import com.mylab.backend.inventory.domain.exception.InvalidInventoryException;
 import com.mylab.backend.inventory.domain.model.InventoryEntryDocument;
-import com.mylab.backend.inventory.domain.model.InventoryMovement;
 import com.mylab.backend.inventory.domain.model.InventoryMovementType;
 import com.mylab.backend.shared.application.port.out.FileStoragePort;
 

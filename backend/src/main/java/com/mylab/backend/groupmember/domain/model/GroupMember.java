@@ -15,8 +15,9 @@ public class GroupMember {
     private final UUID id;
     private final UUID personId;
     private final UUID researchGroupId;
-    private boolean active;
+    private MembershipStatus status;
     private GroupMemberRole role;
+    private UUID roleId;
     private Set<UUID> researchLineIds;
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -26,19 +27,85 @@ public class GroupMember {
             UUID id,
             UUID personId,
             UUID researchGroupId,
-            boolean active,
+            MembershipStatus status,
             GroupMemberRole role,
+            UUID roleId,
             Set<UUID> researchLineIds,
             LocalDateTime createdAt,
             LocalDateTime updatedAt) {
         this.id = requireNonNull(id, "id");
         this.personId = requireNonNull(personId, "personId");
         this.researchGroupId = requireNonNull(researchGroupId, "researchGroupId");
-        this.active = active;
+        this.status = requireNonNull(status, "status");
         this.role = role;
+        this.roleId = roleId;
         this.researchLineIds = defaultIfNull(researchLineIds);
         this.createdAt = requireNonNull(createdAt, "createdAt");
         this.updatedAt = requireValidUpdatedAt(updatedAt, createdAt);
+    }
+
+    public boolean isActive() {
+        return status == MembershipStatus.ACTIVE;
+    }
+
+    public boolean isPending() {
+        return status == MembershipStatus.PENDING;
+    }
+
+    public void assignRole(UUID roleId, LocalDateTime occurredAt) {
+        this.roleId = requireNonNull(roleId, "roleId");
+        this.updatedAt = advance(occurredAt);
+    }
+
+    public void invite(UUID roleId, Set<UUID> researchLineIds, LocalDateTime occurredAt) {
+        this.status = MembershipStatus.PENDING;
+        this.roleId = requireNonNull(roleId, "roleId");
+        this.researchLineIds = defaultIfNull(researchLineIds);
+        this.updatedAt = advance(occurredAt);
+    }
+
+    public void accept(LocalDateTime occurredAt) {
+        if (status != MembershipStatus.PENDING) {
+            throw new InvalidGroupMemberException("only a pending invitation can be accepted");
+        }
+        this.status = MembershipStatus.ACTIVE;
+        this.updatedAt = advance(occurredAt);
+    }
+
+    public void reject(LocalDateTime occurredAt) {
+        if (status != MembershipStatus.PENDING) {
+            throw new InvalidGroupMemberException("only a pending invitation can be rejected");
+        }
+        this.status = MembershipStatus.INACTIVE;
+        this.updatedAt = advance(occurredAt);
+    }
+
+    public void leave(LocalDateTime occurredAt) {
+        if (status != MembershipStatus.ACTIVE) {
+            throw new InvalidGroupMemberException("only an active membership can be left");
+        }
+        this.status = MembershipStatus.INACTIVE;
+        this.updatedAt = advance(occurredAt);
+    }
+
+    public void updateResearchLines(Set<UUID> researchLineIds, LocalDateTime occurredAt) {
+        this.researchLineIds = defaultIfNull(researchLineIds);
+        this.updatedAt = advance(occurredAt);
+    }
+
+    public void update(MembershipStatus status, GroupMemberRole role, Set<UUID> researchLineIds, LocalDateTime occurredAt) {
+        this.status = requireNonNull(status, "status");
+        this.role = role;
+        this.researchLineIds = defaultIfNull(researchLineIds);
+        this.updatedAt = advance(occurredAt);
+    }
+
+    private LocalDateTime advance(LocalDateTime occurredAt) {
+        LocalDateTime validUpdatedAt = requireValidUpdatedAt(occurredAt, this.createdAt);
+        if (validUpdatedAt.isBefore(this.updatedAt)) {
+            throw new InvalidGroupMemberException("updatedAt must not move backwards");
+        }
+        return validUpdatedAt;
     }
 
     private static <T> T requireNonNull(T value, String fieldName) {
@@ -58,43 +125,5 @@ public class GroupMember {
             throw new InvalidGroupMemberException("updatedAt must not be before createdAt");
         }
         return updatedAt;
-    }
-
-    public void activate(LocalDateTime occurredAt) {
-        LocalDateTime validUpdatedAt = requireValidUpdatedAt(occurredAt, this.createdAt);
-        if (validUpdatedAt.isBefore(this.updatedAt)) {
-            throw new InvalidGroupMemberException("updatedAt must not move backwards");
-        }
-        this.active = true;
-        this.updatedAt = validUpdatedAt;
-    }
-
-    public void deactivate(LocalDateTime occurredAt) {
-        LocalDateTime validUpdatedAt = requireValidUpdatedAt(occurredAt, this.createdAt);
-        if (validUpdatedAt.isBefore(this.updatedAt)) {
-            throw new InvalidGroupMemberException("updatedAt must not move backwards");
-        }
-        this.active = false;
-        this.updatedAt = validUpdatedAt;
-    }
-
-    public void updateResearchLines(Set<UUID> researchLineIds, LocalDateTime occurredAt) {
-        LocalDateTime validUpdatedAt = requireValidUpdatedAt(occurredAt, this.createdAt);
-        if (validUpdatedAt.isBefore(this.updatedAt)) {
-            throw new InvalidGroupMemberException("updatedAt must not move backwards");
-        }
-        this.researchLineIds = defaultIfNull(researchLineIds);
-        this.updatedAt = validUpdatedAt;
-    }
-
-    public void update(boolean active, GroupMemberRole role, Set<UUID> researchLineIds, LocalDateTime occurredAt) {
-        LocalDateTime validUpdatedAt = requireValidUpdatedAt(occurredAt, this.createdAt);
-        if (validUpdatedAt.isBefore(this.updatedAt)) {
-            throw new InvalidGroupMemberException("updatedAt must not move backwards");
-        }
-        this.active = active;
-        this.role = role;
-        this.researchLineIds = defaultIfNull(researchLineIds);
-        this.updatedAt = validUpdatedAt;
     }
 }

@@ -31,24 +31,11 @@ import { MemberFormDialog } from '@/pages/members/components/member-form-dialog'
 import { MemberDetailsDialog } from '@/pages/members/components/member-details-dialog'
 import { RemoveMemberDialog } from '@/pages/members/components/remove-member-dialog'
 import { useMembersQuery, useMemberResearchLinesQuery } from '@/queries/members/members.queries'
-import type { GroupMemberListItem, MemberRole } from '@/types/members/member.types'
-
-const roleFilters: { value: MemberRole; label: string }[] = [
-  { value: 'ADMIN', label: 'Admin do grupo' },
-  { value: 'RESPONSIBLE', label: 'Responsáveis' },
-  { value: 'STUDENT', label: 'Estudantes' },
-  { value: 'PARTNER', label: 'Parceiros' },
-]
-
-const roleLabels: Record<MemberRole, string> = {
-  ADMIN: 'Admin do grupo',
-  RESPONSIBLE: 'Responsável',
-  STUDENT: 'Estudante',
-  PARTNER: 'Parceiro',
-}
+import { useRolesQuery } from '@/queries/roles/roles.queries'
+import type { GroupMemberListItem } from '@/types/members/member.types'
 
 function normalizeSearchText(value: string) {
-  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR')
+  return value.normalize('NFD').replace(/[̀-ͯ]/g, '').toLocaleLowerCase('pt-BR')
 }
 
 function cpfDigits(value: string | null) {
@@ -71,14 +58,6 @@ function initials(name: string) {
     .toLocaleUpperCase('pt-BR')
 }
 
-function roleBadgeClass(role: MemberRole | null) {
-  if (role === 'ADMIN') return 'border-transparent bg-brand-navy text-white'
-  if (role === 'RESPONSIBLE') return 'border-transparent bg-primary/10 text-primary'
-  if (role === 'STUDENT') return 'border-transparent bg-muted text-foreground'
-  if (role === 'PARTNER') return 'border-transparent bg-brand-yellow/35 text-brand-navy'
-  return 'border-border bg-background text-muted-foreground'
-}
-
 function PageState({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section aria-labelledby="members-title" className="max-w-2xl">
@@ -88,10 +67,19 @@ function PageState({ title, children }: { title: string; children: ReactNode }) 
   )
 }
 
-function RoleBadge({ role }: { role: MemberRole | null }) {
+function RoleBadge({ label }: { label: string }) {
   return (
-    <Badge variant="outline" className={`h-auto rounded-full px-2.5 py-1 text-xs font-semibold ${roleBadgeClass(role)}`}>
-      {role ? roleLabels[role] : 'Perfil não informado'}
+    <Badge variant="outline" className="h-auto rounded-full border-border bg-muted px-2.5 py-1 text-xs font-semibold text-foreground">
+      {label}
+    </Badge>
+  )
+}
+
+function StatusBadge({ pending }: { pending: boolean }) {
+  if (!pending) return null
+  return (
+    <Badge variant="outline" className="h-auto rounded-full border-transparent bg-brand-yellow/35 px-2 py-0.5 text-[0.65rem] font-semibold text-brand-navy">
+      Convite pendente
     </Badge>
   )
 }
@@ -116,9 +104,11 @@ function MemberActions({ member, onView, onEdit, onRemove }: {
     </div>
   )
 }
-function MemberMobileCard({ member, lineNames, onView, onEdit, onRemove }: {
+
+function MemberMobileCard({ member, lineNames, roleName, onView, onEdit, onRemove }: {
   member: GroupMemberListItem
   lineNames: Map<string, string>
+  roleName: string
   onView: (member: GroupMemberListItem) => void
   onEdit: (member: GroupMemberListItem) => void
   onRemove: (member: GroupMemberListItem) => void
@@ -138,19 +128,15 @@ function MemberMobileCard({ member, lineNames, onView, onEdit, onRemove }: {
         <div className="min-w-0 flex-1">
           <p className="break-words text-sm font-semibold text-brand-navy">
             {member.person.socialName || member.person.name}
-            {member.person.socialName && (
-              <span className="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-[0.65rem] font-semibold text-primary">
-                nome social
-              </span>
-            )}
           </p>
+          <div className="mt-1"><StatusBadge pending={member.membership.status === 'PENDING'} /></div>
         </div>
         <MemberActions member={member} onView={onView} onEdit={onEdit} onRemove={onRemove} />
       </div>
       <dl className="mt-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
         <div>
-          <dt className="text-xs font-medium text-muted-foreground">Perfil</dt>
-          <dd className="mt-1"><RoleBadge role={member.membership.role} /></dd>
+          <dt className="text-xs font-medium text-muted-foreground">Cargo</dt>
+          <dd className="mt-1"><RoleBadge label={roleName} /></dd>
         </div>
         <div>
           <dt className="text-xs font-medium text-muted-foreground">Titulação</dt>
@@ -179,8 +165,9 @@ export function MembersPage() {
   const selectedGroup = useResearchGroup()
   const { data: members, isPending, isError, error, refetch } = useMembersQuery(selectedGroup.id)
   const { data: researchLines, isPending: linesPending, isError: linesError, refetch: refetchLines } = useMemberResearchLinesQuery(selectedGroup.id)
+  const { data: roles } = useRolesQuery(selectedGroup.id)
   const [searchQuery, setSearchQuery] = useState('')
-  const [roleFilter, setRoleFilter] = useState<MemberRole | 'ALL'>('ALL')
+  const [roleFilter, setRoleFilter] = useState<string>('ALL')
   const [lineFilter, setLineFilter] = useState('ALL')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedMember, setSelectedMember] = useState<GroupMemberListItem | null>(null)
@@ -216,14 +203,16 @@ export function MembersPage() {
     )
   }
 
+  const availableRoles = roles ?? []
+  const roleNames = new Map(availableRoles.map((role) => [role.id, role.name]))
+  const roleNameOf = (roleId: string | null) => (roleId ? roleNames.get(roleId) ?? 'Cargo removido' : 'Sem cargo')
   const lineNames = new Map(researchLines.map((line) => [line.id, line.name]))
   const lineCounts = new Map<string, number>()
-  const roleCounts = new Map<MemberRole, number>(roleFilters.map(({ value }) => [value, 0]))
+  const roleCounts = new Map<string, number>()
 
   for (const member of members) {
-    if (member.membership.role) {
-      roleCounts.set(member.membership.role, (roleCounts.get(member.membership.role) ?? 0) + 1)
-    }
+    const roleId = member.membership.roleId
+    if (roleId) roleCounts.set(roleId, (roleCounts.get(roleId) ?? 0) + 1)
     for (const lineId of member.membership.researchLineIds) {
       lineCounts.set(lineId, (lineCounts.get(lineId) ?? 0) + 1)
     }
@@ -231,7 +220,7 @@ export function MembersPage() {
 
   const filteredMembers = members.filter((member) => {
     const normalizedQuery = normalizeSearchText(searchQuery.trim())
-    const matchingRole = roleFilter === 'ALL' || member.membership.role === roleFilter
+    const matchingRole = roleFilter === 'ALL' || member.membership.roleId === roleFilter
     const matchingLine = lineFilter === 'ALL' || member.membership.researchLineIds.includes(lineFilter)
     const searchableValues = [
       member.person.name,
@@ -248,7 +237,12 @@ export function MembersPage() {
     return matchingRole && matchingLine && matchingSearch
   })
 
-  const totalLabel = members.length === 1 ? '1 membro ativo' : `${members.length} membros ativos`
+  const totalLabel = members.length === 1 ? '1 membro' : `${members.length} membros`
+
+  function openInvite() {
+    setSelectedMember(null)
+    setDialogOpen(true)
+  }
 
   return (
     <section aria-labelledby="members-title" className="min-w-0">
@@ -264,44 +258,14 @@ export function MembersPage() {
         <Button
           size="lg"
           className="h-10 w-full shrink-0 px-4 font-semibold sm:w-auto"
-          onClick={() => {
-            setSelectedMember(null)
-            setDialogOpen(true)
-          }}
+          onClick={openInvite}
         >
           <Plus aria-hidden="true" />
-          Novo membro
+          Convidar membro
         </Button>
       </header>
 
-      <nav aria-label="Filtrar membros por perfil" className="mt-6 overflow-x-auto border-b border-border">
-        <ul className="flex min-w-max items-center gap-1">
-          <li>
-            <button
-              type="button"
-              aria-pressed={roleFilter === 'ALL'}
-              onClick={() => setRoleFilter('ALL')}
-              className={`min-h-10 border-b-2 px-3 text-xs font-semibold transition-colors ${roleFilter === 'ALL' ? 'border-primary text-brand-navy' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-            >
-              Todos <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-[0.65rem]">{members.length}</span>
-            </button>
-          </li>
-          {roleFilters.map((role) => (
-            <li key={role.value}>
-              <button
-                type="button"
-                aria-pressed={roleFilter === role.value}
-                onClick={() => setRoleFilter(role.value)}
-                className={`min-h-10 border-b-2 px-3 text-xs font-semibold transition-colors ${roleFilter === role.value ? 'border-primary text-brand-navy' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
-              >
-                {role.label} <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-[0.65rem]">{roleCounts.get(role.value) ?? 0}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </nav>
-
-      <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(16rem,1.4fr)_minmax(12rem,1fr)] sm:items-end">
+      <div className="mt-6 grid gap-3 sm:grid-cols-[minmax(14rem,1.4fr)_minmax(10rem,1fr)_minmax(12rem,1fr)] sm:items-end">
         <div>
           <label htmlFor="members-search" className="block text-xs font-semibold text-brand-navy">Buscar</label>
           <InputGroup className="mt-1.5 h-10 bg-card">
@@ -317,6 +281,22 @@ export function MembersPage() {
               className="h-full text-sm"
             />
           </InputGroup>
+        </div>
+        <div>
+          <label htmlFor="members-role" className="block text-xs font-semibold text-brand-navy">Cargo</label>
+          <Select value={roleFilter} onValueChange={setRoleFilter}>
+            <SelectTrigger id="members-role" className="mt-1.5 h-10 w-full bg-card">
+              <SelectValue placeholder="Todos os cargos" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">Todos os cargos ({members.length})</SelectItem>
+              {availableRoles.map((role) => (
+                <SelectItem key={role.id} value={role.id}>
+                  {role.name}{roleCounts.get(role.id) ? ` (${roleCounts.get(role.id)})` : ''}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div>
           <label htmlFor="members-research-line" className="block text-xs font-semibold text-brand-navy">Linha de pesquisa</label>
@@ -341,16 +321,13 @@ export function MembersPage() {
           <span className="mx-auto grid size-11 place-items-center rounded-xl bg-primary/10 text-primary">
             <UsersRound aria-hidden="true" className="size-5" />
           </span>
-          <h2 id="members-empty-title" className="mt-4 text-base font-bold text-brand-navy">Nenhum membro cadastrado</h2>
+          <h2 id="members-empty-title" className="mt-4 text-base font-bold text-brand-navy">Nenhum membro no grupo</h2>
           <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-            Cadastre pessoas para organizar os vínculos e as linhas de pesquisa do grupo.
+            Convide usuários já cadastrados no sistema e atribua um cargo a cada um.
           </p>
-          <Button className="mt-5 font-semibold" onClick={() => {
-            setSelectedMember(null)
-            setDialogOpen(true)
-          }}>
+          <Button className="mt-5 font-semibold" onClick={openInvite}>
             <Plus aria-hidden="true" />
-            Novo membro
+            Convidar membro
           </Button>
         </section>
       ) : filteredMembers.length === 0 ? (
@@ -374,7 +351,7 @@ export function MembersPage() {
               <TableHeader className="bg-muted/60">
                 <TableRow className="hover:bg-transparent">
                   <TableHead className="px-3 text-xs font-semibold text-brand-navy">Nome</TableHead>
-                  <TableHead className="px-3 text-xs font-semibold text-brand-navy">Perfil</TableHead>
+                  <TableHead className="px-3 text-xs font-semibold text-brand-navy">Cargo</TableHead>
                   <TableHead className="px-3 text-xs font-semibold text-brand-navy">Titulação</TableHead>
                   <TableHead className="px-3 text-xs font-semibold text-brand-navy">E-mail</TableHead>
                   <TableHead className="px-3 text-xs font-semibold text-brand-navy">CPF</TableHead>
@@ -400,16 +377,14 @@ export function MembersPage() {
                           <span className="min-w-0">
                             <span className="block truncate text-xs font-semibold text-brand-navy">
                               {member.person.socialName || member.person.name}
-                              {member.person.socialName && (
-                                <span className="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-[0.6rem] font-semibold text-primary">
-                                  nome social
-                                </span>
-                              )}
                             </span>
+                            {member.membership.status === 'PENDING' && (
+                              <span className="mt-0.5 block"><StatusBadge pending /></span>
+                            )}
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="px-3 py-2.5"><RoleBadge role={member.membership.role} /></TableCell>
+                      <TableCell className="px-3 py-2.5"><RoleBadge label={roleNameOf(member.membership.roleId)} /></TableCell>
                       <TableCell className="px-3 py-2.5 text-xs text-foreground">{member.person.academicDegree || 'Não informada'}</TableCell>
                       <TableCell className="max-w-48 px-3 py-2.5 text-xs text-muted-foreground">
                         <span className="block truncate">{member.person.email || 'Não informado'}</span>
@@ -442,6 +417,7 @@ export function MembersPage() {
                 key={member.membership.id}
                 member={member}
                 lineNames={lineNames}
+                roleName={roleNameOf(member.membership.roleId)}
                 onView={setMemberToView}
                 onRemove={setMemberToRemove}
                 onEdit={(selected) => {
@@ -460,6 +436,7 @@ export function MembersPage() {
         open={dialogOpen}
         member={selectedMember}
         researchLines={researchLines}
+        roles={availableRoles}
         onOpenChange={(open) => {
           setDialogOpen(open)
           if (!open) setSelectedMember(null)
@@ -469,16 +446,17 @@ export function MembersPage() {
           setSelectedMember(null)
           publishToast({
             kind: 'success',
-            title: mode === 'created' ? 'Membro cadastrado' : 'Membro atualizado',
-            description: mode === 'created'
-              ? 'O membro foi vinculado ao grupo.'
-              : 'Os dados e o vínculo do membro foram atualizados.',
+            title: mode === 'invited' ? 'Convite enviado' : 'Vínculo atualizado',
+            description: mode === 'invited'
+              ? 'O usuário foi convidado e precisa aceitar o convite para entrar no grupo.'
+              : 'O cargo e as linhas do membro foram atualizados.',
           })
         }}
       />
       <MemberDetailsDialog
         member={memberToView}
         lineNames={lineNames}
+        roleNames={roleNames}
         onOpenChange={(open) => {
           if (!open) setMemberToView(null)
         }}

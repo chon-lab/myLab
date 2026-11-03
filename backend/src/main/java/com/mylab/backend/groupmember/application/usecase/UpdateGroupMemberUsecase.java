@@ -21,7 +21,11 @@ import com.mylab.backend.groupmember.application.port.out.ResearchGroupLookupPor
 import com.mylab.backend.groupmember.application.port.out.ResearchLineLookupPort;
 import com.mylab.backend.groupmember.domain.model.GroupMember;
 import com.mylab.backend.groupmember.domain.model.GroupMemberRole;
+import com.mylab.backend.groupmember.domain.model.MembershipStatus;
 import com.mylab.backend.groupmember.domain.exception.InvalidGroupMemberException;
+import com.mylab.backend.role.application.exception.RoleNotFoundException;
+import com.mylab.backend.role.application.port.out.RoleRepositoryPort;
+import com.mylab.backend.role.domain.model.Role;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +39,7 @@ public class UpdateGroupMemberUsecase implements UpdateGroupMemberPort {
     private final ResearchGroupLookupPort researchGroupLookupPort;
     private final ResearchLineLookupPort researchLineLookupPort;
     private final PersonLookupPort personLookupPort;
+    private final RoleRepositoryPort roleRepositoryPort;
 
     @Override
     @Transactional
@@ -53,7 +58,7 @@ public class UpdateGroupMemberUsecase implements UpdateGroupMemberPort {
                 .orElseThrow(() -> new GroupMemberNotFoundException(personId, researchGroupId));
 
         LocalDateTime now = LocalDateTime.now();
-        boolean active = input.active() != null ? input.active() : member.isActive();
+        MembershipStatus status = input.status() != null ? input.status() : member.getStatus();
         var role = input.role() != null ? input.role() : member.getRole();
         if (role == GroupMemberRole.PARTNER && !personLookupPort.hasCpf(personId)) {
             throw new InvalidGroupMemberException("cpf is required for partner members");
@@ -62,7 +67,15 @@ public class UpdateGroupMemberUsecase implements UpdateGroupMemberPort {
                 ? validateResearchLineIds(input.researchLineIds(), researchGroupId)
                 : member.getResearchLineIds();
 
-        member.update(active, role, researchLineIds, now);
+        member.update(status, role, researchLineIds, now);
+
+        if (input.roleId() != null) {
+            Role dynamicRole = roleRepositoryPort.findById(input.roleId())
+                    .filter(candidate -> candidate.getResearchGroupId().equals(researchGroupId))
+                    .orElseThrow(() -> new RoleNotFoundException(input.roleId()));
+            member.assignRole(dynamicRole.getId(), now);
+        }
+
         repositoryPort.save(member);
         log.info("Group member updated successfully with ID: {}", member.getId());
     }

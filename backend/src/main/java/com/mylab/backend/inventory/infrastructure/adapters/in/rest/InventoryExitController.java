@@ -1,5 +1,8 @@
 package com.mylab.backend.inventory.infrastructure.adapters.in.rest;
 
+import com.mylab.backend.auth.infrastructure.web.RequiredPermission;
+import com.mylab.backend.role.domain.model.PermissionResource;
+
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.List;
@@ -28,6 +31,7 @@ import com.mylab.backend.inventory.infrastructure.adapters.in.rest.dto.ReverseIn
 import com.mylab.backend.inventory.infrastructure.adapters.in.rest.mapper.InventoryExitRestMapper;
 
 @RestController
+@RequiredPermission(resource = PermissionResource.INVENTORY_EXIT)
 @RequiredArgsConstructor
 public class InventoryExitController {
     private final CreateInventoryExitPort createInventoryExitPort;
@@ -44,8 +48,7 @@ public class InventoryExitController {
     @PostMapping("/api/v1/inventory/exits/{exitId}/reverse")
     public ResponseEntity<Void> reverse(
             @PathVariable UUID exitId,
-            @Valid @RequestBody ReverseInventoryExitRequest request
-    ) {
+            @Valid @RequestBody ReverseInventoryExitRequest request) {
         reverseInventoryExitPort.reverse(exitId, mapper.toInput(request));
         return ResponseEntity.noContent().build();
     }
@@ -57,25 +60,21 @@ public class InventoryExitController {
             @RequestParam(required = false) InventoryExitType type,
             @RequestParam(required = false) UUID inventoryItemId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo
-    ) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo) {
         InventoryExitSearchCriteria criteria = new InventoryExitSearchCriteria(
                 laboratoryId,
                 type,
                 inventoryItemId,
                 dateFrom,
-                dateTo
-        );
+                dateTo);
         return getInventoryExitHistoryPort.getHistory(groupId, criteria);
     }
 
     @PostMapping("/api/v1/research-groups/{groupId}/inventory/exits")
     public ResponseEntity<Void> create(
             @PathVariable UUID groupId,
-            @Valid @RequestBody CreateInventoryExitRequest request
-    ) {
+            @Valid @RequestBody CreateInventoryExitRequest request) {
         UUID exitId = createInventoryExitPort.create(groupId, mapper.toInput(request));
         return ResponseEntity.created(URI.create("/api/v1/inventory/exits/" + exitId)).build();
     }
 }
-

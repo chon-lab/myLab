@@ -45,7 +45,7 @@ Use as classes semânticas correspondentes e os tokens de `src/index.css`; não 
 
 ```
 src/
-  app/                    router
+  routes/                 configuração de roteamento: router.tsx e os route components de entrada
   components/             componentes globais: ui/ (shadcn), layout/, require-auth, brand-logo
   lib/                    api-client, query-client, utils
   services/<modulo>/      *.service.ts
@@ -56,10 +56,11 @@ src/
     components/           componentes usados só por essa tela
 ```
 
-- Módulos seguem o domínio: `auth`, `research-groups`, `people`, `laboratories`, `projects`, `inventory`…
+- Módulos seguem o domínio: `auth`, `research-groups`, `people`, `members`, `roles`, `invitations`, `permissions`, `laboratories`, `projects`, `inventory`…
+- **Cargos e membros (RBAC):** `pages/roles/` faz o CRUD de cargos (matriz recurso × ação do catálogo `GET /permissions/catalog`); o cargo Admin `fullAccess` é somente leitura. `pages/members/` convida **usuários existentes** (busca em `assignable-people`, sem criar pessoa) e atribui um **cargo**; as abas/filtro são pelos cargos do grupo, não por perfil fixo. O vínculo nasce `PENDING`: o convidado vê o convite no sininho (`components/layout/notifications-bell.tsx`, módulo `invitations`) e precisa aceitar; também pode **sair** do grupo (`leave-group-dialog.tsx`). Permissões da UI vêm de `usePermissions()`/`<RequirePermission>` (módulo `permissions`).
 - Um componente vai para `src/components/` só quando é usado por mais de uma página; senão fica em `pages/<tela>/components/`.
 - `pages/navigation-placeholder/` é uma tela genérica temporária para destinos de navegação ainda sem implementação. Ao criar a tela real, registre a rota específica e substitua esse placeholder para aquele destino; a presença de um item no menu ou de uma rota provisória não significa que a funcionalidade está pronta.
-- `pages/research-group-route/` contém a lógica de entrada e validação das rotas com grupo selecionado. Ela resolve o grupo da URL, fornece seu contexto e monta o `AppShell`; não representa uma tela de negócio. Para acessar o grupo atual dentro de uma tela, use `useResearchGroup()` de `components/layout/research-group-context.ts`.
+- `routes/research-group/` contém a lógica de entrada e validação das rotas com grupo selecionado (não são telas de negócio, por isso ficam em `routes/`, não em `pages/`). Resolve o grupo da URL, fornece seu contexto e monta o `AppShell`; os estados de carregamento/erro e a tela de "criar primeiro grupo" ficam em `route-states.tsx`. Para acessar o grupo atual dentro de uma tela, use `useResearchGroup()` de `components/layout/research-group-context.ts`.
 
 - Imports sempre pelo alias `@/`.
 - Textos da interface em português (pt-BR).

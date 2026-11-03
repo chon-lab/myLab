@@ -1,5 +1,8 @@
 package com.mylab.backend.project.infrastructure.adapters.in.rest;
 
+import com.mylab.backend.auth.infrastructure.web.RequiredPermission;
+import com.mylab.backend.role.domain.model.PermissionResource;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
@@ -29,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
+@RequiredPermission(resource = PermissionResource.PROJECT)
 @RequiredArgsConstructor
 @Slf4j
 public class ProjectDocumentController {

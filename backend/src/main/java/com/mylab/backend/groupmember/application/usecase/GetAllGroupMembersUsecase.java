@@ -14,6 +14,7 @@ import com.mylab.backend.groupmember.application.port.out.GroupMemberRepositoryP
 import com.mylab.backend.groupmember.application.port.out.PersonLookupPort;
 import com.mylab.backend.groupmember.application.port.out.ResearchGroupLookupPort;
 import com.mylab.backend.groupmember.domain.model.GroupMember;
+import com.mylab.backend.groupmember.domain.model.MembershipStatus;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,13 +32,13 @@ public class GetAllGroupMembersUsecase implements GetAllGroupMembersPort {
     @Transactional(readOnly = true)
     public List<GroupMember> getAllByResearchGroup(UUID researchGroupId) {
         Objects.requireNonNull(researchGroupId, "researchGroupId must not be null");
-        log.debug("Listing active group members for research group: {}", researchGroupId);
+        log.debug("Listing active and pending group members for research group: {}", researchGroupId);
 
         if (!researchGroupLookupPort.existsById(researchGroupId)) {
             throw new ResearchGroupNotFoundException(researchGroupId);
         }
 
-        return repositoryPort.findAllByResearchGroupIdAndActive(researchGroupId, true);
+        return repositoryPort.findAllByResearchGroupIdAndStatusNot(researchGroupId, MembershipStatus.INACTIVE);
     }
 
     @Override

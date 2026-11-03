@@ -20,15 +20,16 @@ public class GroupMemberRestMapper {
         return new CreateGroupMemberInput(
                 researchGroupId,
                 request.getPersonId(),
-                request.getRole(),
+                request.getRoleId(),
                 request.getResearchLineIds()
         );
     }
 
     public UpdateGroupMemberInput toInput(UpdateGroupMemberRequest request) {
         return new UpdateGroupMemberInput(
-                request.getActive(),
+                request.getStatus(),
                 request.getRole(),
+                request.getRoleId(),
                 request.getResearchLineIds()
         );
     }
@@ -42,8 +43,9 @@ public class GroupMemberRestMapper {
                 domain.getId(),
                 domain.getPersonId(),
                 domain.getResearchGroupId(),
-                domain.isActive(),
+                domain.getStatus(),
                 domain.getRole(),
+                domain.getRoleId(),
                 domain.getResearchLineIds(),
                 domain.getCreatedAt(),
                 domain.getUpdatedAt()

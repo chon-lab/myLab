@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.mylab.backend.groupmember.domain.model.GroupMemberRole;
+import com.mylab.backend.groupmember.domain.model.MembershipStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,8 +19,9 @@ public class GroupMemberResponse {
     private UUID id;
     private UUID personId;
     private UUID researchGroupId;
-    private boolean active;
+    private MembershipStatus status;
     private GroupMemberRole role;
+    private UUID roleId;
     private Set<UUID> researchLineIds;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

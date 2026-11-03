@@ -11,5 +11,6 @@ public interface PersonRepositoryPort {
     Optional<Person> findById(UUID id);
     Optional<Person> findByEmail(String email);
     List<Person> findAllByIds(List<UUID> ids);
+    List<Person> searchAssignable(String query, int limit);
     void deleteById(UUID id);
 }

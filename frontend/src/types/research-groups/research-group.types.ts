@@ -51,3 +51,17 @@ export type UpdateResearchGroupRequest = {
   address: GroupAddress | null
   contacts: GroupContact[]
 }
+
+export type CreateResearchGroupRequest = {
+  cnpqId: string
+  name: string
+  situation: string
+  formationYear: number
+  predominantArea: string
+  institutionName: string
+  institutionUnit: string | null
+  sourceUrl: string | null
+  repercussions: string | null
+  address: GroupAddress | null
+  contacts: GroupContact[]
+}

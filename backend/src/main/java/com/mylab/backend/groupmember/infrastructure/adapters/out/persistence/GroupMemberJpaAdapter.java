@@ -5,9 +5,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.mylab.backend.groupmember.application.port.out.GroupMemberRepositoryPort;
 import com.mylab.backend.groupmember.domain.model.GroupMember;
+import com.mylab.backend.groupmember.domain.model.MembershipStatus;
 import com.mylab.backend.groupmember.infrastructure.adapters.out.persistence.entity.GroupMemberEntity;
 import com.mylab.backend.groupmember.infrastructure.adapters.out.persistence.mapper.GroupMemberMapper;
 import com.mylab.backend.groupmember.infrastructure.adapters.out.persistence.repository.GroupMemberJpaRepository;
@@ -32,12 +34,14 @@ public class GroupMemberJpaAdapter implements GroupMemberRepositoryPort {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<GroupMember> findById(UUID id) {
         log.debug("Finding group member by ID: {}", id);
         return jpaRepository.findById(id).map(mapper::toDomain);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<GroupMember> findByPersonIdAndResearchGroupId(UUID personId, UUID researchGroupId) {
         log.debug("Finding group member by person {} and research group {}", personId, researchGroupId);
         return jpaRepository.findByPersonIdAndResearchGroupId(personId, researchGroupId)
@@ -45,14 +49,28 @@ public class GroupMemberJpaAdapter implements GroupMemberRepositoryPort {
     }
 
     @Override
-    public List<GroupMember> findAllByResearchGroupIdAndActive(UUID researchGroupId, boolean active) {
-        log.debug("Finding group members by research group {} active={}", researchGroupId, active);
-        return mapper.toDomainList(jpaRepository.findAllByResearchGroupIdAndActive(researchGroupId, active));
+    @Transactional(readOnly = true)
+    public List<GroupMember> findAllByResearchGroupIdAndStatusNot(UUID researchGroupId, MembershipStatus status) {
+        log.debug("Finding group members by research group {} status != {}", researchGroupId, status);
+        return mapper.toDomainList(jpaRepository.findAllByResearchGroupIdAndStatusNot(researchGroupId, status));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<GroupMember> findAllByPersonId(UUID personId) {
         log.debug("Finding group members by person ID: {}", personId);
         return mapper.toDomainList(jpaRepository.findAllByPersonId(personId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<GroupMember> findAllByPersonIdAndStatus(UUID personId, MembershipStatus status) {
+        log.debug("Finding group members by person {} status={}", personId, status);
+        return mapper.toDomainList(jpaRepository.findAllByPersonIdAndStatus(personId, status));
+    }
+
+    @Override
+    public long countByRoleId(UUID roleId) {
+        return jpaRepository.countByRoleId(roleId);
     }
 }

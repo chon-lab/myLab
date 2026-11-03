@@ -1,5 +1,8 @@
 package com.mylab.backend.researchgroup.infrastructure.adapters.in.rest;
 
+import com.mylab.backend.auth.infrastructure.web.RequiredPermission;
+import com.mylab.backend.role.domain.model.PermissionResource;
+
 import java.net.URI;
 import java.util.List;
 import java.util.Set;
@@ -16,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.mylab.backend.common.infrastructure.auth.CurrentPersonProvider;
+import com.mylab.backend.auth.infrastructure.CurrentPersonProvider;
 import com.mylab.backend.groupmember.application.port.out.GroupMemberRepositoryPort;
 import com.mylab.backend.groupmember.domain.model.GroupMember;
 import com.mylab.backend.researchgroup.application.port.in.CreateResearchGroupPort;
@@ -35,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
+@RequiredPermission(resource = PermissionResource.RESEARCH_GROUP)
 @RequestMapping("/api/v1/research-groups")
 @RequiredArgsConstructor
 @Slf4j
@@ -77,7 +81,8 @@ public class ResearchGroupController {
     @PostMapping
     public ResponseEntity<Void> createResearchGroup(
             @Valid @RequestBody CreateResearchGroupRequest request) {
-        UUID id = createResearchGroupPort.create(mapper.toInput(request));
+        UUID creatorPersonId = currentPersonProvider.current().getId();
+        UUID id = createResearchGroupPort.create(mapper.toInput(request), creatorPersonId);
         URI location = URI.create("/api/v1/research-groups/" + id);
 
                 log.info("REST POST: create research group with CNPq ID: {}", request.getCnpqId());

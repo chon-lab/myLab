@@ -1,5 +1,8 @@
 package com.mylab.backend.inventory.infrastructure.adapters.in.rest;
 
+import com.mylab.backend.auth.infrastructure.web.RequiredPermission;
+import com.mylab.backend.role.domain.model.PermissionResource;
+
 import java.util.UUID;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +15,7 @@ import com.mylab.backend.inventory.application.dto.InventoryStockResponse;
 import com.mylab.backend.inventory.application.port.in.GetInventoryStockPort;
 
 @RestController
+@RequiredPermission(resource = PermissionResource.INVENTORY_STOCK)
 @RequiredArgsConstructor
 public class InventoryStockController {
     private final GetInventoryStockPort getInventoryStockPort;
@@ -19,8 +23,7 @@ public class InventoryStockController {
     @GetMapping("/api/v1/research-groups/{groupId}/inventory/stock")
     public InventoryStockResponse getStock(
             @PathVariable UUID groupId,
-            @RequestParam(required = false) UUID laboratoryId
-    ) {
+            @RequestParam(required = false) UUID laboratoryId) {
         return getInventoryStockPort.getStock(groupId, laboratoryId);
     }
 }

@@ -1,4 +1,4 @@
-export type MemberRole = 'ADMIN' | 'RESPONSIBLE' | 'STUDENT' | 'PARTNER'
+export type MembershipStatus = 'PENDING' | 'ACTIVE' | 'INACTIVE'
 
 export type Person = {
   id: string
@@ -17,8 +17,8 @@ export type GroupMember = {
   id: string
   personId: string
   researchGroupId: string
-  active: boolean
-  role: MemberRole | null
+  status: MembershipStatus
+  roleId: string | null
   researchLineIds: string[]
   createdAt: string
   updatedAt: string
@@ -40,22 +40,21 @@ export type GroupMemberListItem = {
   membership: GroupMember
 }
 
-export type CreatePersonRequest = {
+export type AssignablePerson = {
+  id: string
   name: string
-  socialName: string | null
   email: string | null
-  phone: string | null
-  cpf: string | null
   academicDegree: string | null
-  areasOfExpertise: string[]
-  researchLineIds: string[]
-  role: MemberRole
 }
 
-export type UpdatePersonRequest = Omit<CreatePersonRequest, 'researchLineIds' | 'role'>
+export type InviteMemberRequest = {
+  personId: string
+  roleId: string
+  researchLineIds: string[]
+}
 
 export type UpdateGroupMemberRequest = {
-  role?: MemberRole
-  active?: boolean
+  status?: MembershipStatus
+  roleId?: string
   researchLineIds?: string[]
 }

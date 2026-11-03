@@ -9,15 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { useMemberDetailsQuery } from '@/queries/members/members.queries'
-import type { GroupMemberListItem, MemberRole } from '@/types/members/member.types'
-
-const roleLabels: Record<MemberRole, string> = {
-  ADMIN: 'Admin do grupo',
-  RESPONSIBLE: 'Responsável',
-  STUDENT: 'Estudante',
-  PARTNER: 'Parceiro',
-}
+import type { GroupMemberListItem } from '@/types/members/member.types'
 
 function maskCpf(value: string | null) {
   const digits = value?.replace(/\D/g, '') ?? ''
@@ -37,18 +29,21 @@ function Detail({ label, children }: { label: string; children: string }) {
 export function MemberDetailsDialog({
   member,
   lineNames,
+  roleNames,
   onOpenChange,
 }: {
   member: GroupMemberListItem | null
   lineNames: Map<string, string>
+  roleNames: Map<string, string>
   onOpenChange: (open: boolean) => void
 }) {
-  const personId = member?.person.id ?? null
-  const personQuery = useMemberDetailsQuery(personId)
-  const person = personQuery.data ?? member?.person
+  const person = member?.person
   const linkedLines = member?.membership.researchLineIds
     .map((lineId) => lineNames.get(lineId))
     .filter((name): name is string => Boolean(name)) ?? []
+  const roleId = member?.membership.roleId
+  const roleName = roleId ? roleNames.get(roleId) ?? 'Cargo não encontrado' : 'Sem cargo'
+  const statusLabel = member?.membership.status === 'PENDING' ? 'Convite pendente' : 'Ativo'
 
   return (
     <Dialog open={Boolean(member)} onOpenChange={onOpenChange}>
@@ -62,23 +57,22 @@ export function MemberDetailsDialog({
           <DialogTitle className="text-lg font-bold text-brand-navy">Detalhes do membro</DialogTitle>
           <DialogDescription>Dados pessoais e vínculo com o grupo.</DialogDescription>
         </DialogHeader>
-        {!member ? null : personQuery.isPending ? (
-          <p role="status" className="px-6 py-5 text-sm text-muted-foreground">Carregando detalhes…</p>
-        ) : personQuery.isError ? (
-          <div className="space-y-3 px-6 py-5">
-            <p role="alert" className="text-sm text-destructive">Não foi possível carregar os detalhes completos desta pessoa.</p>
-            <Button variant="outline" onClick={() => void personQuery.refetch()}>Tentar novamente</Button>
-          </div>
-        ) : person ? (
+        {person ? (
           <dl className="grid gap-x-6 gap-y-5 overflow-y-auto px-6 py-5 sm:grid-cols-2">
             <Detail label="Nome completo">{person.name}</Detail>
             <Detail label="Nome social">{person.socialName ?? ''}</Detail>
-            <Detail label="Perfil no grupo">{member.membership.role ? roleLabels[member.membership.role] : 'Perfil não informado'}</Detail>
+            <Detail label="Cargo">{roleName}</Detail>
+            <Detail label="Situação do vínculo">{statusLabel}</Detail>
             <Detail label="Titulação acadêmica">{person.academicDegree ?? ''}</Detail>
             <Detail label="E-mail">{person.email ?? ''}</Detail>
             <Detail label="Telefone">{person.phone ?? ''}</Detail>
             <Detail label="CPF">{maskCpf(person.cpf)}</Detail>
-            <Detail label="Linhas de pesquisa">{linkedLines.length ? linkedLines.join(', ') : 'Nenhuma linha vinculada'}</Detail>
+            <div className="sm:col-span-2">
+              <dt className="text-xs font-medium text-muted-foreground">Linhas de pesquisa</dt>
+              <dd className="mt-1 break-words text-sm text-foreground">
+                {linkedLines.length ? linkedLines.join(', ') : 'Nenhuma linha vinculada'}
+              </dd>
+            </div>
             <div className="sm:col-span-2">
               <dt className="text-xs font-medium text-muted-foreground">Áreas de atuação</dt>
               <dd className="mt-1 break-words text-sm text-foreground">

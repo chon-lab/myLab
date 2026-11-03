@@ -1,7 +1,10 @@
 import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import { researchGroupsService } from '@/services/research-groups/research-groups.service'
-import type { UpdateResearchGroupRequest } from '@/types/research-groups/research-group.types'
+import type {
+  CreateResearchGroupRequest,
+  UpdateResearchGroupRequest,
+} from '@/types/research-groups/research-group.types'
 
 export const researchGroupsKeys = {
   all: ['research-groups'] as const,
@@ -27,6 +30,15 @@ export function useResearchGroupsQuery() {
 
 export function useResearchGroupQuery(id: string) {
   return useQuery(researchGroupQueryOptions(id))
+}
+
+export function useCreateResearchGroupMutation() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (body: CreateResearchGroupRequest) => researchGroupsService.create(body),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: researchGroupsKeys.all }),
+  })
 }
 
 export function useUpdateResearchGroupMutation(id: string) {

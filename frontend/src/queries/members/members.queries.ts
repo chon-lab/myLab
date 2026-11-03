@@ -3,19 +3,18 @@ import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/r
 import { researchLinesKeys } from '@/queries/research-lines/research-lines.queries'
 import { membersService } from '@/services/members/members.service'
 import type {
-  CreatePersonRequest,
   GroupMemberListItem,
+  InviteMemberRequest,
   UpdateGroupMemberRequest,
-  UpdatePersonRequest,
 } from '@/types/members/member.types'
 
 export const membersKeys = {
   all: ['members'] as const,
   lists: () => [...membersKeys.all, 'list'] as const,
   listByGroup: (researchGroupId: string) => [...membersKeys.lists(), researchGroupId] as const,
-  details: () => [...membersKeys.all, 'detail'] as const,
-  detail: (personId: string) => [...membersKeys.details(), personId] as const,
   researchLines: (researchGroupId: string) => [...membersKeys.all, 'research-lines', researchGroupId] as const,
+  assignable: (researchGroupId: string, search: string) =>
+    [...membersKeys.all, 'assignable', researchGroupId, search] as const,
 }
 
 export const membersByGroupQueryOptions = (researchGroupId: string) =>
@@ -29,7 +28,7 @@ export const membersByGroupQueryOptions = (researchGroupId: string) =>
       const peopleById = new Map(people.map((person) => [person.id, person]))
 
       return memberships
-        .filter((membership) => membership.active)
+        .filter((membership) => membership.status !== 'INACTIVE')
         .flatMap((membership) => {
           const person = peopleById.get(membership.personId)
           return person ? [{ person, membership }] : []
@@ -43,12 +42,6 @@ export const memberResearchLinesQueryOptions = (researchGroupId: string) =>
     queryFn: () => membersService.listResearchLinesByGroup(researchGroupId),
   })
 
-export const memberDetailsQueryOptions = (personId: string) =>
-  queryOptions({
-    queryKey: membersKeys.detail(personId),
-    queryFn: () => membersService.getPerson(personId),
-  })
-
 export function useMembersQuery(researchGroupId: string) {
   return useQuery(membersByGroupQueryOptions(researchGroupId))
 }
@@ -57,10 +50,11 @@ export function useMemberResearchLinesQuery(researchGroupId: string) {
   return useQuery(memberResearchLinesQueryOptions(researchGroupId))
 }
 
-export function useMemberDetailsQuery(personId: string | null) {
+export function useAssignablePeopleQuery(researchGroupId: string, search: string, enabled: boolean) {
   return useQuery({
-    ...memberDetailsQueryOptions(personId ?? ''),
-    enabled: Boolean(personId),
+    queryKey: membersKeys.assignable(researchGroupId, search),
+    queryFn: () => membersService.searchAssignablePeople(researchGroupId, search),
+    enabled,
   })
 }
 
@@ -69,30 +63,17 @@ function useInvalidateMembers(researchGroupId: string) {
 
   return () => Promise.all([
     queryClient.invalidateQueries({ queryKey: membersKeys.listByGroup(researchGroupId) }),
+    queryClient.invalidateQueries({ queryKey: membersKeys.all }),
     queryClient.invalidateQueries({ queryKey: researchLinesKeys.membersByGroup(researchGroupId) }),
   ])
 }
 
-export function useCreateMemberMutation(researchGroupId: string) {
+export function useInviteMemberMutation(researchGroupId: string) {
   const invalidate = useInvalidateMembers(researchGroupId)
 
   return useMutation({
-    mutationFn: (body: CreatePersonRequest) => membersService.createPerson(researchGroupId, body),
+    mutationFn: (body: InviteMemberRequest) => membersService.inviteMember(researchGroupId, body),
     onSuccess: invalidate,
-  })
-}
-
-export function useUpdatePersonMutation(researchGroupId: string) {
-  const invalidate = useInvalidateMembers(researchGroupId)
-  const queryClient = useQueryClient()
-
-  return useMutation({
-    mutationFn: ({ personId, body }: { personId: string; body: UpdatePersonRequest }) =>
-      membersService.updatePerson(personId, body),
-    onSuccess: async (_data, variables) => {
-      await invalidate()
-      await queryClient.invalidateQueries({ queryKey: membersKeys.detail(variables.personId) })
-    },
   })
 }
 

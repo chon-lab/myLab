@@ -34,7 +34,7 @@ export function RemoveMemberDialog({
     try {
       await updateMembership.mutateAsync({
         personId: member.person.id,
-        body: { active: false },
+        body: { status: 'INACTIVE' },
       })
       onRemoved()
     } catch {

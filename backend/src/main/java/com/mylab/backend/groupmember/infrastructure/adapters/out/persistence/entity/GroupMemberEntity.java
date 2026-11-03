@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.mylab.backend.groupmember.domain.model.GroupMemberRole;
+import com.mylab.backend.groupmember.domain.model.MembershipStatus;
 
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -31,8 +32,8 @@ import lombok.NoArgsConstructor;
                 columnNames = {"person_id", "research_group_id"}
         ),
         indexes = {
-                @Index(name = "idx_group_member_group_active", columnList = "research_group_id, active"),
-                @Index(name = "idx_group_member_person_active", columnList = "person_id, active")
+                @Index(name = "idx_group_member_group_status", columnList = "research_group_id, status"),
+                @Index(name = "idx_group_member_person_status", columnList = "person_id, status")
         }
 )
 @Data
@@ -51,8 +52,9 @@ public class GroupMemberEntity {
     @Column(name = "research_group_id", nullable = false, updatable = false)
     private UUID researchGroupId;
 
-    @Column(nullable = false)
-    private boolean active;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 32)
+    private MembershipStatus status;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 32)

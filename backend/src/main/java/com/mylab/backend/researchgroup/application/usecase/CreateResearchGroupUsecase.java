@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.mylab.backend.groupmember.application.port.out.GroupMemberRepositoryPort;
 import com.mylab.backend.groupmember.domain.model.GroupMember;
 import com.mylab.backend.groupmember.domain.model.GroupMemberRole;
+import com.mylab.backend.groupmember.domain.model.MembershipStatus;
 import com.mylab.backend.researchgroup.application.dto.CreateResearchGroupInput;
 import com.mylab.backend.researchgroup.application.port.in.CreateResearchGroupPort;
 import com.mylab.backend.researchgroup.application.port.out.ResearchGroupRepositoryPort;
@@ -68,7 +69,7 @@ public class CreateResearchGroupUsecase implements CreateResearchGroupPort {
                 .id(UUID.randomUUID())
                 .personId(creatorPersonId)
                 .researchGroupId(researchGroup.getId())
-                .active(true)
+                .status(MembershipStatus.ACTIVE)
                 .role(GroupMemberRole.ADMIN)
                 .roleId(adminRole.getId())
                 .researchLineIds(Set.of())

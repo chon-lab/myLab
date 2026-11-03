@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.mylab.backend.groupmember.application.port.out.GroupMemberRepositoryPort;
 import com.mylab.backend.groupmember.domain.model.GroupMember;
+import com.mylab.backend.groupmember.domain.model.MembershipStatus;
 import com.mylab.backend.groupmember.infrastructure.adapters.out.persistence.entity.GroupMemberEntity;
 import com.mylab.backend.groupmember.infrastructure.adapters.out.persistence.mapper.GroupMemberMapper;
 import com.mylab.backend.groupmember.infrastructure.adapters.out.persistence.repository.GroupMemberJpaRepository;
@@ -49,9 +50,9 @@ public class GroupMemberJpaAdapter implements GroupMemberRepositoryPort {
 
     @Override
     @Transactional(readOnly = true)
-    public List<GroupMember> findAllByResearchGroupIdAndActive(UUID researchGroupId, boolean active) {
-        log.debug("Finding group members by research group {} active={}", researchGroupId, active);
-        return mapper.toDomainList(jpaRepository.findAllByResearchGroupIdAndActive(researchGroupId, active));
+    public List<GroupMember> findAllByResearchGroupIdAndStatusNot(UUID researchGroupId, MembershipStatus status) {
+        log.debug("Finding group members by research group {} status != {}", researchGroupId, status);
+        return mapper.toDomainList(jpaRepository.findAllByResearchGroupIdAndStatusNot(researchGroupId, status));
     }
 
     @Override
@@ -59,6 +60,13 @@ public class GroupMemberJpaAdapter implements GroupMemberRepositoryPort {
     public List<GroupMember> findAllByPersonId(UUID personId) {
         log.debug("Finding group members by person ID: {}", personId);
         return mapper.toDomainList(jpaRepository.findAllByPersonId(personId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<GroupMember> findAllByPersonIdAndStatus(UUID personId, MembershipStatus status) {
+        log.debug("Finding group members by person {} status={}", personId, status);
+        return mapper.toDomainList(jpaRepository.findAllByPersonIdAndStatus(personId, status));
     }
 
     @Override

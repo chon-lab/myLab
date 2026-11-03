@@ -19,7 +19,7 @@ A autorização dos endpoints **escopados por grupo** é aplicada pelo `Permissi
 - A **ação** é derivada do método HTTP: `GET`/`HEAD` → `READ`, `POST`/`PUT`/`PATCH` → `WRITE`, `DELETE` → `DELETE`.
 - O **grupo** é resolvido: pelo path nas rotas aninhadas (`/research-groups/{groupId}/...`); via `GroupResolver` (carrega a entidade pra achar o grupo) nas rotas por-id (`/laboratories/{id}`, `/projects/{id}`, `/inventory/entries/{id}/...` etc.). Se o grupo não puder ser resolvido, a rota não é checada.
 - O cargo **Admin** do grupo tem `full_access` (passa em tudo). Cargos custom precisam da permissão `(resource, action)` correspondente; o catálogo de recursos/ações é o enum `PermissionResource`/`PermissionAction` (módulo `role`), exposto em `GET /api/v1/permissions/catalog`.
-- Endpoints **não** escopados por grupo **não** levam a anotação: `GET /api/v1/me`, `GET /api/v1/permissions/catalog`, `GET /api/v1/me/research-groups/{id}/permissions`, e as coleções `GET`/`POST /api/v1/research-groups` (a listagem é filtrada pelos vínculos ativos do usuário; a criação faz o bootstrap do grupo + cargo Admin para o criador).
+- Endpoints **não** escopados por grupo **não** levam a anotação: `GET /api/v1/me`, `GET /api/v1/permissions/catalog`, `GET /api/v1/me/research-groups/{id}/permissions`, as rotas `/api/v1/me/invitations*` e `POST /api/v1/me/research-groups/{id}/leave` (cada uma valida que o vínculo pertence ao usuário logado), e as coleções `GET`/`POST /api/v1/research-groups` (a listagem é filtrada pelos vínculos ativos do usuário; a criação faz o bootstrap do grupo + cargo Admin `ACTIVE` para o criador).
 - Cargos são gerenciados em `/api/v1/research-groups/{id}/roles` (CRUD); o cargo do membro é definido pelo `roleId` no `PATCH` de membro. O `Person` do usuário logado é resolvido pelo e-mail do JWT (criado no 1º acesso — provisionamento JIT).
 
 ## Grupos de pesquisa
@@ -50,18 +50,20 @@ Corpos de criação/atualização exigem `name` e `objective`; aceitam `keywords
 
 | Método e rota | Função |
 | --- | --- |
-| `GET /research-groups/{researchGroupId}/people` | Lista pessoas do grupo. |
-| `POST /research-groups/{researchGroupId}/people` | Cadastra pessoa no contexto do grupo; `CreatePersonRequest`. |
+| `GET /research-groups/{researchGroupId}/people` | Lista pessoas do grupo (membros ativos e pendentes). |
+| `GET /research-groups/{researchGroupId}/assignable-people` | Busca pessoas do sistema ainda não vinculadas ao grupo, para convidar; `?search=` filtra por nome/e-mail. Resposta `AssignablePersonResponse` expõe só `id`, `name`, `email`, `academicDegree` (sem CPF/telefone). |
 | `GET /people/{id}` | Obtém pessoa. |
 | `PUT /people/{id}` | Atualiza pessoa; `UpdatePersonRequest`. |
 | `DELETE /people/{id}` | Remove pessoa. |
-| `GET /research-groups/{researchGroupId}/members` | Lista vínculos do grupo. |
-| `POST /research-groups/{researchGroupId}/members` | Cria ou reativa vínculo; `CreateGroupMemberRequest`. |
-| `PATCH /research-groups/{researchGroupId}/members/{personId}` | Atualiza vínculo pelo ID da pessoa no grupo; `UpdateGroupMemberRequest`. |
+| `GET /research-groups/{researchGroupId}/members` | Lista vínculos do grupo (status `ACTIVE` e `PENDING`). |
+| `POST /research-groups/{researchGroupId}/members` | Convida um usuário existente; cria o vínculo como `PENDING`; `CreateGroupMemberRequest` exige `personId` e `roleId` (cargo), aceita `researchLineIds`. |
+| `PATCH /research-groups/{researchGroupId}/members/{personId}` | Atualiza vínculo pelo ID da pessoa no grupo; `UpdateGroupMemberRequest` aceita `status`, `roleId` e `researchLineIds`. |
 | `GET /people/{personId}/members` | Lista vínculos da pessoa. |
 | `GET /members/{id}` | Obtém vínculo pelo ID próprio. |
 
-Pessoa: `name` e `role` obrigatórios na criação; `socialName`, `email`, `phone`, `cpf`, `academicDegree` e `areasOfExpertise` opcionais, exceto que CPF é obrigatório para `PARTNER`. `role` representa o perfil do vínculo e aceita `ADMIN`, `RESPONSIBLE`, `STUDENT` ou `PARTNER`. A criação também aceita `researchLineIds` e cria pessoa e vínculo na mesma transação. Vínculo: criação exige `personId` e `role`, aceita `researchLineIds`; PATCH aceita `active`, `role` e `researchLineIds`. `GroupMemberResponse` traz `id`, `personId`, `researchGroupId`, `active`, `role`, linhas e timestamps. Vínculos existentes antes da migração V18 ficam com `role` nulo até serem editados. Não existe `DELETE /members`.
+Não há mais cadastro manual de pessoa: a `Person` é criada por provisionamento JIT no 1º login (Keycloak) e o admin apenas convida usuários existentes. Vínculo: nasce `PENDING` ao convidar; se já existe uma linha `INACTIVE` para a mesma pessoa+grupo, ela é reaproveitada (reconvite) em vez de duplicar; `ACTIVE`/`PENDING` existentes retornam 409. O estado do vínculo é o enum `MembershipStatus` (`PENDING`/`ACTIVE`/`INACTIVE`) — **substituiu o antigo boolean `active`** (migração V23). `GroupMemberResponse` traz `id`, `personId`, `researchGroupId`, `status`, `role`, `roleId`, linhas e timestamps. O enum `role` (perfil ADMIN/RESPONSIBLE/STUDENT/PARTNER) ficou **legado**: não é mais usado na UI nem exigido na criação. Não existe `DELETE /members` (remover = `PATCH` com `status=INACTIVE`).
+
+Convites e saída (escopo `/me`, sem `@RequiredPermission` — cada rota valida que o vínculo é do usuário logado): `GET /api/v1/me/invitations` lista os convites `PENDING` do usuário (com nome do grupo e do cargo); `POST /api/v1/me/invitations/{membershipId}/accept` (PENDING→ACTIVE) e `.../reject` (PENDING→INACTIVE); `POST /api/v1/me/research-groups/{groupId}/leave` (ACTIVE→INACTIVE, preserva a linha). Um vínculo `PENDING` não tem permissão alguma até ser aceito.
 
 ## Laboratórios, projetos e documentos
 

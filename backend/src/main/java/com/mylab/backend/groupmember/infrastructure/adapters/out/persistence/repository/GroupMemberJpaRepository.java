@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import com.mylab.backend.groupmember.domain.model.MembershipStatus;
 import com.mylab.backend.groupmember.infrastructure.adapters.out.persistence.entity.GroupMemberEntity;
 
 @Repository
@@ -14,9 +15,11 @@ public interface GroupMemberJpaRepository extends JpaRepository<GroupMemberEntit
 
     Optional<GroupMemberEntity> findByPersonIdAndResearchGroupId(UUID personId, UUID researchGroupId);
 
-    List<GroupMemberEntity> findAllByResearchGroupIdAndActive(UUID researchGroupId, boolean active);
+    List<GroupMemberEntity> findAllByResearchGroupIdAndStatusNot(UUID researchGroupId, MembershipStatus status);
 
     List<GroupMemberEntity> findAllByPersonId(UUID personId);
+
+    List<GroupMemberEntity> findAllByPersonIdAndStatus(UUID personId, MembershipStatus status);
 
     long countByRoleId(UUID roleId);
 }

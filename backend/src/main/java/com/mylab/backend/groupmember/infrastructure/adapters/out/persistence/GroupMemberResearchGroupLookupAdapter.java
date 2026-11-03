@@ -1,10 +1,12 @@
 package com.mylab.backend.groupmember.infrastructure.adapters.out.persistence;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
 import com.mylab.backend.groupmember.application.port.out.ResearchGroupLookupPort;
+import com.mylab.backend.researchgroup.infrastructure.adapters.out.persistence.entity.ResearchGroupEntity;
 import com.mylab.backend.researchgroup.infrastructure.adapters.out.persistence.repository.ResearchGroupJpaRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -21,5 +23,11 @@ public class GroupMemberResearchGroupLookupAdapter implements ResearchGroupLooku
     public boolean existsById(UUID researchGroupId) {
         log.debug("Checking if research group exists by ID: {}", researchGroupId);
         return researchGroupJpaRepository.existsById(researchGroupId);
+    }
+
+    @Override
+    public Optional<String> findName(UUID researchGroupId) {
+        log.debug("Finding research group name by ID: {}", researchGroupId);
+        return researchGroupJpaRepository.findById(researchGroupId).map(ResearchGroupEntity::getName);
     }
 }

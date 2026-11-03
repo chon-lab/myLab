@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.mylab.backend.groupmember.domain.model.GroupMemberRole;
+import com.mylab.backend.groupmember.domain.model.MembershipStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UpdateGroupMemberRequest {
 
-    private Boolean active;
+    private MembershipStatus status;
 
     private GroupMemberRole role;
 

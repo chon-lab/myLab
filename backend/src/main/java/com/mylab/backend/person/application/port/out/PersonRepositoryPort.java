@@ -9,6 +9,7 @@ import com.mylab.backend.person.domain.model.Person;
 public interface PersonRepositoryPort {
     void save(Person person);
     Optional<Person> findById(UUID id);
+    Optional<Person> findByEmail(String email);
     List<Person> findAllByIds(List<UUID> ids);
     void deleteById(UUID id);
 }

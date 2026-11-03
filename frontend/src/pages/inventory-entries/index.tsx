@@ -331,7 +331,7 @@ export function InventoryEntriesPage() {
               <li key={entry.id} className={`rounded-xl border border-slate-200 bg-card p-4 ${entry.status === 'REVERSED' ? 'opacity-70' : ''}`}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="break-words text-sm font-semibold text-brand-navy">{entry.sourceName}</p>
+                    <p className="wrap-break-words text-sm font-semibold text-brand-navy">{entry.sourceName}</p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       {formatMovementDate(entry.receivedAt)} · {entry.laboratoryName}
                     </p>

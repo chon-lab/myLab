@@ -40,6 +40,15 @@ public class PersonJpaAdapter implements PersonRepositoryPort {
     }
 
     @Override
+    public Optional<Person> findByEmail(String email) {
+        log.debug("Finding person by email");
+        if (email == null || email.isBlank()) {
+            return Optional.empty();
+        }
+        return jpaRepository.findByEmailIgnoreCaseAndDeletedAtIsNull(email).map(mapper::toDomain);
+    }
+
+    @Override
     public List<Person> findAllByIds(List<UUID> ids) {
         log.debug("Finding people by IDs: {}", ids);
         if (ids == null || ids.isEmpty()) {

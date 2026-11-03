@@ -67,12 +67,10 @@ src/
 ## Autenticação
 
 - As telas dependem apenas da interface `AuthService` (`types/auth/auth.types.ts`) e dos hooks de `queries/auth/`.
-- Hoje, com `VITE_AUTH_MODE=mock`, aceita qualquer e-mail válido com senha de 6+ caracteres.
-- Futuro: **Keycloak**.
-  - `keycloak-js` com Authorization Code + PKCE entra como nova implementação de `AuthService`.
-  - A tela de login migra para um tema Keycloakify.
-  - Por isso `LoginForm` e `LoginBrandPanel` são apenas de apresentação: sem lógica de auth dentro.
-- O backend (`/api/v1/...`, porta 8080) é acessado via proxy do Vite em dev; erros seguem `ApiErrorResponse` e viram `ApiError`.
+- `VITE_AUTH_MODE` escolhe a implementação em `services/auth/auth.service.ts`:
+  - `mock` (padrão em dev): aceita qualquer e-mail válido com senha de 6+ caracteres.
+  - `keycloak`: `services/auth/keycloak-auth.service.ts` usa `keycloak-js` com Authorization Code + PKCE. O login é por **redirect** (`initKeycloak()` roda no bootstrap de `main.tsx`); a tela `/entrar` só mostra o botão "Entrar", e `LoginForm`/`LoginBrandPanel` seguem apenas de apresentação. Exige `VITE_KEYCLOAK_URL`, `VITE_KEYCLOAK_REALM`, `VITE_KEYCLOAK_CLIENT_ID`.
+- O backend (`/api/v1/...`, porta 8080) é acessado via proxy do Vite em dev; o token do Keycloak é injetado em `Authorization: Bearer` pelo `api-client`. Erros seguem `ApiErrorResponse` e viram `ApiError`.
 
 ## Comandos
 

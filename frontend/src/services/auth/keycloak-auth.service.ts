@@ -10,24 +10,28 @@ const keycloak = new Keycloak({
 
 let initialized = false;
 
-export async function initKeycloak(): Promise<boolean> {
+export async function initKeycloak(): Promise<void> {
   if (initialized) {
-    return Boolean(keycloak.authenticated);
+    return;
   }
 
   initialized = true;
 
-  const authenticated = await keycloak.init({
+  await keycloak.init({
     onLoad: "check-sso",
     silentCheckSsoRedirectUri: `${window.location.origin}/silent-check-sso.html`,
     pkceMethod: "S256",
   });
 
   keycloak.onTokenExpired = () => {
-    void keycloak.updateToken(30);
+    keycloak.updateToken(30).catch(() => redirectToLogin());
   };
 
-  return authenticated;
+  keycloak.onAuthRefreshError = () => redirectToLogin();
+}
+
+function redirectToLogin() {
+  void keycloak.logout({ redirectUri: `${window.location.origin}/entrar` });
 }
 
 function toSession(): Session | null {

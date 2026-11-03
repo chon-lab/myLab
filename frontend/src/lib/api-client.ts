@@ -24,6 +24,14 @@ export class ApiError extends Error {
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? ''
 
+let handlingUnauthorized = false
+
+function handleUnauthorized() {
+  if (handlingUnauthorized) return
+  handlingUnauthorized = true
+  void authService.logout()
+}
+
 async function toApiError(response: Response) {
   const body = (await response.json().catch(() => null)) as Partial<ApiErrorResponse> | null
   return new ApiError(
@@ -64,7 +72,10 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 
   const response = await fetch(`${BASE_URL}${path}`, { ...init, headers })
 
-  if (!response.ok) throw await toApiError(response)
+  if (!response.ok) {
+    if (response.status === 401) handleUnauthorized()
+    throw await toApiError(response)
+  }
   if (response.status === 204) return undefined as T
 
   const text = await response.text()
@@ -92,7 +103,10 @@ export const api = {
     if (token) headers.set('Authorization', `Bearer ${token}`)
 
     const response = await fetch(`${BASE_URL}${path}`, { headers })
-    if (!response.ok) throw await toApiError(response)
+    if (!response.ok) {
+      if (response.status === 401) handleUnauthorized()
+      throw await toApiError(response)
+    }
     return response.blob()
   },
   post: <T>(path: string, body?: unknown) =>

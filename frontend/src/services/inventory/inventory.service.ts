@@ -8,12 +8,15 @@ import type {
   InventoryEntryDocumentSummary,
   InventoryEntryHistoryRecord,
   InventoryEntryDocumentUploadRequest,
+  InventoryExitFilters,
   InventoryExitHistoryRecord,
   InventoryItem,
   InventoryLaboratory,
   InventoryMovementFilters,
   InventoryMovementHistoryRecord,
   InventoryStockResponse,
+  InventoryTransferFilters,
+  InventoryTransferHistoryRecord,
   ReverseInventoryMovementRequest,
   UpdateInventoryItemRequest,
 } from '@/types/inventory/inventory.types'
@@ -112,10 +115,19 @@ export const inventoryService = {
   deleteEntryDocument: (entryId: string, documentId: string) =>
     api.delete<void>(`/api/v1/inventory/entries/${entryId}/documents/${documentId}`),
 
-  listExits: (researchGroupId: string) =>
+  listExits: (researchGroupId: string, filters: InventoryExitFilters = {}) =>
     api.get<InventoryExitHistoryRecord[]>(
-      `/api/v1/research-groups/${researchGroupId}/inventory/exits`,
+      `/api/v1/research-groups/${researchGroupId}/inventory/exits${buildQueryString({
+        laboratoryId: filters.laboratoryId,
+        type: filters.type,
+        inventoryItemId: filters.inventoryItemId,
+        dateFrom: filters.dateFrom,
+        dateTo: filters.dateTo,
+      })}`,
     ),
+
+  getExit: (exitId: string) =>
+    api.get<InventoryExitHistoryRecord>(`/api/v1/inventory/exits/${exitId}`),
 
   createExit: (researchGroupId: string, body: CreateInventoryExitRequest) =>
     api.post<string | undefined>(
@@ -134,5 +146,19 @@ export const inventoryService = {
 
   reverseTransfer: (transferId: string, body: ReverseInventoryMovementRequest) =>
     api.post<void>(`/api/v1/inventory/transfers/${transferId}/reverse`, body),
+
+  listTransfers: (researchGroupId: string, filters: InventoryTransferFilters = {}) =>
+    api.get<InventoryTransferHistoryRecord[]>(
+      `/api/v1/research-groups/${researchGroupId}/inventory/transfers${buildQueryString({
+        sourceLaboratoryId: filters.sourceLaboratoryId,
+        destinationLaboratoryId: filters.destinationLaboratoryId,
+        inventoryItemId: filters.inventoryItemId,
+        dateFrom: filters.dateFrom,
+        dateTo: filters.dateTo,
+      })}`,
+    ),
+
+  getTransfer: (transferId: string) =>
+    api.get<InventoryTransferHistoryRecord>(`/api/v1/inventory/transfers/${transferId}`),
 }
 
